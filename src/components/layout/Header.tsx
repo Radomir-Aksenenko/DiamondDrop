@@ -12,12 +12,11 @@ export default function Header() {
     <header className="relative">
       <div className="h-[82px] px-6 py-4 flex items-center justify-between">
           <div className='flex gap-2 items-center'>
-            <Image
+            <img 
               src={`https://avatars.spworlds.ru/face/${user?.username}?w=100`}
               alt="User Avatar"
               width={50}
               height={50}
-              className=""
             />
             <div>
               <p className='text-[#F9F8FC] text-2xl font-bold mr-2'>{user ? user.username : 'Загрузка...'}</p>
