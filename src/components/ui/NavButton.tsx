@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Импортируем SVG-иконки как React-компоненты
 import AboutIcon from '../icons/AboutIcon';
@@ -17,7 +18,7 @@ interface NavButtonProps {
 
 /**
  * Компонент кнопки навигации для хедера
- * @param icon - Путь к SVG иконке (из папки /public/icons/)
+ * @param icon - Название иконки ('About', 'Case', 'Update')
  * @param href - Путь для навигации
  * @param label - Опциональная подпись
  */
@@ -29,31 +30,95 @@ export default function NavButton({ icon, href, label }: NavButtonProps) {
   const getIconComponent = () => {
     switch (icon) {
       case 'About':
-        return <AboutIcon className={`w-[14px] h-[12px]`} />;
+        return <AboutIcon className="w-[14px] h-[12px]" />;
       case 'Case':
-        return <CaseIcon className={`w-[14px] h-[12px]`} />;
+        return <CaseIcon className="w-[14px] h-[12px]" />;
       case 'Update':
-        return <UpdateIcon className={`w-[14px] h-[12px]`} />;
+        return <UpdateIcon className="w-[14px] h-[12px]" />;
       default:
         return null;
     }
   };
   
+  // Варианты анимации для контейнера иконки
+  const iconContainerVariants = {
+    initial: { scale: 1 },
+    hover: { scale: 1.1, transition: { duration: 0.2 } },
+    tap: { scale: 0.95, transition: { duration: 0.1 } },
+    active: isActive ? {
+      scale: 1.05,
+      transition: {
+        duration: 0.3,
+        ease: "easeOut"
+      }
+    } : {}
+  };
+
+  // Варианты анимации для иконки
+  const iconVariants = {
+    initial: { rotate: 0 },
+    hover: { rotate: isActive ? 0 : 5, transition: { duration: 0.3 } },
+    active: isActive ? {
+      opacity: 1,
+      transition: {
+        duration: 0.3,
+        ease: "easeOut"
+      }
+    } : {}
+  };
+
+  // Варианты анимации для текста
+  const textVariants = {
+    initial: { opacity: isActive ? 1 : 0.7 },
+    hover: { opacity: 1, transition: { duration: 0.2 } },
+    active: isActive ? {
+      opacity: 1,
+      transition: {
+        duration: 0.3,
+        ease: "easeOut"
+      }
+    } : {}
+  };
+
+  // Варианты анимации для фона кнопки
+  const buttonBgVariants = {
+    initial: { backgroundColor: 'rgba(25, 25, 29, 0)' },
+    hover: { backgroundColor: 'rgba(25, 25, 29, 1)', transition: { duration: 0.3 } },
+    active: { backgroundColor: 'rgba(25, 25, 29, 1)' }
+  };
+
   return (
-    <Link 
-      href={href}
-      className={`inline-flex items-center gap-2 p-2 rounded-full ${isActive ? 'text-[#F9F8FC] bg-[#19191D]' : 'text-[#F9F8FC]/70 hover:bg-[#19191D] hover:text-[#F9F8FC]'}`}
-    >
-      <div className={`flex flex-col justify-center items-center w-[30px] h-[30px] gap-[10px] aspect-square rounded-[42px] ${isActive ? 'bg-[#5C5ADC]' : 'bg-[#F9F8FC]/5 hover:bg-[#F9F8FC]/5'}`}>
-        <div className={isActive ? 'text-[#F9F8FC]' : 'text-[#89898D]'}>
-          {getIconComponent()}
-        </div>
-      </div>
-      {label && (
-        <span className={`text-16 font-bold text-[#838286] ${isActive ? 'text-[#F9F8FC]' : ''}`}>
-          {label}
-        </span>
-      )}
+    <Link href={href} className="inline-block">
+      <motion.div
+        initial="initial"
+        animate={isActive ? "active" : "initial"}
+        whileHover="hover"
+        whileTap="tap"
+        variants={buttonBgVariants}
+        className={isActive ? 'inline-flex items-center gap-2 p-2 rounded-full text-[#F9F8FC]' : 'inline-flex items-center gap-2 p-2 rounded-full text-[#F9F8FC]/70 hover:text-[#F9F8FC]'}
+        layout
+        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+      >
+        <motion.div 
+            className={isActive ? 'flex flex-col justify-center items-center w-[30px] h-[30px] gap-[10px] aspect-square rounded-[42px] bg-[#5C5ADC]' : 'flex flex-col justify-center items-center w-[30px] h-[30px] gap-[10px] aspect-square rounded-[42px] bg-[#F9F8FC]/5'}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+          >
+            <motion.div 
+              className={isActive ? 'text-[#F9F8FC]' : 'text-[#89898D]'}
+            >
+              {getIconComponent()}
+            </motion.div>
+          </motion.div>
+        
+        {label && (
+          <motion.span 
+            className={isActive ? 'flex items-center text-base font-bold pr-1 text-[#F9F8FC]' : 'flex items-center text-base font-bold pr-1 text-[#838286]'}
+            layout
+          >
+            {label}
+          </motion.span>
+        )}
+      </motion.div>
     </Link>
   );
 }

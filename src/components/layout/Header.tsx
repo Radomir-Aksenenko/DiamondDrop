@@ -33,8 +33,8 @@ export default function Header() {
         </nav>
         <div className='w-[137px] h-[44px] bg-[#19191D] flex items-center justify-center gap-2 pl-3 rounded-[12px]'>
           <div className='mr-1.5'>
-            <span className='text-[#F9F8FC] font-actay-wide text-20 font-bold mr-1'>999</span>
-            <span>АР</span>
+            <span className='text-[#F9F8FC] font-actay-wide text-20 font-bold'>999</span>
+            <span className='text-[#F9F8FC]/50 font-actay-wide text-16 font-bold ml-1'>АР</span>
           </div>
           <div className='flex items-center justify-center gap-2.5 p-3 rounded-[8px] bg-[#5C5ADC]'>
             <Image
