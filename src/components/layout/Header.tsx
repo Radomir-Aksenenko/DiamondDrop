@@ -6,23 +6,23 @@ import NavButton from '@/components/ui/NavButton';
 import useSPW from '@/hooks/useSPW';
 
 export default function Header() {
-  const { user, isReady } = useSPW();
-  
+  const { user } = useSPW();
+
   return (
     <header className="relative">
       <div className="h-[82px] px-6 py-4 flex items-center justify-between">
           <div className='flex gap-2 items-center'>
             <Image
-              src={isReady && user ? `https://avatars.spworlds.ru/face/${user.username}?w=100` : "https://avatars.spworlds.ru/face/megatntmega?w=100"}
+              src={`https://avatars.spworlds.ru/face/${user?.username}?w=100`}
               alt="User Avatar"
               width={50}
               height={50}
               className=""
             />
             <div>
-              <p className='text-[#F9F8FC] text-2xl font-bold mr-2'>{isReady && user ? user.username : 'Загрузка...'}</p>
+              <p className='text-[#F9F8FC] text-2xl font-bold mr-2'>{user ? user.username : 'Загрузка...'}</p>
               <div className="flex-col justify-center items-center text-[#F9F8FC] text-base font-bold opacity-50">
-                <span className="mr-1">{isReady && user && user.level ? user.level : '?'}</span>
+                <span className="mr-1">{user?.level ?? '?'}</span>
                 <span className="">lvl</span>
               </div>
             </div>
@@ -32,13 +32,19 @@ export default function Header() {
           <NavButton icon="Update" href="/update" label="Обновления" />
           <NavButton icon="About" href="/about" label="О проекте" />
         </nav>
-        <div className='w-[137px] h-[44px] bg-[#19191D] flex items-center justify-center gap-2 pl-3 rounded-lg'>
-          <span className='text-[#F9F8FC] font-actay-wide text-20 font-bold'>999</span>
-          <span>АР
-
-          </span>
-          <div className='flex items-center justify-center gap-2.5 p-3 rounded-md bg-[#5C5ADC]'>
-
+        <div className='w-[137px] h-[44px] bg-[#19191D] flex items-center justify-center gap-2 pl-3 rounded-[12px]'>
+          <div className='mr-1.5'>
+            <span className='text-[#F9F8FC] font-actay-wide text-20 font-bold mr-1'>999</span>
+            <span>АР</span>
+          </div>
+          <div className='flex items-center justify-center gap-2.5 p-3 rounded-[8px] bg-[#5C5ADC]'>
+            <Image
+              src="/Wallet.svg"
+              alt="WalletIcon"
+              width={22}
+              height={20}
+              className='aspect-[11/10]'
+            />
           </div>
         </div>
       </div>

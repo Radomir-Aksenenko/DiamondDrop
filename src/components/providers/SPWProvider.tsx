@@ -14,18 +14,11 @@ export default function SPWProvider({ children }: { children: React.ReactNode })
     spw.initialize();
 
     // Обработчики событий
-    const handleReady = () => {
-      console.log('SPWMini готов к использованию');
-      console.log('Текущий пользователь:', spw.user);
-    };
+    const handleReady = () => {};
 
-    const handleInitResponse = (user: SPWUser) => {
-      console.log(`Авторизован как ${user.username} / ${user.minecraftUUID}`);
-    };
+    const handleInitResponse = (user: SPWUser) => {};
 
-    const handleInitError = (message: string) => {
-      console.error(`Ошибка авторизации: ${message}`);
-    };
+    const handleInitError = (message: string) => {};
 
     // Добавляем обработчики событий
     spw.on('ready', handleReady);

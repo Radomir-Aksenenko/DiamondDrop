@@ -10,8 +10,6 @@ import { SPWUser, ValidateOptions } from '@/types/spw';
  */
 export default function useSPW() {
   const [user, setUser] = useState<SPWUser | null>(spw.user);
-  const [isReady, setIsReady] = useState(false);
-
   useEffect(() => {
     // Обновляем состояние при получении данных пользователя
     const handleInitResponse = (userData: SPWUser) => {
@@ -20,7 +18,6 @@ export default function useSPW() {
 
     // Устанавливаем флаг готовности
     const handleReady = () => {
-      setIsReady(true);
       setUser(spw.user);
     };
 
@@ -31,7 +28,6 @@ export default function useSPW() {
     // Если SPWMini уже инициализирован, устанавливаем данные
     if (spw.user) {
       setUser(spw.user);
-      setIsReady(true);
     }
 
     // Очистка при размонтировании
@@ -48,7 +44,6 @@ export default function useSPW() {
 
   return {
     user,
-    isReady,
     openURL,
     openPayment,
     validateUser,
