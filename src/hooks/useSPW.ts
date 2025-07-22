@@ -2,18 +2,19 @@
 
 import { useEffect, useState } from 'react';
 import spw from '@/lib/spw';
+import { SPWUser, ValidateOptions } from '@/types/spw';
 
 /**
  * Хук для удобного использования SPWMini в компонентах
  * @returns {Object} Объект с данными пользователя и методами SPWMini
  */
 export default function useSPW() {
-  const [user, setUser] = useState(spw.user);
+  const [user, setUser] = useState<SPWUser | null>(spw.user);
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     // Обновляем состояние при получении данных пользователя
-    const handleInitResponse = (userData: any) => {
+    const handleInitResponse = (userData: SPWUser) => {
       setUser(userData);
     };
 
@@ -43,7 +44,7 @@ export default function useSPW() {
   // Методы для работы с SPWMini
   const openURL = (url: string) => spw.openURL(url);
   const openPayment = (code: string) => spw.openPayment(code);
-  const validateUser = (url: string, options?: RequestInit) => spw.validateUser(url, options);
+  const validateUser = (url: string, options?: ValidateOptions) => spw.validateUser(url, options);
 
   return {
     user,

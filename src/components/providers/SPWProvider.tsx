@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import spw from '@/lib/spw';
+import { SPWUser } from '@/types/spw';
 
 /**
  * Провайдер для инициализации SPWMini
@@ -18,7 +19,7 @@ export default function SPWProvider({ children }: { children: React.ReactNode })
       console.log('Текущий пользователь:', spw.user);
     };
 
-    const handleInitResponse = (user: any) => {
+    const handleInitResponse = (user: SPWUser) => {
       console.log(`Авторизован как ${user.username} / ${user.minecraftUUID}`);
     };
 

@@ -7,7 +7,7 @@ import useSPW from '@/hooks/useSPW';
  * Компонент для демонстрации методов SPWMini
  */
 export default function SPWActions() {
-  const { openURL, openPayment, validateUser, isReady, user } = useSPW();
+  const { openURL, validateUser, isReady, user } = useSPW();
 
   // Обработчик для открытия URL
   const handleOpenURL = () => {
