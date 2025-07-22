@@ -28,11 +28,11 @@ export default function Header() {
           </div>
         <nav className="flex items-center gap-2">
           <NavButton icon="Case" href="/" label="Кейсы" />
-          <NavButton icon="Update" href="/update" label="Обновления" />
+          <NavButton icon="Update" href="/update" label="Апгрейд" />
           <NavButton icon="About" href="/about" label="О проекте" />
         </nav>
         <div className='w-[137px] h-[44px] bg-[#19191D] flex items-center justify-center gap-2 pl-3 rounded-[12px]'>
-          <div className='mr-1.5'>
+          <div className='mr-1.5 flex items-center pt-1'>
             <span className='text-[#F9F8FC] font-actay-wide text-20 font-bold'>999</span>
             <span className='text-[#F9F8FC]/50 font-actay-wide text-16 font-bold ml-1'>АР</span>
           </div>
