@@ -1,19 +1,44 @@
 @import "tailwindcss";
 
+/* Подключение шрифта Actay Wide */
+@font-face {
+  font-family: 'Actay Wide';
+  src: url('/fonts/ActayWide-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Actay Wide';
+  src: url('/fonts/ActayWide-BoldItalic.otf') format('opentype');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
 :root {
   --background: #0D0D11;
-  --foreground: #ffffff;
+  --foreground: #F9F8FC;
   --accent: #5C5ADC;
+  --font-actay-wide: 'Actay Wide', sans-serif;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-unbounded), sans-serif;
+  font-family: var(--font-actay-wide), sans-serif;
   
   /* Стили для скролл-бара в Firefox */
   scrollbar-color: var(--accent) var(--background); /* цвет ползунка и трека */
   scrollbar-width: thin; /* тонкий скролл-бар */
+
+  /* Prevent image dragging */
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-drag: none;
 }
 
 /* Стили для скролл-бара в WebKit/Blink (Chrome, Edge, Safari) */
@@ -32,4 +57,13 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: color-mix(in srgb, var(--accent) 80%, white); /* Немного светлее при наведении */
+}
+
+img {
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-drag: none;
+  user-select: none;
 }

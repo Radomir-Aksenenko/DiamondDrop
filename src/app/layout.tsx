@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Unbounded } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/Header";
+import SPWProvider from "@/components/providers/SPWProvider";
 
 const unbounded = Unbounded({
   variable: "--font-unbounded",
@@ -22,12 +23,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${unbounded.variable} antialiased`}
+        className={`${unbounded.variable} antialiased text-[#F9F8FC]`}
       >
-        <Header />
-        <main>
-          {children}
-        </main>
+        <SPWProvider>
+          <Header />
+          <main>
+            {children}
+          </main>
+        </SPWProvider>
       </body>
     </html>
   );
