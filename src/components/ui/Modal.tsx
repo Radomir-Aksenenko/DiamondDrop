@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useCallback, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface ModalProps {
@@ -10,72 +10,97 @@ interface ModalProps {
   title?: React.ReactNode;
 }
 
+// Оптимизированные варианты анимации для лучшей производительности
+const overlayVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1 },
+  exit: { opacity: 0 }
+};
+
+const modalVariants = {
+  hidden: { 
+    scale: 0.95, 
+    opacity: 0,
+    y: 10
+  },
+  visible: { 
+    scale: 1, 
+    opacity: 1,
+    y: 0
+  },
+  exit: { 
+    scale: 0.95, 
+    opacity: 0,
+    y: 10
+  }
+};
+
+// Оптимизированные настройки анимации
+const overlayTransition = { duration: 0.15, ease: "easeOut" };
+const modalTransition = { duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] };
+
 /**
- * Компонент модального окна
+ * Оптимизированный компонент модального окна
  * @param isOpen - Флаг открытия модального окна
  * @param onClose - Функция закрытия модального окна
  * @param children - Содержимое модального окна
  * @param title - Заголовок модального окна (опционально)
  */
-export default function Modal({ isOpen, onClose, children, title }: ModalProps) {
+const Modal = memo(function Modal({ isOpen, onClose, children, title }: ModalProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
 
-  // Закрытие модального окна при клике на оверлей
-  const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
+  // Мемоизированный обработчик клика по оверлею
+  const handleOverlayClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === overlayRef.current) {
       onClose();
     }
-  };
+  }, [onClose]);
+
+  // Мемоизированный обработчик клавиши Escape
+  const handleEscapeKey = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape' && isOpen) {
+      onClose();
+    }
+  }, [isOpen, onClose]);
 
   // Закрытие модального окна при нажатии Escape
   useEffect(() => {
-    const handleEscapeKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
-        onClose();
-      }
-    };
-
-    document.addEventListener('keydown', handleEscapeKey);
-    return () => {
-      document.removeEventListener('keydown', handleEscapeKey);
-    };
-  }, [isOpen, onClose]);
-
-  // Блокировка скролла при открытом модальном окне
-  useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
+      document.addEventListener('keydown', handleEscapeKey);
+      return () => {
+        document.removeEventListener('keydown', handleEscapeKey);
+      };
     }
+    return () => {};
+  }, [isOpen, handleEscapeKey]);
 
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isOpen]);
+  // Комментарий: Убрана блокировка скролла при открытом модальном окне
+  // Теперь скролл бар не будет скрываться при открытии модального окна
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="sync" initial={false}>
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          {/* Оверлей */}
+          {/* Оптимизированный оверлей */}
           <motion.div
             ref={overlayRef}
             className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            variants={overlayVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
             onClick={handleOverlayClick}
+            style={{ willChange: 'opacity' }}
           />
           
-          {/* Модальное окно */}
+          {/* Оптимизированное модальное окно */}
           <motion.div
             className="relative z-10 w-full max-w-md bg-[#151519] rounded-[16px] shadow-xl overflow-hidden"
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.9, opacity: 0 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            variants={modalVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            style={{ willChange: 'transform, opacity' }}
           >
             {/* Заголовок */}
             {title && (
@@ -89,6 +114,7 @@ export default function Modal({ isOpen, onClose, children, title }: ModalProps) 
               className="absolute top-4 right-4 flex items-center justify-center w-8 h-8 rounded-full bg-[#19191D] text-[#F9F8FC] hover:bg-[#1E1E23] transition-colors cursor-pointer"
               onClick={onClose}
               aria-label="Закрыть"
+              type="button"
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -104,4 +130,6 @@ export default function Modal({ isOpen, onClose, children, title }: ModalProps) 
       )}
     </AnimatePresence>
   );
-}
+});
+
+export default Modal;
