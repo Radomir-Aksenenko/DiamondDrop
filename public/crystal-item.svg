@@ -1,0 +1,23 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Фон -->
+  <rect width="64" height="64" rx="8" fill="#2D2D30"/>
+  
+  <!-- Кристалл -->
+  <path d="M32 8L42 18L38 32L32 56L26 32L22 18L32 8Z" fill="#9B59B6"/>
+  <path d="M32 8L38 18L35 28L32 40L29 28L26 18L32 8Z" fill="#8E44AD"/>
+  <path d="M32 8L35 15L33 22L32 30L31 22L29 15L32 8Z" fill="#E74C3C"/>
+  
+  <!-- Грани кристалла -->
+  <path d="M32 8L26 18L32 30L32 8Z" fill="#AF7AC5" opacity="0.7"/>
+  <path d="M32 8L38 18L32 30L32 8Z" fill="#BB8FCE" opacity="0.7"/>
+  
+  <!-- Эффект свечения -->
+  <circle cx="32" cy="32" r="20" fill="url(#crystalGlow)" opacity="0.3"/>
+  
+  <defs>
+    <radialGradient id="crystalGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#9B59B6;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#9B59B6;stop-opacity:0" />
+    </radialGradient>
+  </defs>
+</svg>

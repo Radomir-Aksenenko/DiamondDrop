@@ -1,0 +1,20 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Фон -->
+  <rect width="64" height="64" rx="8" fill="#2D2D30"/>
+  
+  <!-- Основная форма предмета (меч) -->
+  <path d="M32 8L34 10V24H30V10L32 8Z" fill="#C0C0C0"/>
+  <path d="M28 24H36V28H28V24Z" fill="#8B4513"/>
+  <path d="M30 28H34V32H30V28Z" fill="#654321"/>
+  
+  <!-- Эффект свечения -->
+  <circle cx="32" cy="20" r="12" fill="url(#glow)" opacity="0.3"/>
+  
+  <!-- Градиент для свечения -->
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0" />
+    </radialGradient>
+  </defs>
+</svg>
