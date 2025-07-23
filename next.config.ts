@@ -6,9 +6,9 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'avatars.spworlds.ru',
-        pathname: '/**',
-      },
+        hostname: '*',
+        pathname: '**',
+      }
     ],
   },
   webpack(config) {

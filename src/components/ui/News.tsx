@@ -3,16 +3,21 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import useBannersAPI from '@/hooks/useBannersAPI';
 
-// Временные данные для баннеров
-const banners = [
-  { id: 1, title: 'Новость 1', url: '/news/1', image: '/Frame 116.png' },
-  { id: 2, title: 'Новость 2', url: '/news/2', image: '/image 27.png' }
+// Запасные данные для баннеров (используются, если API недоступен)
+const fallbackBanners = [
+  { id: '1', title: 'Новость 1', url: '/news/1', imageUrl: '/Frame 116.png' },
+  { id: '2', title: 'Новость 2', url: '/news/2', imageUrl: '/image 27.png' }
 ];
 
 export default function News() {
+  const { banners: apiBanners, loading, error } = useBannersAPI();
   const [activeIndex, setActiveIndex] = useState(0);
   const sliderRef = useRef<HTMLDivElement>(null);
+  
+  // Используем баннеры из API или запасные данные
+  const banners = apiBanners.length > 0 ? apiBanners : fallbackBanners;
   
   // Функция для переключения на следующий баннер
   const goToNext = () => {
@@ -51,6 +56,11 @@ export default function News() {
     return () => clearInterval(interval);
   }, []);
   
+  // Сбрасываем индекс активного баннера при изменении списка баннеров
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [apiBanners]);
+  
   // Прокрутка к активному баннеру при изменении activeIndex
   useEffect(() => {
     if (sliderRef.current) {
@@ -79,8 +89,8 @@ export default function News() {
               >
                 <div className="absolute inset-0 w-full h-full">
                   <Image 
-                    src={banner.image} 
-                    alt={banner.title}
+                    src={banner.imageUrl} 
+                    alt={`Баннер ${banners.indexOf(banner) + 1}`}
                     fill
                     style={{ objectFit: 'cover' }}
                     priority={activeIndex === banners.indexOf(banner)}
