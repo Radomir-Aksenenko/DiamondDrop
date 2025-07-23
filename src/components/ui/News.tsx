@@ -6,8 +6,8 @@ import Image from 'next/image';
 
 // Временные данные для баннеров
 const banners = [
-  { id: 1, title: 'Новость 1', url: '/news/1', image: '/image 27.png' },
-  { id: 2, title: 'Новость 2', url: '/news/2', image: '/Frame 116.png' }
+  { id: 1, title: 'Новость 1', url: '/news/1', image: '/Frame 116.png' },
+  { id: 2, title: 'Новость 2', url: '/news/2', image: '/image 27.png' }
 ];
 
 export default function News() {
@@ -97,7 +97,7 @@ export default function News() {
             <button
               key={dotIndex}
               onClick={() => goToIndex(dotIndex)}
-              className={`w-3 h-3 rounded-full transition-opacity ${dotIndex === activeIndex ? 'bg-white' : 'bg-white opacity-30'}`}
+              className={`w-3 h-3 rounded-full transition-opacity cursor-pointer ${dotIndex === activeIndex ? 'bg-white' : 'bg-white opacity-30'}`}
               aria-label={`Перейти к баннеру ${dotIndex + 1}`}
             />
           ))}
