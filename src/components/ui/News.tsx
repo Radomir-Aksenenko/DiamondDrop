@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import useBannersAPI from '@/hooks/useBannersAPI';
+import useSPW from '@/hooks/useSPW';
 
 // Запасные данные для баннеров (используются, если API недоступен)
 const fallbackBanners = [
@@ -13,11 +14,32 @@ const fallbackBanners = [
 
 export default function News() {
   const { banners: apiBanners, loading, error } = useBannersAPI();
+  const { isAuthenticated, authToken, makeAuthenticatedRequest } = useSPW();
   const [activeIndex, setActiveIndex] = useState(0);
   const sliderRef = useRef<HTMLDivElement>(null);
   
   // Используем баннеры из API или запасные данные
   const banners = apiBanners.length > 0 ? apiBanners : fallbackBanners;
+  
+  // Пример использования авторизованного запроса
+  const handleBannerClick = async (bannerId: string) => {
+    if (isAuthenticated) {
+      try {
+        // Пример отправки статистики клика с авторизацией
+        await makeAuthenticatedRequest('https://battle-api.chasman.engineer/api/v1/stats/banner-click', {
+          method: 'POST',
+          body: JSON.stringify({
+            bannerId,
+            timestamp: Date.now(),
+            userAgent: navigator.userAgent
+          })
+        });
+        console.log('Статистика клика отправлена');
+      } catch (error) {
+        console.error('Ошибка отправки статистики:', error);
+      }
+    }
+  };
   
   // Функция для переключения на следующий баннер
   const goToNext = () => {
@@ -74,6 +96,13 @@ export default function News() {
   
   return (
     <div className="w-full max-w-4xl mx-auto">
+      {/* Индикатор статуса авторизации */}
+      {isAuthenticated && (
+        <div className="mb-2 text-xs text-green-400 opacity-75">
+          ✓ Авторизован (токен: {authToken?.substring(0, 20)}...)
+        </div>
+      )}
+      
       <div className="relative">
         {/* Слайдер с баннерами */}
         <div 
@@ -83,7 +112,12 @@ export default function News() {
           style={{ overscrollBehavior: 'none' }}
         >
           {banners.map((banner) => (
-            <Link href={banner.url} key={banner.id} className="flex-shrink-0">
+            <Link 
+              href={banner.url} 
+              key={banner.id} 
+              className="flex-shrink-0"
+              onClick={() => handleBannerClick(banner.id)}
+            >
               <div 
                 className="w-[770px] h-[200px] bg-[#19191D] rounded-lg flex flex-col items-center justify-center cursor-pointer hover:opacity-90 transition-opacity relative overflow-hidden"
               >

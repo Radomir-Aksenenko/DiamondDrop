@@ -17,6 +17,14 @@ export interface SPWUser {
   avatar?: string;
   email?: string;
   roles?: string[];
+  /** ID аккаунта */
+  accountId?: string;
+  /** Хеш для валидации */
+  hash?: string;
+  /** Флаг администратора */
+  isAdmin?: boolean;
+  /** Временная метка */
+  timestamp?: number;
   // Удаляем индексную сигнатуру, так как она отсутствует в типе UserData
 }
 
