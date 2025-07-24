@@ -106,18 +106,8 @@ export default function LoadingScreen() {
         </h1>
 
         {/* Текст загрузки */}
-        <p className="text-xl text-[#F9F8FC]/70 mb-8">
-          Инициализация приложения{dots}
-        </p>
-
-        {/* Прогресс бар */}
-        <div className="w-64 h-2 bg-[#F9F8FC]/20 rounded-full mx-auto overflow-hidden">
-          <div className="h-full bg-gradient-to-r from-[#5C5ADC] to-[#4A48B0] rounded-full animate-pulse"></div>
-        </div>
-
-        {/* Дополнительный текст */}
-        <p className="text-sm text-[#F9F8FC]/50 mt-6 opacity-75">
-          Подключение к SPWorlds и валидация пользователя
+        <p className="text-xl text-[#F9F8FC]/70">
+          Загрузка приложения{dots}
         </p>
       </div>
     </div>
