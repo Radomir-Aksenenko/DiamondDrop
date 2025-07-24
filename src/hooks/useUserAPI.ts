@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { getAuthToken, hasAuthToken } from '@/lib/auth';
 
 /**
  * Интерфейс данных пользователя из API
@@ -22,20 +23,7 @@ export default function useUserAPI() {
   const [user, setUser] = useState<APIUser | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-
-  /**
-   * Получает токен авторизации из куки
-   */
-  const getAuthToken = (): string | null => {
-    if (typeof document === 'undefined') return null;
-    
-    const cookies = document.cookie.split(';');
-    const authCookie = cookies.find(cookie => 
-      cookie.trim().startsWith('authToken=')
-    );
-    
-    return authCookie ? authCookie.split('=')[1] : null;
-  };
+  const [tokenState, setTokenState] = useState<string | null>(getAuthToken());
 
   /**
    * Загружает данные пользователя из API
@@ -47,14 +35,16 @@ export default function useUserAPI() {
 
       const token = getAuthToken();
       if (!token) {
-        throw new Error('Токен авторизации не найден');
+        setUser(null);
+        setLoading(false);
+        return;
       }
 
       const response = await fetch('https://battle-api.chasman.engineer/api/v1/users/me', {
         method: 'GET',
         headers: {
           'accept': '*/*',
-          'Authorization': token,
+          'Authorization': `Bearer ${token}`,
         },
       });
 
@@ -68,6 +58,7 @@ export default function useUserAPI() {
       const errorMessage = err instanceof Error ? err.message : 'Неизвестная ошибка';
       setError(errorMessage);
       console.error('Ошибка при загрузке данных пользователя:', errorMessage);
+      setUser(null);
     } finally {
       setLoading(false);
     }
@@ -84,10 +75,24 @@ export default function useUserAPI() {
     fetchUserData();
   }, []);
 
+  // Отслеживаем изменения токена
+  useEffect(() => {
+    const checkTokenInterval = setInterval(() => {
+      const currentToken = getAuthToken();
+      if (currentToken !== tokenState) {
+        setTokenState(currentToken);
+        fetchUserData();
+      }
+    }, 1000);
+
+    return () => clearInterval(checkTokenInterval);
+  }, [tokenState]);
+
   return {
     user,
     loading,
     error,
     refreshUser,
+    isAuthenticated: hasAuthToken(),
   };
 }

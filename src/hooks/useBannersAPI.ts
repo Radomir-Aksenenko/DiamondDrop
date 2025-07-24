@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { getAuthToken, hasAuthToken } from '@/lib/auth';
 
 /**
  * Интерфейс данных баннера из API
@@ -19,20 +20,7 @@ export default function useBannersAPI() {
   const [banners, setBanners] = useState<APIBanner[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-
-  /**
-   * Получает токен авторизации из куки
-   */
-  const getAuthToken = (): string | null => {
-    if (typeof document === 'undefined') return null;
-    
-    const cookies = document.cookie.split(';');
-    const authCookie = cookies.find(cookie => 
-      cookie.trim().startsWith('authToken=')
-    );
-    
-    return authCookie ? authCookie.split('=')[1] : null;
-  };
+  const [tokenState, setTokenState] = useState<string | null>(getAuthToken());
 
   /**
    * Загружает данные баннеров из API
@@ -50,14 +38,15 @@ export default function useBannersAPI() {
           imageUrl: '/Frame 116.png',
           url: '/news/1'
         }]);
-        throw new Error('Токен авторизации не найден');
+        setLoading(false);
+        return;
       }
 
       const response = await fetch('https://battle-api.chasman.engineer/api/v1/banners', {
         method: 'GET',
         headers: {
           'accept': '*/*',
-          'Authorization': token,
+          'Authorization': `Bearer ${token}`,
         },
       });
 
@@ -72,10 +61,12 @@ export default function useBannersAPI() {
       setError(errorMessage);
       console.error('Ошибка при загрузке баннеров:', errorMessage);
       
-      // Если ошибка не связана с отсутствием токена, устанавливаем пустой массив
-      if (err instanceof Error && err.message !== 'Токен авторизации не найден') {
-        setBanners([]);
-      }
+      // Устанавливаем дефолтный баннер при ошибке
+      setBanners([{
+        id: 'default',
+        imageUrl: '/Frame 116.png',
+        url: '/news/1'
+      }]);
     } finally {
       setLoading(false);
     }
@@ -92,10 +83,24 @@ export default function useBannersAPI() {
     fetchBannersData();
   }, []);
 
+  // Отслеживаем изменения токена
+  useEffect(() => {
+    const checkTokenInterval = setInterval(() => {
+      const currentToken = getAuthToken();
+      if (currentToken !== tokenState) {
+        setTokenState(currentToken);
+        fetchBannersData();
+      }
+    }, 1000);
+
+    return () => clearInterval(checkTokenInterval);
+  }, [tokenState]);
+
   return {
     banners,
     loading,
     error,
     refreshBanners,
+    isAuthenticated: hasAuthToken(),
   };
 }
