@@ -68,9 +68,9 @@ export default function LoadingScreen() {
           {/* Кнопка перезагрузки */}
           <button 
             onClick={handleReload}
-            className="bg-[#5C5ADC] hover:bg-[#4A48B0] text-[#F9F8FC] font-bold py-3 px-6 rounded-lg transition-all duration-200 font-unbounded hover:scale-105 hover:shadow-lg hover:shadow-[#5C5ADC]/30"
+            className="bg-[#5C5ADC] cursor-pointer hover:bg-[#4A48B0] text-[#F9F8FC] font-bold py-3 px-6 rounded-lg transition-all duration-200 font-unbounded hover:scale-105 hover:shadow-lg hover:shadow-[#5C5ADC]/30"
           >
-            Попробовать ещё
+            Попробовать ещё раз
           </button>
 
           {/* Дополнительная информация */}
