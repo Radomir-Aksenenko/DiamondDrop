@@ -86,7 +86,7 @@ export default function News() {
       <div className="relative">
         {/* Слайдер с баннерами */}
         <div 
-          className="flex overflow-x-auto pb-4 space-x-4 no-scrollbar" 
+          className="flex overflow-x-auto space-x-4 no-scrollbar" 
           ref={sliderRef}
           onWheel={handleWheel}
           style={{ overscrollBehavior: 'none' }}

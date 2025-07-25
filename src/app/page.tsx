@@ -6,6 +6,22 @@ export default function Home() {
     <div className="min-h-screen p-6">
       <News />
       <RecentWins />
+      
+      {/* Заголовок "Кейсы" */}
+      <h2 
+        style={{
+          color: '#FFFFFF',
+          textAlign: 'center',
+          fontFamily: 'Unbounded',
+          fontSize: '24px',
+          fontStyle: 'normal',
+          fontWeight: 500,
+          lineHeight: 'normal',
+          marginTop: '24px'
+        }}
+      >
+        Кейсы
+      </h2>
     </div>
   );
 }

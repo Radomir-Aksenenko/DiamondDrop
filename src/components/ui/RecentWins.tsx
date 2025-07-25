@@ -52,10 +52,10 @@ export default function RecentWins() {
   }, [liveWins, preloadedWins]);
 
   return (
-    <div className="w-full max-w-4xl mx-auto mt-4">
+    <div className="w-full max-w-4xl mx-auto mt-6">
       {/* Горизонтальная прокрутка карточек */}
       <div className="relative">
-        <div className={`flex gap-4 overflow-x-auto no-scrollbar pb-4 transition-all duration-500 ease-out ${
+        <div className={`flex gap-4 overflow-x-auto no-scrollbar transition-all duration-500 ease-out ${
           isShifting ? 'animate-container-shift' : ''
         }`}>
           {displayWins.map((win, index) => (
