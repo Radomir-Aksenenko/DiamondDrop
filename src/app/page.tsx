@@ -8,18 +8,7 @@ export default function Home() {
       <RecentWins />
       
       {/* Заголовок "Кейсы" */}
-      <h2 
-        style={{
-          color: '#FFFFFF',
-          textAlign: 'center',
-          fontFamily: 'Unbounded',
-          fontSize: '24px',
-          fontStyle: 'normal',
-          fontWeight: 500,
-          lineHeight: 'normal',
-          marginTop: '24px'
-        }}
-      >
+      <h2 className="text-white text-center font-unbounded text-2xl font-medium mt-6">
         Кейсы
       </h2>
     </div>
