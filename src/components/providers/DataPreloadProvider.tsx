@@ -99,6 +99,7 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentToken, setCurrentToken] = useState<string | null>(getAuthToken());
 
   // Функция загрузки баннеров
   const loadBanners = async (): Promise<APIBanner[]> => {
@@ -261,6 +262,20 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
   useEffect(() => {
     preloadAllData();
   }, []);
+
+  // Отслеживаем изменения токена и перезагружаем данные
+  useEffect(() => {
+    const checkTokenInterval = setInterval(() => {
+      const token = getAuthToken();
+      if (token !== currentToken) {
+        console.log('🔄 Токен изменился, перезагружаем данные...');
+        setCurrentToken(token);
+        preloadAllData();
+      }
+    }, 1000);
+
+    return () => clearInterval(checkTokenInterval);
+  }, [currentToken]);
 
   // Значение контекста
   const contextValue: DataPreloadContextType = {

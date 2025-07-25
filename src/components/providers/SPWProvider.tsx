@@ -20,6 +20,14 @@ function SPWContent({ children }: { children: React.ReactNode }) {
   const isLoading = spwLoading || dataLoading;
   const error = spwError || dataError;
 
+  /**
+   * Уведомляет о получении токена (данные загрузятся автоматически через DataPreloadProvider)
+   */
+  const notifyTokenReceived = async (token: string) => {
+    console.log('✅ Токен авторизации получен, данные будут загружены автоматически');
+    console.log('🔗 Токен:', token.substring(0, 20) + '...');
+  };
+
   useEffect(() => {
     let mounted = true;
 
@@ -58,6 +66,9 @@ function SPWContent({ children }: { children: React.ReactNode }) {
         
         console.log('Токен авторизации получен и сохранен');
         
+        // Уведомляем о получении токена
+        await notifyTokenReceived(token);
+        
         setSPWLoading(false);
         setSPWError(null);
       } catch (error) {
@@ -82,6 +93,7 @@ function SPWContent({ children }: { children: React.ReactNode }) {
         timestamp: Date.now()
       };
 
+      // Вызываем валидацию асинхронно
       handleUserValidation(mockSPWUser);
       return;
     }
