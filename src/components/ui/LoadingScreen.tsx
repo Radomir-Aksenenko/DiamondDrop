@@ -105,13 +105,8 @@ export default function LoadingScreen({ loadingStage = 'Загрузка при�
         </h1>
 
         {/* Текст загрузки с этапом */}
-        <p className="text-xl text-[#F9F8FC]/70 mb-2">
+        <p className="text-xl text-[#F9F8FC]/70">
           {loadingStage}{dots}
-        </p>
-        
-        {/* Дополнительная информация */}
-        <p className="text-sm text-[#F9F8FC]/50">
-          Подготавливаем всё самое лучшее для вас
         </p>
       </div>
     </div>
