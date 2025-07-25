@@ -155,15 +155,6 @@ export default function CasesGrid() {
         </div>
       )}
 
-      {/* Сообщение о том, что все кейсы загружены */}
-      {!hasMore && cases.length > 0 && (
-        <div className="text-center mt-8 py-6">
-          <div className="text-gray-400 text-sm">
-            Все кейсы загружены
-          </div>
-        </div>
-      )}
-
       {/* Сообщение об ошибке при загрузке дополнительных кейсов */}
       {error && cases.length > 0 && (
         <div className="mt-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
