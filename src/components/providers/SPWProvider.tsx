@@ -12,7 +12,7 @@ import DataPreloadProvider, { usePreloadedData } from './DataPreloadProvider';
  * Внутренний компонент, который использует предзагруженные данные
  */
 function SPWContent({ children }: { children: React.ReactNode }) {
-  const { isLoading: dataLoading, error: dataError } = usePreloadedData();
+  const { isLoading: dataLoading, error: dataError, loadingStage } = usePreloadedData();
   const [spwLoading, setSPWLoading] = useState(true);
   const [spwInitialized, setSPWInitialized] = useState(false);
   const [spwError, setSPWError] = useState<string | null>(null);
@@ -20,6 +20,17 @@ function SPWContent({ children }: { children: React.ReactNode }) {
   // Общее состояние загрузки (SPW + данные)
   const isLoading = spwLoading || dataLoading;
   const error = spwError || dataError;
+
+  // Определяем текущий этап загрузки
+  const getCurrentLoadingStage = () => {
+    if (spwLoading) {
+      return 'Подключение к платформе';
+    }
+    if (dataLoading) {
+      return loadingStage;
+    }
+    return 'Завершение загрузки';
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -118,15 +129,7 @@ function SPWContent({ children }: { children: React.ReactNode }) {
 
   // Показываем загрузку пока не инициализировано
   if (isLoading) {
-    let loadingStage = 'Инициализация приложения';
-    
-    if (spwLoading) {
-      loadingStage = 'Подключение к платформе';
-    } else if (dataLoading) {
-      loadingStage = 'Загрузка данных';
-    }
-    
-    return <LoadingScreen loadingStage={loadingStage} />;
+    return <LoadingScreen loadingStage={getCurrentLoadingStage()} />;
   }
 
   // Показываем ошибку если что-то пошло не так
