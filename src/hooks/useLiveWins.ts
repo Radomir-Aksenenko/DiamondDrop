@@ -64,6 +64,7 @@ export interface LiveWinData {
   itemImage: string;
   itemName: string;
   apValue: number;
+  amount: number;
   timestamp: Date;
 }
 
@@ -103,7 +104,8 @@ const transformWSData = (wsData: WSWinData): LiveWinData => {
     percentage: `${wsData.item.PercentChance.toFixed(2)}%`,
     itemImage: wsData.item.ImageUrl || 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/cobblestone/icon',
     itemName: decodeUnicode(wsData.item.Name),
-    apValue: Math.round(wsData.item.Price),
+    apValue: parseFloat(wsData.item.Price.toFixed(1)), // Сохраняем дробные значения до десятых
+    amount: wsData.item.Amount || 1, // Извлекаем количество из данных
     timestamp: new Date()
   };
 };

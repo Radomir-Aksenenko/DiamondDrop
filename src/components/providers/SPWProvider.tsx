@@ -26,12 +26,26 @@ function SPWContent({ children }: { children: React.ReactNode }) {
     // Функция валидации пользователя
     const handleUserValidation = async (user: SPWUser) => {
       try {
-        // Подготавливаем данные для валидации
+        // Проверяем наличие обязательных полей
+        if (!user.hash) {
+          throw new Error('Отсутствует hash пользователя');
+        }
+        if (!user.accountId) {
+          throw new Error('Отсутствует accountId пользователя');
+        }
+        if (!user.username) {
+          throw new Error('Отсутствует username пользователя');
+        }
+        if (!user.minecraftUUID) {
+          throw new Error('Отсутствует minecraftUUID пользователя');
+        }
+
+        // Подготавливаем данные для валидации только с настоящими данными
         const validationData: ValidationData = {
-          hash: user.hash || "9c51ce16880ef149ac2bbabde38da3c611adb9b9edf073bc99812bf364b252d2",
-          accountId: user.accountId || "889e603f-67a3-46f4-bad6-a6221dcb964d",
-          username: user.username || "rafael1209",
-          minecraftUUID: user.minecraftUUID || "3f5edd2a95b4364a2748d4ec3ad39b",
+          hash: user.hash,
+          accountId: user.accountId,
+          username: user.username,
+          minecraftUUID: user.minecraftUUID,
           roles: user.roles || [],
           isAdmin: user.isAdmin || false,
           timestamp: user.timestamp || Date.now()

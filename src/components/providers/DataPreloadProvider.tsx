@@ -60,7 +60,8 @@ const mockLiveWins: LiveWinData[] = [
     percentage: '0.01%',
     itemImage: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/netherite_sword/icon',
     itemName: 'Золотой меч',
-    apValue: 999,
+    apValue: 999.5,
+    amount: 1,
     timestamp: new Date(Date.now() - 1000 * 60 * 5)
   },
   {
@@ -70,7 +71,8 @@ const mockLiveWins: LiveWinData[] = [
     percentage: '0.5%',
     itemImage: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/diamond_chestplate/icon',
     itemName: 'Магический щит',
-    apValue: 250,
+    apValue: 250.3,
+    amount: 2,
     timestamp: new Date(Date.now() - 1000 * 60 * 15)
   },
   {
@@ -80,7 +82,8 @@ const mockLiveWins: LiveWinData[] = [
     percentage: '2.5%',
     itemImage: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/diamond/icon',
     itemName: 'Редкий кристалл',
-    apValue: 100,
+    apValue: 100.7,
+    amount: 16,
     timestamp: new Date(Date.now() - 1000 * 60 * 30)
   }
 ];

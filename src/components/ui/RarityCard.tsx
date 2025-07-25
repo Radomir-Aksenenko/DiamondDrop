@@ -16,6 +16,7 @@ interface RarityCardProps {
   itemImage: string;
   itemName?: string;
   apValue: number;
+  amount?: number;
   orientation?: OrientationType;
   className?: string;
 }
@@ -55,6 +56,7 @@ export default function RarityCard({
   itemImage, 
   itemName, 
   apValue, 
+  amount = 1,
   orientation = 'vertical',
   className = '' 
 }: RarityCardProps) {
@@ -74,6 +76,11 @@ export default function RarityCard({
 
   const imageSize = 'w-12 h-12'; // 48px для всех ориентаций
   const textSize = isHorizontal ? 'text-xs' : 'text-sm';
+
+  // Форматируем стоимость с дробными значениями
+  const formatPrice = (price: number): string => {
+    return price % 1 === 0 ? price.toString() : price.toFixed(1);
+  };
 
   if (isHorizontal) {
     return (
@@ -109,7 +116,7 @@ export default function RarityCard({
                 opacity: 0.5
               }}
             >
-              x1
+              x{amount}
             </span>
           </div>
         </div>
@@ -143,7 +150,7 @@ export default function RarityCard({
                 lineHeight: 'normal'
               }}
             >
-              {apValue}
+              {formatPrice(apValue)}
             </span>
             <span 
               style={{
@@ -205,7 +212,7 @@ export default function RarityCard({
               lineHeight: 'normal'
             }}
           >
-            {apValue}
+            {formatPrice(apValue)}
           </span>
           <span 
             style={{
@@ -245,7 +252,7 @@ export default function RarityCard({
               opacity: 0.5
             }}
           >
-            x1
+            x{amount}
           </span>
         </div>
       </div>
