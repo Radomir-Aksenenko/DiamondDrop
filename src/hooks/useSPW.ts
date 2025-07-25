@@ -65,7 +65,7 @@ export default function useSPW() {
       ...options,
       headers: {
         ...options.headers,
-        'Authorization': `Bearer ${token}`,
+        'Authorization': `${token}`,
         'Content-Type': 'application/json',
       },
     });

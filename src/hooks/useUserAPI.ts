@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { getAuthToken, hasAuthToken } from '@/lib/auth';
+import { API_ENDPOINTS, DEV_CONFIG, isDevelopment } from '@/lib/config';
 
 /**
  * Интерфейс данных пользователя из API
@@ -33,6 +34,14 @@ export default function useUserAPI() {
       setLoading(true);
       setError(null);
 
+      // В dev режиме используем мок данные
+      if (isDevelopment && DEV_CONFIG.skipAuth) {
+        console.log('🔧 Dev режим: используем мок пользователя');
+        setUser(DEV_CONFIG.mockUser);
+        setLoading(false);
+        return;
+      }
+
       const token = getAuthToken();
       if (!token) {
         setUser(null);
@@ -40,11 +49,11 @@ export default function useUserAPI() {
         return;
       }
 
-      const response = await fetch('https://battle-api.chasman.engineer/api/v1/users/me', {
+      const response = await fetch(API_ENDPOINTS.users.me, {
         method: 'GET',
         headers: {
           'accept': '*/*',
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `${token}`,
         },
       });
 

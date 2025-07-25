@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import useBannersAPI from '@/hooks/useBannersAPI';
 import useSPW from '@/hooks/useSPW';
+import { API_ENDPOINTS } from '@/lib/config';
 
 // Запасные данные для баннеров (используются, если API недоступен)
 const fallbackBanners = [
@@ -26,7 +27,7 @@ export default function News() {
     if (isAuthenticated) {
       try {
         // Пример отправки статистики клика с авторизацией
-        await makeAuthenticatedRequest('https://battle-api.chasman.engineer/api/v1/stats/banner-click', {
+        await makeAuthenticatedRequest(API_ENDPOINTS.stats.bannerClick, {
           method: 'POST',
           body: JSON.stringify({
             bannerId,
@@ -96,13 +97,6 @@ export default function News() {
   
   return (
     <div className="w-full max-w-4xl mx-auto">
-      {/* Индикатор статуса авторизации */}
-      {isAuthenticated && (
-        <div className="mb-2 text-xs text-green-400 opacity-75">
-          ✓ Авторизован (токен: {authToken?.substring(0, 20)}...)
-        </div>
-      )}
-      
       <div className="relative">
         {/* Слайдер с баннерами */}
         <div 

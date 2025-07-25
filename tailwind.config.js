@@ -11,6 +11,12 @@ module.exports = {
         'actay-wide': 'var(--font-actay-wide)',
         'unbounded': 'var(--font-unbounded)',
       },
+      width: {
+        '15': '60px',
+      },
+      height: {
+        '15': '60px',
+      },
     },
   },
   plugins: [],

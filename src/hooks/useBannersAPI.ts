@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { getAuthToken, hasAuthToken } from '@/lib/auth';
+import { API_ENDPOINTS, DEV_CONFIG, isDevelopment } from '@/lib/config';
 
 /**
  * Интерфейс данных баннера из API
@@ -30,6 +31,14 @@ export default function useBannersAPI() {
       setLoading(true);
       setError(null);
 
+      // В dev режиме используем мок данные
+      if (isDevelopment && DEV_CONFIG.skipAuth) {
+        console.log('🔧 Dev режим: используем мок баннеры');
+        setBanners([...DEV_CONFIG.mockBanners]);
+        setLoading(false);
+        return;
+      }
+
       const token = getAuthToken();
       if (!token) {
         // Если токен не найден, устанавливаем один баннер
@@ -42,11 +51,11 @@ export default function useBannersAPI() {
         return;
       }
 
-      const response = await fetch('https://battle-api.chasman.engineer/api/v1/banners', {
+      const response = await fetch(API_ENDPOINTS.banners, {
         method: 'GET',
         headers: {
           'accept': '*/*',
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `${token}`,
         },
       });
 

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import spw from '@/lib/spw';
 import { SPWUser } from '@/types/spw';
 import { validateUserAndSetToken, ValidationData } from '@/lib/auth';
+import { isDevelopment, DEV_CONFIG } from '@/lib/config';
 import LoadingScreen from '@/components/ui/LoadingScreen';
 
 /**
@@ -17,36 +18,6 @@ export default function SPWProvider({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     let mounted = true;
-
-    // Инициализация SPWMini
-    spw.initialize();
-
-    // Обработчики событий
-    const handleReady = async () => {
-      if (!mounted) return;
-      
-      console.log('SPW готов к работе!');
-      console.log('Текущий пользователь:', spw.user);
-      
-      if (spw.user) {
-        await handleUserValidation(spw.user);
-      }
-    };
-
-    const handleInitResponse = async (user: SPWUser) => {
-      if (!mounted) return;
-      
-      console.log(`Вошел как ${user.username} / ${user.minecraftUUID}`);
-      await handleUserValidation(user);
-    };
-
-    const handleInitError = (message: string) => {
-      if (!mounted) return;
-      
-      console.error(`Ошибка входа: ${message}`);
-      setError(`Ошибка инициализации SPWorlds: ${message}`);
-      setIsLoading(false);
-    };
 
     // Функция валидации пользователя
     const handleUserValidation = async (user: SPWUser) => {
@@ -77,6 +48,55 @@ export default function SPWProvider({ children }: { children: React.ReactNode })
         setError('Ошибка валидации пользователя. Попробуйте перезагрузить страницу.');
         setIsLoading(false);
       }
+    };
+
+    // В dev режиме пропускаем инициализацию SPW и сразу переходим к валидации
+    if (isDevelopment && DEV_CONFIG.skipAuth) {
+      console.log('🔧 Dev режим: пропускаем инициализацию SPW');
+      
+      // Создаем мок пользователя для валидации
+      const mockSPWUser: SPWUser = {
+        username: 'DevUser',
+        minecraftUUID: '3f5edd2a95b4364a2748d4ec3ad39b',
+        hash: 'dev-hash',
+        accountId: 'dev-account-id',
+        roles: ['user'],
+        isAdmin: false,
+        timestamp: Date.now()
+      };
+
+      handleUserValidation(mockSPWUser);
+      return;
+    }
+
+    // Инициализация SPWMini
+    spw.initialize();
+
+    // Обработчики событий
+    const handleReady = async () => {
+      if (!mounted) return;
+      
+      console.log('SPW готов к работе!');
+      console.log('Текущий пользователь:', spw.user);
+      
+      if (spw.user) {
+        await handleUserValidation(spw.user);
+      }
+    };
+
+    const handleInitResponse = async (user: SPWUser) => {
+      if (!mounted) return;
+      
+      console.log(`Вошел как ${user.username} / ${user.minecraftUUID}`);
+      await handleUserValidation(user);
+    };
+
+    const handleInitError = (message: string) => {
+      if (!mounted) return;
+      
+      console.error(`Ошибка входа: ${message}`);
+      setError(`Ошибка инициализации SPWorlds: ${message}`);
+      setIsLoading(false);
     };
 
     // Добавляем обработчики событий

@@ -3,6 +3,8 @@
  * Токен хранится только в памяти на время сессии
  */
 
+import { API_ENDPOINTS, DEV_CONFIG, isDevelopment } from './config';
+
 let authToken: string | null = null;
 
 /**
@@ -63,7 +65,14 @@ export interface ValidationData {
  */
 export async function validateUserAndSetToken(userData: ValidationData): Promise<string> {
   try {
-    const response = await fetch('https://battle-api.chasman.engineer/api/v1/validate', {
+    // В dev режиме пропускаем авторизацию и возвращаем мок токен
+    if (isDevelopment && DEV_CONFIG.skipAuth) {
+      console.log('🔧 Dev режим: пропускаем авторизацию, используем мок токен');
+      setAuthToken(DEV_CONFIG.mockToken);
+      return DEV_CONFIG.mockToken;
+    }
+
+    const response = await fetch(API_ENDPOINTS.validate, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -8,35 +8,35 @@ const rarityExamples = [
   {
     rarity: 'Common' as RarityType,
     percentage: '99.99%',
-    itemImage: '/placeholder-item.svg',
+    itemImage: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/cobblestone/icon',
     itemName: 'Обычный предмет',
     apValue: 12
   },
   {
     rarity: 'Uncommon' as RarityType,
     percentage: '99.99%',
-    itemImage: '/placeholder-item.svg',
+    itemImage: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/iron_ingot/icon',
     itemName: 'Необычный предмет',
     apValue: 12
   },
   {
     rarity: 'Rare' as RarityType,
     percentage: '99.99%',
-    itemImage: '/crystal-item.svg',
+    itemImage: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/diamond/icon',
     itemName: 'Редкий кристалл',
     apValue: 12
   },
   {
     rarity: 'Epic' as RarityType,
     percentage: '99.99%',
-    itemImage: '/shield-item.svg',
+    itemImage: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/diamond_chestplate/icon',
     itemName: 'Эпический щит',
     apValue: 12
   },
   {
     rarity: 'Legendary' as RarityType,
     percentage: '99.99%',
-    itemImage: '/sword-legendary.svg',
+    itemImage: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/netherite_sword/icon',
     itemName: 'Легендарный меч',
     apValue: 12
   }
