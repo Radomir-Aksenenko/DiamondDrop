@@ -102,12 +102,15 @@ export default function News() {
                 className="w-[770px] h-[200px] bg-[#19191D] rounded-lg flex flex-col items-center justify-center cursor-pointer hover:opacity-90 transition-opacity relative overflow-hidden"
               >
                 <div className="absolute inset-0 w-full h-full">
-                  <Image 
+                  <img 
                     src={banner.imageUrl} 
                     alt={`Баннер ${banners.indexOf(banner) + 1}`}
-                    fill
-                    style={{ objectFit: 'cover' }}
-                    priority={activeIndex === banners.indexOf(banner)}
+                    style={{ 
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover'
+                    }}
+                    loading={activeIndex === banners.indexOf(banner) ? "eager" : "lazy"}
                   />
                 </div>
               </div>

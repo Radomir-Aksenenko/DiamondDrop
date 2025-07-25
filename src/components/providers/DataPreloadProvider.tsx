@@ -100,6 +100,7 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
   const [error, setError] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentToken, setCurrentToken] = useState<string | null>(getAuthToken());
+  const [hasInitialLoad, setHasInitialLoad] = useState(false);
 
   // Функция загрузки баннеров
   const loadBanners = async (): Promise<APIBanner[]> => {
@@ -198,10 +199,13 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
   };
 
   // Функция предзагрузки всех данных
-  const preloadAllData = async () => {
+  const preloadAllData = async (isInitialLoad = false) => {
     try {
-      setIsLoading(true);
-      setError(null);
+      // Устанавливаем состояние загрузки только для первоначальной загрузки
+      if (isInitialLoad || !hasInitialLoad) {
+        setIsLoading(true);
+        setError(null);
+      }
 
       console.log('🚀 Начинаем предзагрузку всех данных...');
 
@@ -222,15 +226,21 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
 
       console.log('✅ Предзагрузка завершена');
 
-      // Небольшая задержка для плавности
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Небольшая задержка для плавности только при первоначальной загрузке
+      if (isInitialLoad || !hasInitialLoad) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        setHasInitialLoad(true);
+      }
 
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Неизвестная ошибка';
       setError(errorMessage);
       console.error('❌ Ошибка предзагрузки:', errorMessage);
     } finally {
-      setIsLoading(false);
+      // Убираем состояние загрузки только после первоначальной загрузки
+      if (isInitialLoad || !hasInitialLoad) {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -255,12 +265,21 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
   };
 
   const refreshAllData = async () => {
-    await preloadAllData();
+    await preloadAllData(true); // Принудительная перезагрузка с показом состояния загрузки
   };
 
-  // Запускаем предзагрузку при монтировании
+  // Запускаем предзагрузку при монтировании только если есть токен или в dev режиме
   useEffect(() => {
-    preloadAllData();
+    const token = getAuthToken();
+    const shouldLoad = token || (isDevelopment && DEV_CONFIG.skipAuth);
+    
+    if (shouldLoad) {
+      preloadAllData(true);
+    } else {
+      // Если токена нет, показываем состояние ожидания токена
+      console.log('⏳ Ожидаем получение токена авторизации...');
+      setIsLoading(true);
+    }
   }, []);
 
   // Отслеживаем изменения токена и перезагружаем данные
@@ -270,12 +289,19 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
       if (token !== currentToken) {
         console.log('🔄 Токен изменился, перезагружаем данные...');
         setCurrentToken(token);
-        preloadAllData();
+        
+        if (token && !hasInitialLoad) {
+          // Первая загрузка после получения токена
+          preloadAllData(true);
+        } else if (token && hasInitialLoad) {
+          // Обновление данных при изменении токена
+          preloadAllData(false);
+        }
       }
     }, 1000);
 
     return () => clearInterval(checkTokenInterval);
-  }, [currentToken]);
+  }, [currentToken, hasInitialLoad]);
 
   // Значение контекста
   const contextValue: DataPreloadContextType = {

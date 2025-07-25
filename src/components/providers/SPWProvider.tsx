@@ -69,6 +69,9 @@ function SPWContent({ children }: { children: React.ReactNode }) {
         // Уведомляем о получении токена
         await notifyTokenReceived(token);
         
+        // Ждем небольшую задержку чтобы DataPreloadProvider успел начать загрузку
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
         setSPWLoading(false);
         setSPWError(null);
       } catch (error) {
