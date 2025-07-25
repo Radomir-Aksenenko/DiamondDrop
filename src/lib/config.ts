@@ -12,6 +12,7 @@ export const API_BASE_URL = 'https://battle-api.chasman.engineer/api/v1';
 export const API_ENDPOINTS = {
   validate: `${API_BASE_URL}/validate`,
   banners: `${API_BASE_URL}/banners`,
+  cases: `${API_BASE_URL}/cases`,
   users: {
     me: `${API_BASE_URL}/users/me`,
   },
