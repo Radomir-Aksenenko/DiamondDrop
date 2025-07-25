@@ -12,8 +12,8 @@ interface PreloadedData {
   banners: APIBanner[];
   user: APIUser | null;
   liveWins: LiveWinData[];
-  isLoading: boolean;
-  loadingStage: string;
+  isLoaded: boolean;
+  loading: boolean;
   error: string | null;
   isAuthenticated: boolean;
 }
@@ -94,7 +94,6 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
   const [user, setUser] = useState<APIUser | null>(null);
   const [liveWins, setLiveWins] = useState<LiveWinData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [loadingStage, setLoadingStage] = useState('Инициализация');
   const [error, setError] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -199,7 +198,6 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
     try {
       setIsLoading(true);
       setError(null);
-      setLoadingStage('Проверка авторизации');
 
       console.log('🚀 Начинаем предзагрузку всех данных...');
 
@@ -207,37 +205,25 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
       const authenticated = hasAuthToken();
       setIsAuthenticated(authenticated);
 
-      // Загружаем баннеры
-      setLoadingStage('Загрузка баннеров');
-      console.log('📰 Загружаем баннеры...');
-      const bannersData = await loadBanners();
+      // Загружаем все данные параллельно для лучшей производительности
+      const [bannersData, userData, liveWinsData] = await Promise.all([
+        loadBanners(),
+        loadUser(),
+        loadInitialLiveWins()
+      ]);
+
       setBanners(bannersData);
-      console.log('✅ Баннеры загружены:', bannersData.length);
-
-      // Загружаем данные пользователя
-      setLoadingStage('Загрузка профиля пользователя');
-      console.log('👤 Загружаем данные пользователя...');
-      const userData = await loadUser();
       setUser(userData);
-      console.log('✅ Данные пользователя загружены:', userData?.nickname || 'Не авторизован');
-
-      // Загружаем начальные выигрыши
-      setLoadingStage('Загрузка последних выигрышей');
-      console.log('🎰 Загружаем начальные выигрыши...');
-      const liveWinsData = await loadInitialLiveWins();
       setLiveWins(liveWinsData);
-      console.log('✅ Выигрыши загружены:', liveWinsData.length);
 
-      setLoadingStage('Завершение загрузки');
       console.log('✅ Предзагрузка завершена');
 
-      // Небольшая задержка для плавности (минимум 500мс для показа финального этапа)
+      // Небольшая задержка для плавности
       await new Promise(resolve => setTimeout(resolve, 500));
 
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Неизвестная ошибка';
       setError(errorMessage);
-      setLoadingStage('Ошибка загрузки');
       console.error('❌ Ошибка предзагрузки:', errorMessage);
     } finally {
       setIsLoading(false);
@@ -278,8 +264,8 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
     banners,
     user,
     liveWins,
-    isLoading,
-    loadingStage,
+    isLoaded: !isLoading && !error,
+    loading: isLoading,
     error,
     isAuthenticated,
     refreshBanners,

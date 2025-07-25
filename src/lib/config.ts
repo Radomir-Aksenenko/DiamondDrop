@@ -36,12 +36,12 @@ export const DEV_CONFIG = {
   mockBanners: [
     {
       id: 'dev-banner-1',
-      imageUrl: '/Frame 116.png',
+      imageUrl: '/Frame116.svg',
       url: '/news/1',
     },
     {
       id: 'dev-banner-2', 
-      imageUrl: '/image 27.png',
+      imageUrl: '/image27.svg',
       url: '/news/2',
     },
   ],

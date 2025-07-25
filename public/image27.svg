@@ -1,0 +1,40 @@
+<svg width="400" height="300" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bannerGradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#DC5C5C;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#B04848;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#903838;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="gemGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FCF8F9;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#DC5C5C;stop-opacity:0.3" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Фон баннера -->
+  <rect width="400" height="300" rx="12" fill="url(#bannerGradient2)"/>
+  
+  <!-- Декоративные элементы -->
+  <circle cx="320" cy="60" r="25" fill="#FCF8F9" opacity="0.1"/>
+  <circle cx="350" cy="220" r="15" fill="#FCF8F9" opacity="0.15"/>
+  <circle cx="50" cy="80" r="20" fill="#FCF8F9" opacity="0.08"/>
+  
+  <!-- Главный алмаз -->
+  <g transform="translate(200, 150)">
+    <polygon points="0,-50 40,-15 25,50 -25,50 -40,-15" fill="url(#gemGradient)"/>
+    <polygon points="0,-40 30,-10 20,40 -20,40 -30,-10" fill="#FCF8F9" opacity="0.9"/>
+    <polygon points="0,-30 20,-5 15,30 -15,30 -20,-5" fill="#DC5C5C" opacity="0.3"/>
+  </g>
+  
+  <!-- Дополнительные мелкие алмазы -->
+  <g transform="translate(120, 80)">
+    <polygon points="0,-15 12,-5 8,15 -8,15 -12,-5" fill="#FCF8F9" opacity="0.6"/>
+  </g>
+  <g transform="translate(280, 220)">
+    <polygon points="0,-12 10,-3 6,12 -6,12 -10,-3" fill="#FCF8F9" opacity="0.5"/>
+  </g>
+  
+  <!-- Текст -->
+  <text x="200" y="240" text-anchor="middle" fill="#FCF8F9" font-family="Arial, sans-serif" font-size="20" font-weight="bold">Специальное предложение</text>
+  <text x="200" y="265" text-anchor="middle" fill="#FCF8F9" opacity="0.8" font-family="Arial, sans-serif" font-size="14">Ограниченное время</text>
+</svg>

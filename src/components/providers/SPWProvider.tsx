@@ -12,25 +12,13 @@ import DataPreloadProvider, { usePreloadedData } from './DataPreloadProvider';
  * Внутренний компонент, который использует предзагруженные данные
  */
 function SPWContent({ children }: { children: React.ReactNode }) {
-  const { isLoading: dataLoading, error: dataError, loadingStage } = usePreloadedData();
+  const { loading: dataLoading, error: dataError } = usePreloadedData();
   const [spwLoading, setSPWLoading] = useState(true);
-  const [spwInitialized, setSPWInitialized] = useState(false);
   const [spwError, setSPWError] = useState<string | null>(null);
 
   // Общее состояние загрузки (SPW + данные)
   const isLoading = spwLoading || dataLoading;
   const error = spwError || dataError;
-
-  // Определяем текущий этап загрузки
-  const getCurrentLoadingStage = () => {
-    if (spwLoading) {
-      return 'Подключение к платформе';
-    }
-    if (dataLoading) {
-      return loadingStage;
-    }
-    return 'Завершение загрузки';
-  };
 
   useEffect(() => {
     let mounted = true;
@@ -56,7 +44,6 @@ function SPWContent({ children }: { children: React.ReactNode }) {
         
         console.log('Токен авторизации получен и сохранен');
         
-        setSPWInitialized(true);
         setSPWLoading(false);
         setSPWError(null);
       } catch (error) {
@@ -129,7 +116,7 @@ function SPWContent({ children }: { children: React.ReactNode }) {
 
   // Показываем загрузку пока не инициализировано
   if (isLoading) {
-    return <LoadingScreen loadingStage={getCurrentLoadingStage()} />;
+    return <LoadingScreen />;
   }
 
   // Показываем ошибку если что-то пошло не так

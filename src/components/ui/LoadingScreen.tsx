@@ -2,14 +2,10 @@
 
 import { useState, useEffect } from 'react';
 
-interface LoadingScreenProps {
-  loadingStage?: string;
-}
-
 /**
  * Компонент красивой загрузки с анимацией в цветах сайта
  */
-export default function LoadingScreen({ loadingStage = 'Загрузка приложения' }: LoadingScreenProps) {
+export default function LoadingScreen() {
   const [dots, setDots] = useState('');
   const [showTimeoutMessage, setShowTimeoutMessage] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -104,9 +100,9 @@ export default function LoadingScreen({ loadingStage = 'Загрузка при�
           DiamondDrop
         </h1>
 
-        {/* Текст загрузки с этапом */}
+        {/* Текст загрузки */}
         <p className="text-xl text-[#F9F8FC]/70">
-          {loadingStage}{dots}
+          Загрузка приложения{dots}
         </p>
       </div>
     </div>

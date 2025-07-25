@@ -1,0 +1,30 @@
+<svg width="770" height="200" viewBox="0 0 770 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bannerGradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#5C5ADC;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#4A48B0;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#3A3890;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="diamondGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#F9F8FC;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#5C5ADC;stop-opacity:0.3" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Фон баннера -->
+  <rect width="770" height="200" rx="8" fill="url(#bannerGradient1)"/>
+  
+  <!-- Декоративные элементы -->
+  <circle cx="650" cy="50" r="30" fill="#F9F8FC" opacity="0.1"/>
+  <circle cx="700" cy="150" r="20" fill="#F9F8FC" opacity="0.15"/>
+  
+  <!-- Алмаз в центре -->
+  <g transform="translate(385, 100)">
+    <polygon points="0,-40 30,-10 0,40 -30,-10" fill="url(#diamondGradient)" transform="rotate(45)"/>
+    <polygon points="0,-30 20,-5 0,30 -20,-5" fill="#F9F8FC" opacity="0.8" transform="rotate(45)"/>
+  </g>
+  
+  <!-- Текст -->
+  <text x="385" y="130" text-anchor="middle" fill="#F9F8FC" font-family="Arial, sans-serif" font-size="24" font-weight="bold">DiamondDrop</text>
+  <text x="385" y="155" text-anchor="middle" fill="#F9F8FC" opacity="0.7" font-family="Arial, sans-serif" font-size="16">Новости и обновления</text>
+</svg>
