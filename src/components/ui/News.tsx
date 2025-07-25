@@ -3,24 +3,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import useBannersAPI from '@/hooks/useBannersAPI';
+import { usePreloadedData } from '@/components/providers/DataPreloadProvider';
 import useSPW from '@/hooks/useSPW';
 import { API_ENDPOINTS } from '@/lib/config';
 
-// Запасные данные для баннеров (используются, если API недоступен)
-const fallbackBanners = [
-  { id: '1', title: 'Новость 1', url: '/news/1', imageUrl: '/Frame 116.png' },
-  { id: '2', title: 'Новость 2', url: '/news/2', imageUrl: '/image 27.png' }
-];
-
 export default function News() {
-  const { banners: apiBanners, loading, error } = useBannersAPI();
-  const { isAuthenticated, authToken, makeAuthenticatedRequest } = useSPW();
+  const { banners, isAuthenticated } = usePreloadedData();
+  const { makeAuthenticatedRequest } = useSPW();
   const [activeIndex, setActiveIndex] = useState(0);
   const sliderRef = useRef<HTMLDivElement>(null);
-  
-  // Используем баннеры из API или запасные данные
-  const banners = apiBanners.length > 0 ? apiBanners : fallbackBanners;
   
   // Пример использования авторизованного запроса
   const handleBannerClick = async (bannerId: string) => {
@@ -78,11 +69,6 @@ export default function News() {
     
     return () => clearInterval(interval);
   }, []);
-  
-  // Сбрасываем индекс активного баннера при изменении списка баннеров
-  useEffect(() => {
-    setActiveIndex(0);
-  }, [apiBanners]);
   
   // Прокрутка к активному баннеру при изменении activeIndex
   useEffect(() => {

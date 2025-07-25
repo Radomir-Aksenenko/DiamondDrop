@@ -6,15 +6,20 @@ import { SPWUser } from '@/types/spw';
 import { validateUserAndSetToken, ValidationData } from '@/lib/auth';
 import { isDevelopment, DEV_CONFIG } from '@/lib/config';
 import LoadingScreen from '@/components/ui/LoadingScreen';
+import DataPreloadProvider, { usePreloadedData } from './DataPreloadProvider';
 
 /**
- * Провайдер для инициализации SPWMini
- * Инициализирует SPWMini при монтировании компонента и очищает при размонтировании
+ * Внутренний компонент, который использует предзагруженные данные
  */
-export default function SPWProvider({ children }: { children: React.ReactNode }) {
-  const [isLoading, setIsLoading] = useState(true);
-  const [isInitialized, setIsInitialized] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+function SPWContent({ children }: { children: React.ReactNode }) {
+  const { isLoading: dataLoading, error: dataError } = usePreloadedData();
+  const [spwLoading, setSPWLoading] = useState(true);
+  const [spwInitialized, setSPWInitialized] = useState(false);
+  const [spwError, setSPWError] = useState<string | null>(null);
+
+  // Общее состояние загрузки (SPW + данные)
+  const isLoading = spwLoading || dataLoading;
+  const error = spwError || dataError;
 
   useEffect(() => {
     let mounted = true;
@@ -40,13 +45,13 @@ export default function SPWProvider({ children }: { children: React.ReactNode })
         
         console.log('Токен авторизации получен и сохранен');
         
-        setIsInitialized(true);
-        setIsLoading(false);
-        setError(null);
+        setSPWInitialized(true);
+        setSPWLoading(false);
+        setSPWError(null);
       } catch (error) {
         console.error('Ошибка валидации пользователя:', error);
-        setError('Ошибка валидации пользователя. Попробуйте перезагрузить страницу.');
-        setIsLoading(false);
+        setSPWError('Ошибка валидации пользователя. Попробуйте перезагрузить страницу.');
+        setSPWLoading(false);
       }
     };
 
@@ -95,8 +100,8 @@ export default function SPWProvider({ children }: { children: React.ReactNode })
       if (!mounted) return;
       
       console.error(`Ошибка входа: ${message}`);
-      setError(`Ошибка инициализации SPWorlds: ${message}`);
-      setIsLoading(false);
+      setSPWError(`Ошибка инициализации SPWorlds: ${message}`);
+      setSPWLoading(false);
     };
 
     // Добавляем обработчики событий
@@ -113,7 +118,15 @@ export default function SPWProvider({ children }: { children: React.ReactNode })
 
   // Показываем загрузку пока не инициализировано
   if (isLoading) {
-    return <LoadingScreen />;
+    let loadingStage = 'Инициализация приложения';
+    
+    if (spwLoading) {
+      loadingStage = 'Подключение к платформе';
+    } else if (dataLoading) {
+      loadingStage = 'Загрузка данных';
+    }
+    
+    return <LoadingScreen loadingStage={loadingStage} />;
   }
 
   // Показываем ошибку если что-то пошло не так
@@ -135,4 +148,17 @@ export default function SPWProvider({ children }: { children: React.ReactNode })
   }
 
   return <>{children}</>;
+}
+
+/**
+ * Главный провайдер, который оборачивает приложение в DataPreloadProvider и SPWContent
+ */
+export default function SPWProvider({ children }: { children: React.ReactNode }) {
+  return (
+    <DataPreloadProvider>
+      <SPWContent>
+        {children}
+      </SPWContent>
+    </DataPreloadProvider>
+  );
 }

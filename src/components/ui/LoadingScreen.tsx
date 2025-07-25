@@ -2,10 +2,14 @@
 
 import { useState, useEffect } from 'react';
 
+interface LoadingScreenProps {
+  loadingStage?: string;
+}
+
 /**
  * Компонент красивой загрузки с анимацией в цветах сайта
  */
-export default function LoadingScreen() {
+export default function LoadingScreen({ loadingStage = 'Загрузка приложения' }: LoadingScreenProps) {
   const [dots, setDots] = useState('');
   const [showTimeoutMessage, setShowTimeoutMessage] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -19,14 +23,14 @@ export default function LoadingScreen() {
       });
     }, 500);
 
-    // Таймаут на 10 секунд
+    // Таймаут на 15 секунд (увеличен для предзагрузки)
     const timeoutTimer = setTimeout(() => {
       setIsTransitioning(true);
       // Небольшая задержка для плавного перехода
       setTimeout(() => {
         setShowTimeoutMessage(true);
       }, 300);
-    }, 10000);
+    }, 15000);
 
     return () => {
       clearInterval(dotsInterval);
@@ -50,9 +54,6 @@ export default function LoadingScreen() {
 
         {/* Сообщение об ошибке */}
         <div className="relative z-10 text-center max-w-md mx-auto px-6 animate-slide-up">
-          {/* Иконка часов вместо красного значка */}
-          
-
           {/* Заголовок */}
           <h1 className="text-2xl font-bold text-[#F9F8FC] mb-4 font-unbounded">
             Хмм... Что-то пошло не так
@@ -72,8 +73,6 @@ export default function LoadingScreen() {
           >
             Попробовать ещё раз
           </button>
-
-          {/* Дополнительная информация */}
         </div>
       </div>
     );
@@ -105,9 +104,14 @@ export default function LoadingScreen() {
           DiamondDrop
         </h1>
 
-        {/* Текст загрузки */}
-        <p className="text-xl text-[#F9F8FC]/70">
-          Загрузка приложения{dots}
+        {/* Текст загрузки с этапом */}
+        <p className="text-xl text-[#F9F8FC]/70 mb-2">
+          {loadingStage}{dots}
+        </p>
+        
+        {/* Дополнительная информация */}
+        <p className="text-sm text-[#F9F8FC]/50">
+          Подготавливаем всё самое лучшее для вас
         </p>
       </div>
     </div>

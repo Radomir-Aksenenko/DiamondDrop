@@ -3,22 +3,20 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import NavButton from '@/components/ui/NavButton';
-import useSPW from '@/hooks/useSPW';
-import useUserAPI from '@/hooks/useUserAPI';
+import { usePreloadedData } from '@/components/providers/DataPreloadProvider';
 import WalletModal from '@/components/ui/WalletModal';
 import UpgradeModal from '@/components/ui/UpgradeModal';
 
 export default function Header() {
-  const { user: spwUser } = useSPW();
-  const { user: apiUser, loading: apiLoading, error: apiError } = useUserAPI();
+  const { user, isAuthenticated } = usePreloadedData();
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   
-  // Используем данные из API, если доступны, иначе из SPW
-  const displayUser = apiUser;
-  const userBalance = apiUser?.balance ?? 999; // Используем баланс из API или дефолтное значение
-  const userName = apiUser?.nickname ?? 'Загрузка...'; // Используем дефолтный никнейм, если API не доступен
-  const userLevel = apiUser?.level;
+  // Используем предзагруженные данные пользователя
+  const userBalance = user?.balance ?? 999;
+  const userName = user?.nickname ?? (isAuthenticated ? 'Загрузка...' : 'Гость');
+  const userLevel = user?.level ?? 1;
+  
   // Формируем URL аватара напрямую из никнейма
   const userAvatarUrl = `https://avatars.spworlds.ru/face/${userName}?w=100`;
   
@@ -47,10 +45,9 @@ export default function Header() {
               <div>
                 <p className='text-[#F9F8FC] text-2xl font-bold mr-2 font-unbounded'>{userName}</p>
                 <div className="flex-col justify-center items-center text-[#F9F8FC] text-base font-bold opacity-50">
-                  <span className="mr-1">{userLevel ?? '?'}</span>
+                  <span className="mr-1">{userLevel}</span>
                   <span className="">lvl</span>
                 </div>
-                {/* Индикатор ошибки API скрыт */}
               </div>
             </div>
         <nav className="flex items-center gap-2">
