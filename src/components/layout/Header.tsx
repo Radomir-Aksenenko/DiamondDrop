@@ -62,7 +62,7 @@ export default function Header() {
           </div>
           <button 
             onClick={handleOpenWalletModal}
-            className='flex items-center justify-center gap-2.5 p-3 rounded-[8px] bg-[#5C5ADC] hover:bg-[#4A48B0] transition-colors cursor-pointer flex-shrink-0'
+            className='flex items-center justify-center gap-2.5 p-3 rounded-[12px] bg-[#5C5ADC] hover:bg-[#4A48B0] transition-colors cursor-pointer flex-shrink-0'
           >
             <img
               src="/Wallet.svg"

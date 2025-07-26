@@ -9,7 +9,7 @@ export default function Home() {
       <RecentWins />
       
       {/* Заголовок "Кейсы" */}
-      <h2 className="text-white text-center font-unbounded text-2xl font-medium mt-6">
+      <h2 className="text-white text-center font-unbounded text-2xl font-medium mt-6 mb-5">
         Кейсы
       </h2>
       

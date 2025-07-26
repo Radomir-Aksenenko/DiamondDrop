@@ -48,6 +48,27 @@ export default function useCasesAPI() {
       }
       setError(null);
 
+      // В dev режиме используем моковые данные
+      if (isDevelopment && DEV_CONFIG.skipAuth) {
+        // Имитируем задержку сети
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        const mockCases = DEV_CONFIG.mockCases;
+        const startIndex = (page - 1) * pageSize;
+        const endIndex = startIndex + pageSize;
+        const pageCases = mockCases.slice(startIndex, endIndex);
+        
+        if (append) {
+          setCases(prev => [...prev, ...pageCases]);
+        } else {
+          setCases(pageCases);
+        }
+        
+        // Проверяем есть ли еще страницы
+        setHasMore(endIndex < mockCases.length);
+        return;
+      }
+
       const token = getAuthToken();
       if (!token) {
         // Если нет токена, показываем пустой список

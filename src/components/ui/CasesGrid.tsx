@@ -53,28 +53,24 @@ export default function CasesGrid() {
   // Показываем скелетон загрузки для первой загрузки
   if (loading && cases.length === 0) {
     return (
-      <div className="w-full max-w-7xl mx-auto mt-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-          {Array.from({ length: 10 }).map((_, index) => (
+      <div className="w-full px-6 mt-2 mb-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
+          {Array.from({ length: 12 }).map((_, index) => (
             <div 
               key={index}
-              className="bg-gradient-to-b from-[#1A1A24] to-[#0F0F16] rounded-2xl p-4 border border-[#2A2A3A] animate-pulse"
+              className="bg-[#151519] rounded-xl p-3 sm:p-4 animate-pulse w-full max-w-[175px] sm:max-w-[200px] md:max-w-[220px] h-[274px] sm:h-[300px] md:h-[320px] mx-auto"
             >
-              {/* Скелетон изображения */}
-              <div className="w-full h-48 mb-4 rounded-xl bg-[#2A2A3A]" />
+              {/* Скелетон названия */}
+              <div className="h-6 sm:h-7 md:h-8 bg-[#2A2A3A] rounded mb-2 sm:mb-3" />
               
-              {/* Скелетон текста */}
-              <div className="space-y-3">
-                <div className="h-6 bg-[#2A2A3A] rounded w-3/4" />
-                <div className="space-y-2">
-                  <div className="h-4 bg-[#2A2A3A] rounded w-full" />
-                  <div className="h-4 bg-[#2A2A3A] rounded w-2/3" />
-                </div>
-                <div className="flex items-center justify-between pt-2">
-                  <div className="h-6 bg-[#2A2A3A] rounded w-16" />
-                  <div className="h-8 bg-[#2A2A3A] rounded w-20" />
-                </div>
-              </div>
+              {/* Скелетон цены */}
+              <div className="h-6 sm:h-7 bg-[#2A2A3A] rounded-full w-20 sm:w-24 mx-auto mb-2 sm:mb-3" />
+              
+              {/* Скелетон изображения */}
+              <div className="flex-1 bg-[#2A2A3A] rounded-lg mb-2 sm:mb-3 min-h-[120px] sm:min-h-[140px] md:min-h-[160px]" />
+              
+              {/* Скелетон кнопки */}
+              <div className="h-8 sm:h-10 bg-[#2A2A3A] rounded-lg" />
             </div>
           ))}
         </div>
@@ -85,7 +81,7 @@ export default function CasesGrid() {
   // Показываем ошибку
   if (error && cases.length === 0) {
     return (
-      <div className="w-full max-w-4xl mx-auto mt-6">
+      <div className="w-full px-6 mt-2 mb-2">
         <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-6 text-center">
           <div className="text-red-400 text-lg font-medium mb-2">
             Ошибка загрузки кейсов
@@ -107,7 +103,7 @@ export default function CasesGrid() {
   // Показываем сообщение когда кейсов нет
   if (!loading && cases.length === 0 && !error) {
     return (
-      <div className="w-full max-w-4xl mx-auto mt-6">
+      <div className="w-full px-6 mt-2 mb-2">
         <div className="bg-[#1A1A24] border border-[#2A2A3A] rounded-lg p-8 text-center">
           <div className="text-gray-400 text-lg font-medium mb-2">
             Кейсы не найдены
@@ -121,48 +117,22 @@ export default function CasesGrid() {
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto mt-6">
-      {/* Сетка кейсов */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-        {cases.map((caseData) => (
-          <CaseCard 
-            key={caseData.id} 
-            case={caseData} 
-            onClick={handleCaseClick}
-          />
+    <div className="w-full px-6 mt-2 mb-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
+        {cases.map((caseItem) => (
+          <CaseCard key={caseItem.id} case={caseItem} />
         ))}
       </div>
-
+      
       {/* Индикатор загрузки дополнительных кейсов */}
-      {loadingMore && (
+      {loading && cases.length > 0 && (
         <div className="flex justify-center mt-8">
-          <div className="flex items-center space-x-3 text-[#5C5ADC]">
-            <div className="w-6 h-6 border-2 border-[#5C5ADC] border-t-transparent rounded-full animate-spin" />
-            <span className="text-sm font-medium">Загружаем еще кейсы...</span>
-          </div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FFD700]"></div>
         </div>
       )}
-
-      {/* Элемент для отслеживания прокрутки */}
-      {hasMore && !loadingMore && (
-        <div 
-          ref={loadMoreRef}
-          className="h-20 flex items-center justify-center mt-8"
-        >
-          <div className="text-gray-500 text-sm">
-            Прокрутите вниз для загрузки еще
-          </div>
-        </div>
-      )}
-
-      {/* Сообщение об ошибке при загрузке дополнительных кейсов */}
-      {error && cases.length > 0 && (
-        <div className="mt-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
-          <p className="text-red-400 text-sm text-center">
-            Ошибка при загрузке дополнительных кейсов: {error}
-          </p>
-        </div>
-      )}
+      
+      {/* Элемент для отслеживания скролла */}
+      <div ref={loadMoreRef} className="h-4" />
     </div>
   );
 }
