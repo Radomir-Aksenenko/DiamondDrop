@@ -58,19 +58,19 @@ export default function CasesGrid() {
           {Array.from({ length: 12 }).map((_, index) => (
             <div 
               key={index}
-              className="bg-[#151519] rounded-xl p-3 sm:p-4 animate-pulse w-full max-w-[175px] sm:max-w-[200px] md:max-w-[220px] h-[274px] sm:h-[300px] md:h-[320px] mx-auto"
+              className="bg-[#151519] rounded-xl p-3 animate-pulse w-full max-w-[180px] h-[280px] mx-auto"
             >
               {/* Скелетон названия */}
-              <div className="h-6 sm:h-7 md:h-8 bg-[#2A2A3A] rounded mb-2 sm:mb-3" />
+              <div className="h-6 bg-[#2A2A3A] rounded mb-2" />
               
               {/* Скелетон цены */}
-              <div className="h-6 sm:h-7 bg-[#2A2A3A] rounded-full w-20 sm:w-24 mx-auto mb-2 sm:mb-3" />
+              <div className="h-6 bg-[#2A2A3A] rounded-full w-20 mx-auto mb-2" />
               
               {/* Скелетон изображения */}
-              <div className="flex-1 bg-[#2A2A3A] rounded-lg mb-2 sm:mb-3 min-h-[120px] sm:min-h-[140px] md:min-h-[160px]" />
+              <div className="w-[120px] h-[120px] bg-[#2A2A3A] rounded-lg mb-2 mx-auto" />
               
               {/* Скелетон кнопки */}
-              <div className="h-8 sm:h-10 bg-[#2A2A3A] rounded-lg" />
+              <div className="h-8 bg-[#2A2A3A] rounded-lg mt-auto" />
             </div>
           ))}
         </div>
