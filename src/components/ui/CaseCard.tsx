@@ -20,44 +20,44 @@ export default function CaseCard({ case: caseData, onClick }: CaseCardProps) {
   };
 
   // Функция для определения размера шрифта в зависимости от длины текста
-  // Максимально поддерживаем изначальный размер, уменьшаем только при необходимости
+  // Максимально придерживаемся стандартного размера, но обеспечиваем читаемость
   const getTextSizeClass = (text: string) => {
     const length = text.length;
-    if (length <= 25) {
-      return 'text-base'; // Изначальный размер для большинства названий
-    } else if (length <= 40) {
-      return 'text-sm'; // Немного меньше для длинных названий
-    } else if (length <= 55) {
-      return 'text-xs'; // Маленький размер для очень длинных названий
+    if (length <= 20) {
+      return 'text-lg'; // 18px для коротких названий
+    } else if (length <= 35) {
+      return 'text-base'; // 16px для средних названий
+    } else if (length <= 50) {
+      return 'text-sm'; // 14px для длинных названий
     } else {
-      return 'text-[10px]'; // Минимальный размер только для экстремально длинных названий
+      return 'text-xs'; // 12px для очень длинных названий
     }
   };
 
   return (
-    <div className='relative flex flex-col items-center gap-2 w-full max-w-[180px] h-[280px] p-3 rounded-xl bg-[#151519] hover:bg-[#1a1a1e] transition-all duration-300 cursor-pointer group overflow-hidden mx-auto' onClick={handleClick}>
+    <div className='relative flex flex-col items-center w-full max-w-[180px] h-[280px] p-3 rounded-xl bg-[#151519] hover:bg-[#1a1a1e] transition-all duration-300 cursor-pointer group overflow-hidden mx-auto' onClick={handleClick}>
       {/* Название кейса с отступами и адаптивным размером */}
-      <div className='w-full px-2 h-[3rem] flex items-center justify-center overflow-hidden'>
-        <p className={`text-center text-[#F9F8FC] font-actay font-bold line-clamp-2 leading-tight w-full ${getTextSizeClass(caseData.name)}`}>
+      <div className='w-full flex items-start justify-center overflow-hidden mb-1 pt-1'>
+        <p className={`text-center text-[#F9F8FC] font-actay font-bold line-clamp-3 leading-tight w-full ${getTextSizeClass(caseData.name)}`}>
           {caseData.name}
         </p>
       </div>
       
       {/* Цена в AP */}
-      <div className='flex px-3 py-1.5 justify-center items-center gap-2 rounded-[100px] bg-[#6563EE]/10'>
+      <div className='flex px-3 py-1.5 justify-center items-center gap-2 rounded-[100px] bg-[#6563EE]/10 mb-0.5'>
         <span className='text-[#5C5ADC] font-actay text-xs font-bold'>{caseData.price}</span>
         <span className='text-[#5C5ADC] font-actay text-xs font-bold'>АР</span>
       </div>
       
       {/* Изображение кейса */}
-      <div className='flex-1 flex items-center justify-center w-full min-h-0'>
+      <div className='flex-1 flex items-center justify-center w-full min-h-0 mb-2'>
         {caseData.imageUrl ? (
           <Image 
             src={caseData.imageUrl} 
             alt={caseData.name} 
             width={120} 
             height={120} 
-            className="object-contain w-[120px] h-[120px] group-hover:scale-105 transition-transform duration-300" 
+            className="object-contain w-[120px] h-[120px] transition-transform duration-300" 
           />
         ) : (
           <div className="w-[120px] h-[120px] flex items-center justify-center bg-gradient-to-br from-[#2A2A3A] to-[#1A1A24] rounded-lg">
