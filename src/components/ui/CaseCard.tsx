@@ -5,14 +5,14 @@ import Image from 'next/image';
 import { CaseData } from '@/hooks/useCasesAPI';
 
 interface CaseCardProps {
-  case: CaseData;
+  caseData: CaseData;
   onClick?: (caseData: CaseData) => void;
 }
 
 /**
  * Компонент карточки кейса с адаптивным дизайном
  */
-export default function CaseCard({ case: caseData, onClick }: CaseCardProps) {
+export default function CaseCard({ caseData, onClick }: CaseCardProps) {
   const handleClick = () => {
     if (onClick) {
       onClick(caseData);
@@ -35,16 +35,16 @@ export default function CaseCard({ case: caseData, onClick }: CaseCardProps) {
   };
 
   return (
-    <div className='relative flex flex-col items-center w-full max-w-[180px] h-[280px] p-3 rounded-xl bg-[#151519] hover:bg-[#1a1a1e] transition-all duration-300 cursor-pointer group overflow-hidden mx-auto' onClick={handleClick}>
+    <div className='relative flex flex-col items-center w-full h-[280px] p-3 rounded-[12px] bg-[#151519] border border-[#19191D] hover:bg-[#1a1a1e] hover:border-[#2A2A3A] transition-all duration-300 cursor-pointer group overflow-hidden' onClick={handleClick}>
       {/* Название кейса с отступами и адаптивным размером */}
-      <div className='w-full flex items-start justify-center overflow-hidden mb-1 pt-1'>
+      <div className='w-full flex items-start justify-center overflow-hidden mb-2 pt-1'>
         <p className={`text-center text-[#F9F8FC] font-actay font-bold line-clamp-3 leading-tight w-full ${getTextSizeClass(caseData.name)}`}>
           {caseData.name}
         </p>
       </div>
       
       {/* Цена в AP */}
-      <div className='flex px-3 py-1.5 justify-center items-center gap-2 rounded-[100px] bg-[#6563EE]/10 mb-0.5'>
+      <div className='flex px-3 py-1.5 justify-center items-center gap-1 rounded-[100px] bg-[#6563EE]/10 mb-2'>
         <span className='text-[#5C5ADC] font-actay text-xs font-bold'>{caseData.price}</span>
         <span className='text-[#5C5ADC] font-actay text-xs font-bold'>АР</span>
       </div>
@@ -99,7 +99,7 @@ export default function CaseCard({ case: caseData, onClick }: CaseCardProps) {
       </div>
       
       {/* Эффект свечения при наведении */}
-      <div className="absolute inset-0 rounded-xl bg-gradient-to-t from-[#5C5ADC]/0 via-[#5C5ADC]/5 to-[#5C5ADC]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+      <div className="absolute inset-0 rounded-[12px] bg-gradient-to-t from-[#5C5ADC]/0 via-[#5C5ADC]/5 to-[#5C5ADC]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
     </div>
   );
 }

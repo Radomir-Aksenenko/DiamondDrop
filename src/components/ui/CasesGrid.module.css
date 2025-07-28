@@ -1,0 +1,28 @@
+.caseItem {
+  width: calc((100% - 8px) / 2);
+  flex-shrink: 0;
+}
+
+@media (min-width: 640px) {
+  .caseItem {
+    width: calc((100% - 16px) / 3);
+  }
+}
+
+@media (min-width: 768px) {
+  .caseItem {
+    width: calc((100% - 24px) / 4);
+  }
+}
+
+@media (min-width: 1024px) {
+  .caseItem {
+    width: calc((100% - 32px) / 5);
+  }
+}
+
+@media (min-width: 1280px) {
+  .caseItem {
+    width: calc((100% - 40px) / 6);
+  }
+}
