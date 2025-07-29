@@ -55,28 +55,54 @@ export const DEV_CONFIG = {
       price: 16,
       items: [
         {
+          id: 'cobblestone-1',
           name: 'Булыжник',
-          rarity: 'common' as const,
-          chance: 99.99,
-          imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/cobblestone/icon'
+          description: 'Обычный булыжник',
+          imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/cobblestone/icon',
+          amount: 64,
+          price: 0.5,
+          percentChance: 45.0,
+          rarity: 'Common' as const
         },
         {
+          id: 'iron-ingot-1',
           name: 'Железный слиток',
-          rarity: 'rare' as const,
-          chance: 15.5,
-          imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/iron_ingot/icon'
+          description: 'Полезный металл',
+          imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/iron_ingot/icon',
+          amount: 16,
+          price: 8.0,
+          percentChance: 25.0,
+          rarity: 'Uncommon' as const
         },
         {
+          id: 'gold-ingot-1',
           name: 'Золотой слиток',
-          rarity: 'epic' as const,
-          chance: 5.2,
-          imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/gold_ingot/icon'
+          description: 'Драгоценный металл',
+          imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/gold_ingot/icon',
+          amount: 8,
+          price: 24.0,
+          percentChance: 15.0,
+          rarity: 'Rare' as const
         },
         {
+          id: 'diamond-1',
           name: 'Алмаз',
-          rarity: 'legendary' as const,
-          chance: 0.8,
-          imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/diamond/icon'
+          description: 'Редкий драгоценный камень',
+          imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/diamond/icon',
+          amount: 4,
+          price: 64.0,
+          percentChance: 10.0,
+          rarity: 'Epic' as const
+        },
+        {
+          id: 'netherite-1',
+          name: 'Незеритовый слиток',
+          description: 'Самый прочный материал',
+          imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/netherite_ingot/icon',
+          amount: 1,
+          price: 256.0,
+          percentChance: 5.0,
+          rarity: 'Legendary' as const
         }
       ]
     },

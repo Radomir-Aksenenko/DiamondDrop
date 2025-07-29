@@ -201,21 +201,44 @@ export default function CasePage() {
         <div className='flex w-[221px] p-4 flex-col items-center gap-4 self-stretch rounded-xl bg-[#F9F8FC]/[0.05]'>
           <h1 className='text-[#F9F8FC] font-unbounded text-xl font-medium'>В кейсе</h1>
           
-          {/* Список предметов кейса */}
-          <div className='flex flex-col items-start gap-2 self-stretch'>
-            {caseData.items && caseData.items.length > 0 ? (
-              caseData.items.map((item, index) => (
-                <CaseItemCard 
-                  key={index}
-                  item={item}
-                  casePrice={caseData.price}
-                />
-              ))
-            ) : (
-              <div className="text-[#F9F8FC]/50 font-unbounded text-sm text-center w-full">
-                Предметы не найдены
-              </div>
-            )}
+          {/* Список предметов кейса с кастомным скроллбаром */}
+          <div 
+            className='w-full flex-1 overflow-y-auto'
+            style={{
+              scrollbarWidth: '4px',
+              scrollbarColor: 'rgba(249, 248, 252, 0.1) transparent'
+            }}
+          >
+            <style jsx>{`
+              div::-webkit-scrollbar {
+                width: 4px;
+              }
+              div::-webkit-scrollbar-track {
+                background: transparent;
+              }
+              div::-webkit-scrollbar-thumb {
+                background: rgba(249, 248, 252, 0.1);
+                border-radius: 24px;
+              }
+              div::-webkit-scrollbar-thumb:hover {
+                background: rgba(249, 248, 252, 0.2);
+              }
+            `}</style>
+            <div className='grid grid-cols-2 gap-2 w-full'>
+              {caseData.items && caseData.items.length > 0 ? (
+                caseData.items.map((item, index) => (
+                  <CaseItemCard 
+                    key={index}
+                    item={item}
+                    casePrice={caseData.price}
+                  />
+                ))
+              ) : (
+                <div className="text-[#F9F8FC]/50 font-unbounded text-sm text-center w-full col-span-2">
+                  Предметы не найдены
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

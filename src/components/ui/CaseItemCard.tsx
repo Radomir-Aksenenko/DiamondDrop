@@ -13,22 +13,27 @@ interface CaseItemCardProps {
 
 // Конфигурация цветов и стилей для каждого типа редкости
 const rarityConfig = {
-  common: {
+  Common: {
     background: 'rgba(249, 248, 252, 0.05)',
     border: '1px solid rgba(249, 248, 252, 0.05)',
     textColor: 'text-gray-300'
   },
-  rare: {
+  Uncommon: {
+    background: 'rgba(249, 248, 252, 0.05)',
+    border: '1px solid rgba(249, 248, 252, 0.05)',
+    textColor: 'text-gray-300'
+  },
+  Rare: {
     background: 'radial-gradient(181.89% 122.27% at 50% 52.63%, rgba(178, 255, 158, 0.00) 0%, rgba(71, 173, 45, 0.30) 100%)',
     border: '1px solid rgba(249, 248, 252, 0.05)',
     textColor: 'text-green-300'
   },
-  epic: {
+  Epic: {
     background: 'radial-gradient(166.28% 111.64% at 50% 52.63%, rgba(203, 50, 209, 0.00) 0%, rgba(172, 33, 146, 0.60) 100%)',
     border: '1px solid rgba(249, 248, 252, 0.05)',
     textColor: 'text-purple-300'
   },
-  legendary: {
+  Legendary: {
     background: 'radial-gradient(202.89% 144.9% at 50% 52.63%, rgba(255, 219, 18, 0.00) 0%, rgba(255, 183, 50, 0.80) 100%)',
     border: '1px solid rgba(249, 248, 252, 0.05)',
     textColor: 'text-yellow-300'
@@ -43,16 +48,16 @@ export default function CaseItemCard({
   casePrice, 
   className = '' 
 }: CaseItemCardProps) {
-  const config = rarityConfig[item.rarity as keyof typeof rarityConfig] || rarityConfig.common;
+  const config = rarityConfig[item.rarity as keyof typeof rarityConfig] || rarityConfig.Common;
   
-  // Рассчитываем стоимость предмета на основе шанса выпадения и цены кейса
-  const itemValue = Math.round((casePrice * item.chance) / 100);
+  // Используем цену предмета из API
+  const itemValue = item.price;
 
   // Стили карточки
   const cardStyles = {
     display: 'flex',
-    width: '138px',
-    height: '138px',
+    width: '90.5px',
+    height: '122px',
     padding: '8px',
     alignItems: 'center',
     gap: '8px',
@@ -100,7 +105,7 @@ export default function CaseItemCard({
             opacity: 0.5
           }}
         >
-          {formatChance(item.chance)}
+          {formatChance(item.percentChance)}
         </span>
         {/* Стоимость */}
         <div className="flex items-baseline">
@@ -142,7 +147,7 @@ export default function CaseItemCard({
           style={{ objectFit: 'contain' }}
           className="drop-shadow-lg"
         />
-        {/* Количество поверх изображения (всегда x1 для предметов кейса) */}
+        {/* Количество поверх изображения */}
         <div className="absolute -bottom-1 -right-1">
           <span 
             style={{
@@ -155,7 +160,7 @@ export default function CaseItemCard({
               opacity: 0.5
             }}
           >
-            x1
+            x{item.amount}
           </span>
         </div>
       </div>

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { getAuthToken } from '@/lib/auth';
 import { API_BASE_URL, isDevelopment, DEV_CONFIG } from '@/lib/config';
 import { CaseData } from './useCasesAPI';
+import { generateRandomItems } from '@/lib/caseUtils';
 
 /**
  * Хук для получения данных отдельного кейса из API
@@ -34,17 +35,24 @@ export default function useCaseAPI(caseId: string) {
         const mockCase = DEV_CONFIG.mockCases.find(c => c.id === caseId);
         
         if (mockCase) {
-          setCaseData(mockCase);
+          // Добавляем случайные предметы если их нет
+          const caseWithItems = {
+            ...mockCase,
+            description: mockCase.description || null,
+            items: mockCase.items || generateRandomItems(mockCase.price)
+          };
+          setCaseData(caseWithItems);
         } else {
-          // Если кейс не найден, создаем дефолтный
-          setCaseData({
+          // Если кейс не найден, создаем дефолтный с случайными предметами
+          const defaultCase: CaseData = {
             id: caseId,
-            name: 'Мамонт',
-            description: 'Каменный век, дикие земли, первобытные люди и... МАМОНТЫ! Да-да, именно с них началась история самого первого кейса.',
+            name: 'Случайный кейс',
+            description: 'Этот кейс был сгенерирован автоматически в dev режиме',
             imageUrl: '/09b1b0e86eb0cd8a7909f6f74b56ddc17804658d.png',
             price: 16,
-            items: []
-          });
+            items: generateRandomItems(16)
+          };
+          setCaseData(defaultCase);
         }
         return;
       }

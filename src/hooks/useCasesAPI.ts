@@ -3,15 +3,20 @@
 import { useEffect, useState, useCallback } from 'react';
 import { getAuthToken } from '@/lib/auth';
 import { API_BASE_URL, isDevelopment, DEV_CONFIG } from '@/lib/config';
+import { generateRandomItems } from '@/lib/caseUtils';
 
 /**
  * Интерфейс предмета в кейсе
  */
 export interface CaseItem {
+  id: string;
   name: string;
-  rarity: 'common' | 'rare' | 'epic' | 'legendary';
-  chance: number;
-  imageUrl?: string | null;
+  description: string | null;
+  imageUrl: string | null;
+  amount: number;
+  price: number;
+  percentChance: number;
+  rarity: 'Common' | 'Uncommon' | 'Rare' | 'Epic' | 'Legendary';
 }
 
 /**
@@ -20,10 +25,10 @@ export interface CaseItem {
 export interface CaseData {
   id: string;
   name: string;
-  description?: string;
+  description: string | null;
   imageUrl: string | null;
   price: number;
-  items?: CaseItem[];
+  items: CaseItem[];
 }
 
 /**
@@ -64,7 +69,12 @@ export default function useCasesAPI() {
         // Имитируем задержку сети
         await new Promise(resolve => setTimeout(resolve, 500));
         
-        const mockCases = DEV_CONFIG.mockCases;
+        const mockCases = DEV_CONFIG.mockCases.map(caseData => ({
+          ...caseData,
+          description: caseData.description || null,
+          items: caseData.items || generateRandomItems(caseData.price)
+        }));
+        
         const startIndex = (page - 1) * pageSize;
         const endIndex = startIndex + pageSize;
         const pageCases = mockCases.slice(startIndex, endIndex);
