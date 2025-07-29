@@ -74,7 +74,7 @@ export default function Header() {
           </button>
         </div>
       </div>
-      
+      <div className='h-[3px] bg-[#151519]'></div>
       {/* Модальное окно кошелька */}
       <WalletModal isOpen={isWalletModalOpen} onClose={handleCloseWalletModal} />
 

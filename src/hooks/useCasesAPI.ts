@@ -5,14 +5,25 @@ import { getAuthToken } from '@/lib/auth';
 import { API_BASE_URL, isDevelopment, DEV_CONFIG } from '@/lib/config';
 
 /**
+ * Интерфейс предмета в кейсе
+ */
+export interface CaseItem {
+  name: string;
+  rarity: 'common' | 'rare' | 'epic' | 'legendary';
+  chance: number;
+  imageUrl?: string | null;
+}
+
+/**
  * Интерфейс кейса из API
  */
 export interface CaseData {
   id: string;
   name: string;
-  description: string;
+  description?: string;
   imageUrl: string | null;
   price: number;
+  items?: CaseItem[];
 }
 
 /**

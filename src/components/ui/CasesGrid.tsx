@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import CaseCard from './CaseCard';
 import useCasesAPI, { CaseData } from '@/hooks/useCasesAPI';
 import styles from './CasesGrid.module.css';
@@ -12,14 +13,16 @@ export default function CasesGrid() {
   const { cases, loading, loadingMore, error, hasMore, loadMore } = useCasesAPI();
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const router = useRouter();
 
   /**
    * Обработчик клика по кейсу
    */
   const handleCaseClick = useCallback((caseData: CaseData) => {
     console.log('Клик по кейсу:', caseData);
-    // Здесь можно добавить логику открытия кейса
-  }, []);
+    // Переходим на страницу кейса используя ID
+    router.push(`/case/${caseData.id}`);
+  }, [router]);
 
   /**
    * Настройка Intersection Observer для бесконечной прокрутки
@@ -119,13 +122,13 @@ export default function CasesGrid() {
 
   return (
     <div className="w-full mt-2 mb-2">
-      <div className="flex flex-wrap gap-2">
-        {cases.map((caseItem) => (
-          <div key={caseItem.id} className={styles.caseItem}>
-            <CaseCard caseData={caseItem} />
-          </div>
-        ))}
-      </div>
+        <div className="flex flex-wrap gap-2">
+          {cases.map((caseItem) => (
+            <div key={caseItem.id} className={styles.caseItem}>
+              <CaseCard caseData={caseItem} onClick={handleCaseClick} />
+            </div>
+          ))}
+        </div>
       
       {/* Показываем индикатор загрузки при подгрузке */}
       {loading && cases.length > 0 && (
