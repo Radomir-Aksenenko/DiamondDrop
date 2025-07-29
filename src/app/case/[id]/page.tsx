@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
@@ -19,6 +19,14 @@ export default function CasePage() {
   
   const [isFastMode, setIsFastMode] = useState(false);
   const [selectedNumber, setSelectedNumber] = useState(1);
+  
+  // Состояния для кастомного скроллбара
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [scrollTop, setScrollTop] = useState(0);
+  const [scrollHeight, setScrollHeight] = useState(0);
+  const [clientHeight, setClientHeight] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isScrollbarVisible, setIsScrollbarVisible] = useState(false);
 
   // Компонент для кнопок с цифрами
   const NumberButton = ({ number }: { number: number }) => (
@@ -36,6 +44,83 @@ export default function CasePage() {
       {number}
     </motion.button>
   );
+
+  // Функции для кастомного скроллбара
+  const updateScrollInfo = () => {
+    if (scrollContainerRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
+      setScrollTop(scrollTop);
+      setScrollHeight(scrollHeight);
+      setClientHeight(clientHeight);
+      setIsScrollbarVisible(scrollHeight > clientHeight);
+    }
+  };
+
+  const handleScroll = () => {
+    updateScrollInfo();
+  };
+
+  const handleScrollbarClick = (e: React.MouseEvent) => {
+    if (!scrollContainerRef.current) return;
+    
+    const rect = e.currentTarget.getBoundingClientRect();
+    const clickY = e.clientY - rect.top;
+    const scrollRatio = clickY / rect.height;
+    const newScrollTop = scrollRatio * (scrollHeight - clientHeight);
+    
+    scrollContainerRef.current.scrollTop = newScrollTop;
+  };
+
+  const handleThumbMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging || !scrollContainerRef.current) return;
+      
+      e.preventDefault();
+      const scrollbarElement = document.querySelector('.custom-scrollbar-track') as HTMLElement;
+      if (!scrollbarElement) return;
+      
+      const rect = scrollbarElement.getBoundingClientRect();
+      const mouseY = e.clientY - rect.top;
+      const scrollRatio = mouseY / rect.height;
+      const newScrollTop = scrollRatio * (scrollHeight - clientHeight);
+      
+      scrollContainerRef.current.scrollTop = Math.max(0, Math.min(newScrollTop, scrollHeight - clientHeight));
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging, scrollHeight, clientHeight]);
+
+  useEffect(() => {
+    updateScrollInfo();
+    
+    const resizeObserver = new ResizeObserver(updateScrollInfo);
+    if (scrollContainerRef.current) {
+      resizeObserver.observe(scrollContainerRef.current);
+    }
+    
+    return () => resizeObserver.disconnect();
+  }, [caseData?.items]);
+
+  // Вычисляем параметры для ползунка скроллбара
+  const thumbHeight = isScrollbarVisible ? Math.max((clientHeight / scrollHeight) * clientHeight, 20) : 0;
+  const thumbTop = isScrollbarVisible ? (scrollTop / (scrollHeight - clientHeight)) * (clientHeight - thumbHeight) : 0;
 
   // Обработка состояний загрузки и ошибки
   if (loading) {
@@ -198,46 +283,74 @@ export default function CasePage() {
         </div>
         
         {/* Правый сайдбар */}
-        <div className='flex w-[221px] p-4 flex-col items-center gap-4 self-stretch rounded-xl bg-[#F9F8FC]/[0.05]'>
+        <div className='flex w-[221px] p-4 flex-col items-center gap-4 rounded-xl bg-[#F9F8FC]/[0.05]' style={{ height: '585px', minHeight: '585px', maxHeight: '585px' }}>
           <h1 className='text-[#F9F8FC] font-unbounded text-xl font-medium'>В кейсе</h1>
           
-          {/* Список предметов кейса с кастомным скроллбаром */}
-          <div 
-            className='w-full flex-1 overflow-y-auto'
-            style={{
-              scrollbarColor: 'rgba(249, 248, 252, 0.1) transparent'
-            }}
-          >
-            <style jsx>{`
-              div::-webkit-scrollbar {
-                width: 4px;
-              }
-              div::-webkit-scrollbar-track {
-                background: transparent;
-              }
-              div::-webkit-scrollbar-thumb {
-                background: rgba(249, 248, 252, 0.1);
-                border-radius: 24px;
-              }
-              div::-webkit-scrollbar-thumb:hover {
-                background: rgba(249, 248, 252, 0.2);
-              }
-            `}</style>
-            <div className='grid grid-cols-2 gap-2 w-full'>
-              {caseData.items && caseData.items.length > 0 ? (
-                caseData.items.map((item, index) => (
-                  <CaseItemCard 
-                    key={index}
-                    item={item}
-                    casePrice={caseData.price}
-                  />
-                ))
-              ) : (
-                <div className="text-[#F9F8FC]/50 font-unbounded text-sm text-center w-full col-span-2">
-                  Предметы не найдены
+          {/* Контейнер с кастомным скроллбаром */}
+          <div className='w-full flex-1 relative'>
+            {/* Список предметов кейса */}
+            <div 
+              ref={scrollContainerRef}
+              className='w-full h-full overflow-y-auto overflow-x-hidden pr-2'
+              onScroll={handleScroll}
+              style={{ 
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none'
+              }}
+            >
+              <style jsx>{`
+                div::-webkit-scrollbar {
+                  display: none;
+                }
+              `}</style>
+              <div className='flex flex-col items-center justify-start gap-2 w-full'>
+                <div className='grid grid-cols-2 gap-2 w-full justify-items-center place-items-center'>
+                  {caseData.items && caseData.items.length > 0 ? (
+                    caseData.items.map((item, index) => (
+                      <CaseItemCard 
+                        key={index}
+                        item={item}
+                        casePrice={caseData.price}
+                      />
+                    ))
+                  ) : (
+                    <div className="text-[#F9F8FC]/50 font-unbounded text-sm text-center w-full col-span-2">
+                      Предметы не найдены
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
+            
+            {/* Кастомный скроллбар */}
+            {isScrollbarVisible && (
+              <div 
+                className='custom-scrollbar-track absolute top-0 right-0 w-1 h-full cursor-pointer'
+                onClick={handleScrollbarClick}
+                style={{
+                  background: 'transparent'
+                }}
+              >
+                <div
+                  className='absolute w-1 rounded-full transition-all duration-200 cursor-grab active:cursor-grabbing'
+                  style={{
+                    height: `${thumbHeight}px`,
+                    top: `${thumbTop}px`,
+                    background: 'rgba(249, 248, 252, 0.1)',
+                    borderRadius: '24px'
+                  }}
+                  onMouseDown={handleThumbMouseDown}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(249, 248, 252, 0.2)';
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isDragging) {
+                      e.currentTarget.style.background = 'rgba(249, 248, 252, 0.1)';
+                    }
+                  }}
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>

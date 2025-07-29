@@ -56,11 +56,11 @@ export default function CaseItemCard({
   // Стили карточки
   const cardStyles = {
     display: 'flex',
-    width: '90.5px',
+    width: '80px',
     height: '122px',
     padding: '8px',
     alignItems: 'center',
-    gap: '8px',
+    gap: '6px',
     borderRadius: '8px',
     flexDirection: 'column' as const,
     justifyContent: 'space-between' as const
@@ -91,9 +91,8 @@ export default function CaseItemCard({
         ...cardStyles
       }}
     >
-      {/* Верхняя часть - процент шанса и стоимость */}
-      <div className="flex flex-col items-center justify-center text-center">
-        {/* Процент шанса */}
+      {/* Верхняя часть - только процент шанса */}
+      <div className="flex items-center justify-center text-center">
         <span 
           style={{
             color: '#F9F8FC',
@@ -107,38 +106,9 @@ export default function CaseItemCard({
         >
           {formatChance(item.percentChance)}
         </span>
-        {/* Стоимость */}
-        <div className="flex items-baseline">
-          <span 
-            style={{
-              color: '#F9F8FC',
-              textAlign: 'center',
-              fontFamily: 'Actay Wide',
-              fontSize: '16px',
-              fontStyle: 'normal',
-              fontWeight: 700,
-              lineHeight: 'normal'
-            }}
-          >
-            {formatPrice(itemValue)}
-          </span>
-          <span 
-            style={{
-              color: 'rgba(249, 248, 252, 0.50)',
-              fontFamily: 'Actay Wide',
-              fontSize: '12px',
-              fontStyle: 'normal',
-              fontWeight: 700,
-              lineHeight: 'normal',
-              marginLeft: '2px'
-            }}
-          >
-            AP
-          </span>
-        </div>
       </div>
 
-      {/* Нижняя часть - иконка предмета */}
+      {/* Средняя часть - иконка предмета */}
       <div className="relative w-12 h-12 flex items-center justify-center">
         <Image
           src={item.imageUrl || '/09b1b0e86eb0cd8a7909f6f74b56ddc17804658d.png'}
@@ -163,6 +133,36 @@ export default function CaseItemCard({
             x{item.amount}
           </span>
         </div>
+      </div>
+
+      {/* Нижняя часть - цена после иконки */}
+      <div className="flex items-baseline justify-center">
+        <span 
+          style={{
+            color: '#F9F8FC',
+            textAlign: 'center',
+            fontFamily: 'Actay Wide',
+            fontSize: '16px',
+            fontStyle: 'normal',
+            fontWeight: 700,
+            lineHeight: 'normal'
+          }}
+        >
+          {formatPrice(itemValue)}
+        </span>
+        <span 
+          style={{
+            color: 'rgba(249, 248, 252, 0.50)',
+            fontFamily: 'Actay Wide',
+            fontSize: '12px',
+            fontStyle: 'normal',
+            fontWeight: 700,
+            lineHeight: 'normal',
+            marginLeft: '2px'
+          }}
+        >
+          AP
+        </span>
       </div>
     </div>
   );
