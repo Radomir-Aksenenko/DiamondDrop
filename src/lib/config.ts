@@ -53,6 +53,32 @@ export const DEV_CONFIG = {
       description: 'Каменный век, дикие земли, первобытные люди и... МАМОНТЫ! Да-да, именно с них началась история самого первого кейса.',
       imageUrl: '/09b1b0e86eb0cd8a7909f6f74b56ddc17804658d.png',
       price: 16,
+      items: [
+        {
+          name: 'Булыжник',
+          rarity: 'common' as const,
+          chance: 99.99,
+          imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/cobblestone/icon'
+        },
+        {
+          name: 'Железный слиток',
+          rarity: 'rare' as const,
+          chance: 15.5,
+          imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/iron_ingot/icon'
+        },
+        {
+          name: 'Золотой слиток',
+          rarity: 'epic' as const,
+          chance: 5.2,
+          imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/gold_ingot/icon'
+        },
+        {
+          name: 'Алмаз',
+          rarity: 'legendary' as const,
+          chance: 0.8,
+          imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/diamond/icon'
+        }
+      ]
     },
     {
       id: '6836d58aed445deeaeda5ca1',
@@ -113,7 +139,7 @@ export const DEV_CONFIG = {
   ],
   // Мок токен для dev режима
   mockToken: 'dev-mock-token-12345',
-} as const;
+};
 
 // Настройки запросов
 export const REQUEST_CONFIG = {

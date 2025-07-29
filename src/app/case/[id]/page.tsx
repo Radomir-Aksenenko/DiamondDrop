@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import useCaseAPI from '@/hooks/useCaseAPI';
+import CaseItemCard from '@/components/ui/CaseItemCard';
 
 /**
  * Страница отдельного кейса
@@ -192,13 +193,30 @@ export default function CasePage() {
           
           {/* Нижний блок */}
           <div className="flex p-[10px] items-start gap-2 flex-1 self-stretch rounded-xl bg-[#F9F8FC]/[0.05] w-[679px] h-[288px]">
-            {/* Содержимое нижнего блока */}
+            d
           </div>
         </div>
         
         {/* Правый сайдбар */}
         <div className='flex w-[221px] p-4 flex-col items-center gap-4 self-stretch rounded-xl bg-[#F9F8FC]/[0.05]'>
-          {/* Содержимое сайдбара */}
+          <h1 className='text-[#F9F8FC] font-unbounded text-xl font-medium'>В кейсе</h1>
+          
+          {/* Список предметов кейса */}
+          <div className='flex flex-col items-start gap-2 self-stretch'>
+            {caseData.items && caseData.items.length > 0 ? (
+              caseData.items.map((item, index) => (
+                <CaseItemCard 
+                  key={index}
+                  item={item}
+                  casePrice={caseData.price}
+                />
+              ))
+            ) : (
+              <div className="text-[#F9F8FC]/50 font-unbounded text-sm text-center w-full">
+                Предметы не найдены
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
