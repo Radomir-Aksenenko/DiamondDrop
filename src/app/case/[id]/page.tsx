@@ -205,7 +205,6 @@ export default function CasePage() {
           <div 
             className='w-full flex-1 overflow-y-auto'
             style={{
-              scrollbarWidth: '4px',
               scrollbarColor: 'rgba(249, 248, 252, 0.1) transparent'
             }}
           >
