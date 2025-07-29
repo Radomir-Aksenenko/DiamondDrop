@@ -1,286 +1,205 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import React, { useState } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
-import { CaseData } from '@/hooks/useCasesAPI';
-import { getAuthToken } from '@/lib/auth';
-import { API_BASE_URL, isDevelopment, DEV_CONFIG } from '@/lib/config';
+import { motion } from 'framer-motion';
+import useCaseAPI from '@/hooks/useCaseAPI';
 
 /**
  * Страница отдельного кейса
  */
 export default function CasePage() {
-  const params = useParams();
   const router = useRouter();
-  const [caseData, setCaseData] = useState<CaseData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
+  const params = useParams();
   const caseId = params.id as string;
+  
+  const { caseData, loading, error } = useCaseAPI(caseId);
+  
+  const [isFastMode, setIsFastMode] = useState(false);
+  const [selectedNumber, setSelectedNumber] = useState(1);
 
-  useEffect(() => {
-    const fetchCaseData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+  // Компонент для кнопок с цифрами
+  const NumberButton = ({ number }: { number: number }) => (
+    <motion.button 
+      onClick={() => setSelectedNumber(number)}
+      className={`flex cursor-pointer w-[36px] h-[36px] justify-center items-center rounded-[8px] font-unbounded text-sm font-medium transition-all duration-200 ${
+        selectedNumber === number 
+          ? 'border border-[#5C5ADC] bg-[#6563EE]/[0.10] text-[#F9F8FC]' 
+          : 'bg-[#F9F8FC]/[0.05] text-[#F9F8FC] hover:bg-[#F9F8FC]/[0.08]'
+      }`}
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      transition={{ type: "spring", stiffness: 400, damping: 17 }}
+    >
+      {number}
+    </motion.button>
+  );
 
-        // В режиме разработки используем моковые данные
-        if (isDevelopment) {
-          // Имитируем задержку загрузки
-          await new Promise(resolve => setTimeout(resolve, 500));
-          
-          // Ищем кейс по ID в моковых данных
-          const mockCase = DEV_CONFIG.mockCases.find(c => c.id === caseId);
-          
-          if (!mockCase) {
-            setError('Кейс не найден');
-            return;
-          }
-          
-          // Создаем полные данные кейса с предметами
-          const fullCaseData: CaseData = {
-            ...mockCase,
-            items: [
-              { name: 'Редкий предмет 1', rarity: 'legendary', chance: 5 },
-              { name: 'Эпический предмет 1', rarity: 'epic', chance: 15 },
-              { name: 'Редкий предмет 2', rarity: 'rare', chance: 30 },
-              { name: 'Обычный предмет 1', rarity: 'common', chance: 50 }
-            ]
-          };
-          
-          setCaseData(fullCaseData);
-          return;
-        }
-
-        const token = getAuthToken();
-        if (!token) {
-          setError('Необходима авторизация');
-          return;
-        }
-
-        // В продакшене получаем кейс по ID через API
-        const response = await fetch(`${API_BASE_URL}/cases/${caseId}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (!response.ok) {
-          if (response.status === 404) {
-            setError('Кейс не найден');
-          } else {
-            throw new Error(`Ошибка ${response.status}: ${response.statusText}`);
-          }
-          return;
-        }
-
-        const data = await response.json();
-        setCaseData(data);
-      } catch (err) {
-        console.error('Ошибка при загрузке кейса:', err);
-        setError(err instanceof Error ? err.message : 'Неизвестная ошибка');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (caseId) {
-      fetchCaseData();
-    }
-  }, [caseId]);
-
-  // Функция для получения цвета редкости
-  const getRarityColor = (rarity: string) => {
-    switch (rarity) {
-      case 'legendary':
-        return 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20';
-      case 'epic':
-        return 'text-purple-400 bg-purple-400/10 border-purple-400/20';
-      case 'rare':
-        return 'text-blue-400 bg-blue-400/10 border-blue-400/20';
-      case 'common':
-        return 'text-gray-400 bg-gray-400/10 border-gray-400/20';
-      default:
-        return 'text-gray-400 bg-gray-400/10 border-gray-400/20';
-    }
-  };
-
-  // Функция для получения названия редкости на русском
-  const getRarityName = (rarity: string) => {
-    switch (rarity) {
-      case 'legendary':
-        return 'Легендарный';
-      case 'epic':
-        return 'Эпический';
-      case 'rare':
-        return 'Редкий';
-      case 'common':
-        return 'Обычный';
-      default:
-        return 'Неизвестный';
-    }
-  };
-
+  // Обработка состояний загрузки и ошибки
   if (loading) {
     return (
-      <div className="min-h-screen p-6 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#5C5ADC]"></div>
+      <div className="min-h-screen py-6 flex flex-col items-center justify-center">
+        <div className="text-[#F9F8FC] font-unbounded text-lg">Загрузка кейса...</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen p-6 flex items-center justify-center">
-        <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-8 text-center max-w-md">
-          <div className="text-red-400 text-xl font-medium mb-4">
-            Ошибка загрузки кейса
-          </div>
-          <p className="text-red-300 text-sm mb-6">
-            {error}
-          </p>
-          <div className="flex gap-4 justify-center">
-            <button 
-              onClick={() => window.location.reload()}
-              className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200"
-            >
-              Попробовать снова
-            </button>
-            <button 
-              onClick={() => router.push('/')}
-              className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200"
-            >
-              На главную
-            </button>
-          </div>
-        </div>
+      <div className="min-h-screen py-6 flex flex-col items-center justify-center gap-4">
+        <div className="text-red-400 font-unbounded text-lg">Ошибка: {error}</div>
+        <button 
+          onClick={() => router.back()}
+          className="px-4 py-2 bg-[#5C5ADC] text-[#F9F8FC] rounded-lg font-unbounded"
+        >
+          Вернуться назад
+        </button>
       </div>
     );
   }
 
   if (!caseData) {
     return (
-      <div className="min-h-screen p-6 flex items-center justify-center">
-        <div className="text-gray-400 text-xl">Кейс не найден</div>
+      <div className="min-h-screen py-6 flex flex-col items-center justify-center gap-4">
+        <div className="text-[#F9F8FC] font-unbounded text-lg">Кейс не найден</div>
+        <button 
+          onClick={() => router.back()}
+          className="px-4 py-2 bg-[#5C5ADC] text-[#F9F8FC] rounded-lg font-unbounded"
+        >
+          Вернуться назад
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen p-6">
+    <div className="min-h-screen py-6 flex flex-col items-start gap-4 flex-1 self-stretch">
       {/* Кнопка назад */}
       <button 
         onClick={() => router.back()}
-        className="mb-6 flex items-center gap-2 text-gray-400 hover:text-white transition-colors duration-200"
+        className="flex w-full h-[42px] px-6 items-center gap-4 cursor-pointer"
       >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M19 12H5M12 19L5 12L12 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-        Назад
+        <motion.div 
+          className="flex w-[42px] h-[42px] flex-col justify-center items-center gap-[10px] flex-shrink-0 rounded-[8px] bg-[#F9F8FC]/[0.05]"
+          whileHover={{ backgroundColor: "rgba(249, 248, 252, 0.1)" }}
+          whileTap={{ scale: 0.95 }}
+          transition={{ type: "spring", stiffness: 400, damping: 25 }}
+        >
+          <Image 
+            src="/Arrow - Left.svg" 
+            alt="Назад" 
+            width={18} 
+            height={12} 
+            className="w-[18px] h-[12px]"
+          />
+        </motion.div>
+        <p className='text-[#F9F8FC] font-unbounded text-2xl font-medium'>Кейсы</p>
       </button>
 
-      <div className="max-w-4xl mx-auto">
-        {/* Основная информация о кейсе */}
-        <div className="bg-[#151519] border border-[#19191D] rounded-[12px] p-6 mb-6">
-          <div className="flex flex-col lg:flex-row gap-6">
-            {/* Изображение кейса */}
-            <div className="flex-shrink-0 flex justify-center lg:justify-start">
-              {caseData.imageUrl ? (
-                <Image 
-                  src={caseData.imageUrl} 
-                  alt={caseData.name} 
-                  width={200} 
-                  height={200} 
-                  className="object-contain w-[200px] h-[200px]" 
-                />
-              ) : (
-                <div className="w-[200px] h-[200px] flex items-center justify-center bg-gradient-to-br from-[#2A2A3A] to-[#1A1A24] rounded-lg">
-                  <div className="flex flex-col items-center justify-center text-[#5C5ADC]">
-                    <svg 
-                      width="60" 
-                      height="60" 
-                      viewBox="0 0 24 24" 
-                      fill="none" 
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="mb-2"
+      {/* Основной контент */}
+      <div className='flex px-6 items-end gap-2 flex-[1_0_0] self-stretch'>
+        <div className='flex flex-col justify-end items-start gap-2 flex-1 self-stretch'>
+          {/* Блок с информацией о кейсе */}
+          <div className="flex flex-col items-start gap-2 self-stretch p-4 rounded-xl bg-[#F9F8FC]/[0.05] w-[679px] h-[288px]">
+            <div className='flex h-[256px] items-center gap-4 self-stretch'>
+              {/* Изображение кейса */}
+              <Image
+                src={caseData.imageUrl || "/09b1b0e86eb0cd8a7909f6f74b56ddc17804658d.png"}
+                alt={`Изображение кейса ${caseData.name}`}
+                width={256}
+                height={256}
+                className="object-cover rounded-lg w-[256px] h-[256px] flex-shrink-0"
+                priority
+              />
+              
+              {/* Информация о кейсе */}
+              <div className='flex py-2 flex-col justify-between items-start flex-1 self-stretch'>
+                {/* Заголовок и описание */}
+                <div className='flex flex-col items-start gap-2 self-stretch'>
+                  <h1 className='text-[#F9F8FC] font-unbounded text-xl font-medium'>{caseData.name}</h1>
+                  <p className="text-[#F9F8FC] font-['Actay_Wide'] text-sm font-bold opacity-30 leading-relaxed">
+                    {caseData.description || 'Описание кейса отсутствует'}
+                  </p>
+                </div>
+                
+                {/* Кнопки выбора количества */}
+                <div className='flex items-center gap-2'>
+                  {[1, 2, 3, 4].map((number) => (
+                    <NumberButton key={number} number={number} />
+                  ))}
+                </div>
+                
+                {/* Быстрый режим */}
+                <div className='flex items-center gap-4 self-stretch'>
+                  <div className='flex items-center gap-2'>
+                    <Image
+                      src="/Fast.svg"
+                      alt="Иконка быстрого режима"
+                      width={10}
+                      height={14}
+                      className="flex-shrink-0"
+                      priority
+                    />
+                    <p className="text-[#F9F8FC] font-['Actay_Wide'] text-base font-bold">Быстрый режим</p>
+                    <motion.button 
+                      onClick={() => setIsFastMode(!isFastMode)}
+                      className={`flex w-[27px] h-[15px] p-[2px] cursor-pointer ${
+                        isFastMode ? 'justify-end bg-[#5C5ADC]' : 'justify-start bg-[#F9F8FC]/[0.10]'
+                      } items-center rounded-[100px] transition-colors duration-200`}
+                      whileTap={{ scale: 0.95 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 17 }}
                     >
-                      <path 
-                        d="M3 10V18C3 19.1046 3.89543 20 5 20H19C20.1046 20 21 19.1046 21 18V10M3 10V8C3 6.89543 3.89543 6 5 6H19C20.1046 6 21 6.89543 21 8V10M3 10H21M12 14V16" 
-                        stroke="currentColor" 
-                        strokeWidth="2" 
-                        strokeLinecap="round" 
-                        strokeLinejoin="round"
+                      <motion.div 
+                        className='w-[11px] h-[11px] flex-shrink-0 rounded-[100px] bg-[#F9F8FC]'
+                        layout
+                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
                       />
-                      <path 
-                        d="M8 6V4C8 2.89543 8.89543 2 10 2H14C15.1046 2 16 2.89543 16 4V6" 
-                        stroke="currentColor" 
-                        strokeWidth="2" 
-                        strokeLinecap="round" 
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                    <span className="text-sm opacity-60">Изображение</span>
+                    </motion.button>
                   </div>
                 </div>
-              )}
-            </div>
-
-            {/* Информация о кейсе */}
-            <div className="flex-1">
-              <h1 className="text-white text-3xl font-bold font-actay mb-4">
-                {caseData.name}
-              </h1>
-              
-              {/* Цена */}
-              <div className="flex items-center gap-2 mb-4">
-                <span className="text-2xl font-bold text-[#5C5ADC]">{caseData.price}</span>
-                <span className="text-xl text-[#5C5ADC]">АР</span>
+                
+                {/* Кнопки действий */}
+                <div className='flex items-center gap-2'>
+                  <motion.button 
+                    className='flex px-4 py-3 justify-center items-center gap-2 rounded-xl bg-[#5C5ADC] transition-colors duration-200'
+                    whileHover={{ backgroundColor: "#6462DE" }}
+                    whileTap={{ scale: 0.98 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                  >
+                    <span className="text-[#F9F8FC] font-unbounded text-sm font-medium cursor-pointer">
+                      Открыть {selectedNumber} {selectedNumber === 1 ? 'кейс' : 'кейса'}
+                    </span>
+                    <span className="text-[#F9F8FC] font-unbounded text-sm font-medium opacity-50 cursor-pointer">·</span>
+                    <span className='text-[#F9F8FC] font-unbounded text-sm font-medium opacity-50 cursor-pointer'>
+                      {selectedNumber * caseData.price}
+                    </span>
+                    <span className='text-[#F9F8FC] font-unbounded text-[10px] font-medium opacity-50 cursor-pointer'>АР</span>
+                  </motion.button>
+                  
+                  <motion.button 
+                    className='flex px-4 py-3 justify-center items-center gap-[10px] rounded-[8px] bg-[#F9F8FC]/[0.05] text-[#F9F8FC] font-unbounded text-sm font-medium transition-colors duration-200 cursor-pointer'
+                    whileHover={{ backgroundColor: "#242428" }}
+                    whileTap={{ scale: 0.98 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                  >
+                    Демо
+                  </motion.button>
+                </div>
               </div>
-
-              {/* Описание */}
-              {caseData.description && (
-                <p className="text-gray-300 text-lg mb-6 leading-relaxed">
-                  {caseData.description}
-                </p>
-              )}
-
-              {/* Кнопка открыть кейс */}
-              <button className="bg-[#5C5ADC] hover:bg-[#4947b3] text-white px-8 py-3 rounded-lg font-medium font-unbounded transition-colors duration-200 text-lg">
-                Открыть кейс
-              </button>
             </div>
+          </div>
+          
+          {/* Нижний блок */}
+          <div className="flex p-[10px] items-start gap-2 flex-1 self-stretch rounded-xl bg-[#F9F8FC]/[0.05] w-[679px] h-[288px]">
+            {/* Содержимое нижнего блока */}
           </div>
         </div>
-
-        {/* Содержимое кейса */}
-        {caseData.items && caseData.items.length > 0 && (
-          <div className="bg-[#151519] border border-[#19191D] rounded-[12px] p-6">
-            <h2 className="text-white text-2xl font-bold font-actay mb-6">
-              Содержимое кейса
-            </h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {caseData.items.map((item, index) => (
-                <div 
-                  key={index}
-                  className={`p-4 rounded-lg border ${getRarityColor(item.rarity)}`}
-                >
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-medium text-white">{item.name}</h3>
-                    <span className="text-sm font-medium">
-                      {item.chance}%
-                    </span>
-                  </div>
-                  <div className="text-sm opacity-80">
-                    {getRarityName(item.rarity)}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        
+        {/* Правый сайдбар */}
+        <div className='flex w-[221px] p-4 flex-col items-center gap-4 self-stretch rounded-xl bg-[#F9F8FC]/[0.05]'>
+          {/* Содержимое сайдбара */}
+        </div>
       </div>
     </div>
   );

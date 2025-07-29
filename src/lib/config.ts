@@ -48,6 +48,13 @@ export const DEV_CONFIG = {
   ],
   mockCases: [
     {
+      id: 'mammoth',
+      name: 'Мамонт',
+      description: 'Каменный век, дикие земли, первобытные люди и... МАМОНТЫ! Да-да, именно с них началась история самого первого кейса.',
+      imageUrl: '/09b1b0e86eb0cd8a7909f6f74b56ddc17804658d.png',
+      price: 16,
+    },
+    {
       id: '6836d58aed445deeaeda5ca1',
       name: 'Стартовый кейс',
       description: 'Идеальный выбор для новичков',
