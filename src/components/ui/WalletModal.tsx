@@ -269,7 +269,7 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalPr
               value={depositAmount}
               onChange={handleDepositAmountChange}
               className={`w-full bg-[#19191D] text-[#F9F8FC] p-4 rounded-lg outline-none text-2xl font-unbounded ${depositAmountError ? 'border border-red-500' : 'focus:ring-1 focus:ring-[#5C5ADC]'}`} 
-              placeholder="999 АР"
+              placeholder="Сумма депозита"
             />
             {depositAmountError && (
               <p className="text-red-500 text-sm mt-1">*{depositAmountError}</p>
