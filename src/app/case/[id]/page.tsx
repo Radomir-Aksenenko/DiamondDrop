@@ -233,8 +233,7 @@ export default function CasePage() {
                       className={`flex w-[27px] h-[15px] p-[2px] cursor-pointer ${
                         isFastMode ? 'justify-end bg-[#5C5ADC]' : 'justify-start bg-[#F9F8FC]/[0.10]'
                       } items-center rounded-[100px] transition-colors duration-200`}
-                      whileTap={{ scale: 0.95 }}
-                      transition={{ type: "spring", stiffness: 400, damping: 17 }}
+
                     >
                       <motion.div 
                         className='w-[11px] h-[11px] flex-shrink-0 rounded-[100px] bg-[#F9F8FC]'
