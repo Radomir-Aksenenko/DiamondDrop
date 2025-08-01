@@ -325,7 +325,7 @@ export default function CasePage() {
             <div className="flex w-full h-full gap-[8px]">
               {selectedNumber === 1 && (
                 // Одно поле на всю ширину
-                <div className="flex-1 h-full rounded-lg bg-[#1A1A24] border border-[#2A2A3A]">
+                <div className="flex-1 h-full rounded-lg bg-[#0D0D11]">
                   {/* Содержимое поля кейса */}
                 </div>
               )}
@@ -333,10 +333,10 @@ export default function CasePage() {
               {selectedNumber === 2 && (
                 // Два равных поля
                 <>
-                  <div className="flex-1 h-full rounded-lg bg-[#1A1A24] border border-[#2A2A3A]">
+                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11]">
                     {/* Содержимое поля кейса 1 */}
                   </div>
-                  <div className="flex-1 h-full rounded-lg bg-[#1A1A24] border border-[#2A2A3A]">
+                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11]">
                     {/* Содержимое поля кейса 2 */}
                   </div>
                 </>
@@ -345,13 +345,13 @@ export default function CasePage() {
               {selectedNumber === 3 && (
                 // Три равных поля
                 <>
-                  <div className="flex-1 h-full rounded-lg bg-[#1A1A24] border border-[#2A2A3A]">
+                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11]">
                     {/* Содержимое поля кейса 1 */}
                   </div>
-                  <div className="flex-1 h-full rounded-lg bg-[#1A1A24] border border-[#2A2A3A]">
+                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11]">
                     {/* Содержимое поля кейса 2 */}
                   </div>
-                  <div className="flex-1 h-full rounded-lg bg-[#1A1A24] border border-[#2A2A3A]">
+                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11]">
                     {/* Содержимое поля кейса 3 */}
                   </div>
                 </>
@@ -360,16 +360,16 @@ export default function CasePage() {
               {selectedNumber === 4 && (
                 // Четыре равных поля
                 <>
-                  <div className="flex-1 h-full rounded-lg bg-[#1A1A24] border border-[#2A2A3A]">
+                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11]">
                     {/* Содержимое поля кейса 1 */}
                   </div>
-                  <div className="flex-1 h-full rounded-lg bg-[#1A1A24] border border-[#2A2A3A]">
+                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11]">
                     {/* Содержимое поля кейса 2 */}
                   </div>
-                  <div className="flex-1 h-full rounded-lg bg-[#1A1A24] border border-[#2A2A3A]">
+                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11]">
                     {/* Содержимое поля кейса 3 */}
                   </div>
-                  <div className="flex-1 h-full rounded-lg bg-[#1A1A24] border border-[#2A2A3A]">
+                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11]">
                     {/* Содержимое поля кейса 4 */}
                   </div>
                 </>
