@@ -3,6 +3,7 @@
 import React, { useState, useCallback, useMemo, memo } from 'react';
 import Modal from './Modal';
 import useSPW from '@/hooks/useSPW';
+import { SmartLink } from '@/lib/linkUtils';
 
 interface WalletModalProps {
   isOpen: boolean;
@@ -283,7 +284,7 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalPr
           <div className="mt-4">
             <p className="text-[#F9F8FC]/50 text-sm mb-4">
               Нажимая кнопку «Пополнить»,<br/>
-              я соглашаюсь с <a href="#" className="text-[#5C5ADC] hover:underline">«Договором оферты»</a>
+              я соглашаюсь с <SmartLink href="https://example.com/terms" className="text-[#5C5ADC] hover:underline">«Договором оферты»</SmartLink>
             </p>
             
             <div className="grid grid-cols-2 gap-3">
@@ -347,7 +348,7 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalPr
           <div className="mt-4">
             <p className="text-[#F9F8FC]/50 text-sm mb-4">
               Нажимая кнопку «Вывести»,<br/>
-              я соглашаюсь с <a href="#" className="text-[#5C5ADC] hover:underline">«Договором оферты»</a>
+              я соглашаюсь с <SmartLink href="https://example.com/terms" className="text-[#5C5ADC] hover:underline">«Договором оферты»</SmartLink>
             </p>
             
             <div className="grid grid-cols-2 gap-3">

@@ -24,9 +24,21 @@ export default function useSPW() {
       setUser(spw.user);
     };
 
+    // Обработчик успешного открытия URL
+    const handleOpenURLResponse = () => {
+      console.log('Окно открытия URL успешно открыто');
+    };
+
+    // Обработчик ошибки открытия URL
+    const handleOpenURLError = (err: string) => {
+      console.error(`Ошибка запроса окна открытия URL: ${err}`);
+    };
+
     // Добавляем обработчики событий
     spw.on('initResponse', handleInitResponse);
     spw.on('ready', handleReady);
+    spw.on('openURLResponse', handleOpenURLResponse);
+    spw.on('openURLError', handleOpenURLError);
 
     // Если SPWMini уже инициализирован, устанавливаем данные
     if (spw.user) {
@@ -45,6 +57,8 @@ export default function useSPW() {
     return () => {
       spw.off('initResponse', handleInitResponse);
       spw.off('ready', handleReady);
+      spw.off('openURLResponse', handleOpenURLResponse);
+      spw.off('openURLError', handleOpenURLError);
       clearInterval(tokenCheckInterval);
     };
   }, [authToken]);

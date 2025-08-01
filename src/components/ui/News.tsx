@@ -6,18 +6,20 @@ import Image from 'next/image';
 import { usePreloadedData } from '@/components/providers/DataPreloadProvider';
 import useSPW from '@/hooks/useSPW';
 import { API_ENDPOINTS } from '@/lib/config';
+import { useLinkHandler, isExternalLink } from '@/lib/linkUtils';
 
 export default function News() {
   const { banners, isAuthenticated } = usePreloadedData();
   const { makeAuthenticatedRequest } = useSPW();
+  const { handleLinkClick } = useLinkHandler();
   const [activeIndex, setActiveIndex] = useState(0);
   const sliderRef = useRef<HTMLDivElement>(null);
   
-  // Пример использования авторизованного запроса
-  const handleBannerClick = async (bannerId: string) => {
+  // Обработчик клика по баннеру
+  const handleBannerClick = async (bannerId: string, url: string, event: React.MouseEvent) => {
+    // Отправляем статистику клика если пользователь авторизован
     if (isAuthenticated) {
       try {
-        // Пример отправки статистики клика с авторизацией
         await makeAuthenticatedRequest(API_ENDPOINTS.stats.bannerClick, {
           method: 'POST',
           body: JSON.stringify({
@@ -31,6 +33,9 @@ export default function News() {
         console.error('Ошибка отправки статистики:', error);
       }
     }
+    
+    // Обрабатываем ссылку через SPM если это внешняя ссылка
+    handleLinkClick(url, event);
   };
   
   // Функция для переключения на следующий баннер
@@ -91,31 +96,64 @@ export default function News() {
           onWheel={handleWheel}
           style={{ overscrollBehavior: 'none' }}
         >
-          {banners.map((banner) => (
-            <Link 
-              href={banner.url} 
-              key={banner.id} 
-              className="flex-shrink-0"
-              onClick={() => handleBannerClick(banner.id)}
-            >
-              <div 
-                className="w-[770px] h-[200px] bg-[#19191D] rounded-lg flex flex-col items-center justify-center cursor-pointer hover:opacity-90 transition-opacity relative overflow-hidden"
-              >
-                <div className="absolute inset-0 w-full h-full">
-                  <img 
-                    src={banner.imageUrl} 
-                    alt={`Баннер ${banners.indexOf(banner) + 1}`}
-                    style={{ 
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover'
-                    }}
-                    loading={activeIndex === banners.indexOf(banner) ? "eager" : "lazy"}
-                  />
-                </div>
-              </div>
-            </Link>
-          ))}
+          {banners.map((banner) => {
+            // Для внутренних ссылок используем Link, для внешних - обычную ссылку с обработчиком
+            const isExternal = isExternalLink(banner.url);
+            
+            if (isExternal) {
+              return (
+                <a
+                  href={banner.url}
+                  key={banner.id}
+                  className="flex-shrink-0"
+                  onClick={(e) => handleBannerClick(banner.id, banner.url, e)}
+                >
+                  <div 
+                    className="w-[770px] h-[200px] bg-[#19191D] rounded-lg flex flex-col items-center justify-center cursor-pointer hover:opacity-90 transition-opacity relative overflow-hidden"
+                  >
+                    <div className="absolute inset-0 w-full h-full">
+                      <img 
+                        src={banner.imageUrl} 
+                        alt={`Баннер ${banners.indexOf(banner) + 1}`}
+                        style={{ 
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover'
+                        }}
+                        loading={activeIndex === banners.indexOf(banner) ? "eager" : "lazy"}
+                      />
+                    </div>
+                  </div>
+                </a>
+              );
+            } else {
+              return (
+                <Link 
+                  href={banner.url} 
+                  key={banner.id} 
+                  className="flex-shrink-0"
+                  onClick={(e) => handleBannerClick(banner.id, banner.url, e)}
+                >
+                  <div 
+                    className="w-[770px] h-[200px] bg-[#19191D] rounded-lg flex flex-col items-center justify-center cursor-pointer hover:opacity-90 transition-opacity relative overflow-hidden"
+                  >
+                    <div className="absolute inset-0 w-full h-full">
+                      <img 
+                        src={banner.imageUrl} 
+                        alt={`Баннер ${banners.indexOf(banner) + 1}`}
+                        style={{ 
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover'
+                        }}
+                        loading={activeIndex === banners.indexOf(banner) ? "eager" : "lazy"}
+                      />
+                    </div>
+                  </div>
+                </Link>
+              );
+            }
+          })}
         </div>
         
         {/* Индикаторы (точки) поверх слайдера */}
