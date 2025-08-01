@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import NavButton from '@/components/ui/NavButton';
 import { usePreloadedData } from '@/components/providers/DataPreloadProvider';
@@ -19,6 +19,11 @@ export default function Header() {
   
   // Формируем URL аватара напрямую из никнейма
   const userAvatarUrl = `https://avatars.spworlds.ru/face/${userName}?w=100`;
+
+  // Логирование изменений баланса для отладки
+  useEffect(() => {
+    console.log('🏠 Header: Баланс пользователя обновлен:', userBalance);
+  }, [userBalance]);
   
   const handleOpenWalletModal = () => {
     setIsWalletModalOpen(true);

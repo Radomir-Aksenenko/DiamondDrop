@@ -91,9 +91,17 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalPr
     const cleanup = setupPaymentHandlers(
       // onSuccess - при успешной оплате
       async () => {
-        console.log('Депозит успешно выполнен');
-        // Обновляем баланс пользователя
-        await refreshUser();
+        console.log('🎉 Депозит успешно выполнен');
+        console.log('🔄 Начинаем обновление баланса пользователя...');
+        
+        try {
+          // Обновляем баланс пользователя
+          await refreshUser();
+          console.log('✅ Баланс пользователя успешно обновлен');
+        } catch (error) {
+          console.error('❌ Ошибка при обновлении баланса:', error);
+        }
+        
         // Очищаем форму и закрываем модалку
         setDepositAmount('');
         setSelectedDepositAmountButton(null);

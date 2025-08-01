@@ -256,11 +256,23 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
 
   const refreshUser = async () => {
     try {
+      console.log('🔄 refreshUser: Начинаем обновление данных пользователя...');
+      const oldBalance = user?.balance;
+      console.log('💰 refreshUser: Текущий баланс:', oldBalance);
+      
       const userData = await loadUser();
+      console.log('📊 refreshUser: Получены новые данные пользователя:', userData);
+      console.log('💰 refreshUser: Новый баланс:', userData?.balance);
+      
       setUser(userData);
       setIsAuthenticated(hasAuthToken());
+      
+      console.log('✅ refreshUser: Данные пользователя успешно обновлены');
+      if (oldBalance !== userData?.balance) {
+        console.log(`💸 refreshUser: Баланс изменился с ${oldBalance} на ${userData?.balance}`);
+      }
     } catch (err) {
-      console.error('Ошибка обновления пользователя:', err);
+      console.error('❌ refreshUser: Ошибка обновления пользователя:', err);
     }
   };
 
