@@ -92,7 +92,7 @@ export interface SmartLinkProps {
   children: React.ReactNode;
   className?: string;
   onClick?: (event: React.MouseEvent) => void;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export function SmartLink({ href, children, className, onClick, ...props }: SmartLinkProps) {
