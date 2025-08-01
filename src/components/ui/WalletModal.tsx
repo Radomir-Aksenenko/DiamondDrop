@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useCallback, useMemo, memo } from 'react';
+import React, { useState, useCallback, useMemo, memo, useEffect } from 'react';
 import Modal from './Modal';
 import useSPW from '@/hooks/useSPW';
+import useDepositAPI from '@/hooks/useDepositAPI';
 import { SmartLink } from '@/lib/linkUtils';
 
 interface WalletModalProps {
@@ -28,7 +29,7 @@ const AmountButton = memo(function AmountButton({
   isMax?: boolean;
 }) {
   const buttonClass = useMemo(() => 
-    `${isSelected ? 'bg-[#1D1D2E] border border-[#5C5ADC]' : 'bg-[#19191D] hover:bg-[#1E1E23]'} transition-colors py-2 px-1 rounded-lg text-[#F9F8FC] font-bold cursor-pointer outline-none focus:outline-none active:outline-none focus:ring-0 active:ring-0`,
+    `${isSelected ? 'bg-[#1D1D2E] border border-[#5C5ADC]' : 'bg-[#19191D] hover:bg-[#1E1E23]'} transition-colors py-1.5 px-1 rounded-lg text-[#F9F8FC] font-bold cursor-pointer outline-none focus:outline-none active:outline-none focus:ring-0 active:ring-0`,
     [isSelected]
   );
 
@@ -51,7 +52,7 @@ const CardButton = memo(function CardButton({
   onClick: () => void; 
 }) {
   const buttonClass = useMemo(() => 
-    `${isSelected ? 'bg-[#1D1D2E] border border-[#5C5ADC]' : 'bg-[#19191D] hover:bg-[#1E1E23]'} transition-colors py-2 px-1 rounded-lg text-[#F9F8FC] font-bold cursor-pointer outline-none focus:outline-none active:outline-none focus:ring-0 active:ring-0`,
+    `${isSelected ? 'bg-[#1D1D2E] border border-[#5C5ADC]' : 'bg-[#19191D] hover:bg-[#1E1E23]'} transition-colors py-1.5 px-1 rounded-lg text-[#F9F8FC] font-bold cursor-pointer outline-none focus:outline-none active:outline-none focus:ring-0 active:ring-0`,
     [isSelected]
   );
 
@@ -69,6 +70,7 @@ const CardButton = memo(function CardButton({
  */
 const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalProps) {
   const { user } = useSPW();
+  const { createDeposit, setupPaymentHandlers, isLoading: isDepositLoading, error: depositError, clearError } = useDepositAPI();
   const [activeTab, setActiveTab] = useState('deposit');
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [depositAmount, setDepositAmount] = useState('');
@@ -80,12 +82,39 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalPr
   const [depositAmountError, setDepositAmountError] = useState<string | null>(null);
   const [cardError, setCardError] = useState<string | null>(null);
 
+  // Настройка обработчиков событий оплаты
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const cleanup = setupPaymentHandlers(
+      // onSuccess - при успешной оплате
+      () => {
+        console.log('Депозит успешно выполнен');
+        // Очищаем форму и закрываем модалку
+        setDepositAmount('');
+        setSelectedDepositAmountButton(null);
+        setDepositAmountError(null);
+        clearError();
+        onClose();
+        // Здесь можно добавить обновление баланса пользователя
+      },
+      // onError - при ошибке оплаты
+      (error: string) => {
+        console.error('Ошибка при оплате депозита:', error);
+        setDepositAmountError(`Ошибка оплаты: ${error}`);
+      }
+    );
+
+    return cleanup;
+  }, [isOpen, setupPaymentHandlers, onClose, clearError]);
+
   // Мемоизированные обработчики для предотвращения лишних рендеров
   const handleDepositAmountSelect = useCallback((amount: string) => {
     setDepositAmount(amount);
     setSelectedDepositAmountButton(amount);
     setDepositAmountError(null);
-  }, []);
+    clearError(); // Очищаем ошибки API
+  }, [clearError]);
 
   const handleAmountSelect = useCallback((amount: string) => {
     setWithdrawAmount(amount);
@@ -104,7 +133,8 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalPr
     setDepositAmount(value);
     setSelectedDepositAmountButton(null);
     setDepositAmountError(null);
-  }, []);
+    clearError(); // Очищаем ошибки API
+  }, [clearError]);
 
   const handleAmountChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/\D/g, '');
@@ -163,12 +193,12 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalPr
     return isValid;
   }, [withdrawAmount, cardNumber]);
 
-  const handleDeposit = useCallback(() => {
+  const handleDeposit = useCallback(async () => {
     if (validateDepositForm()) {
-      console.log('Пополнение средств:', { depositAmount });
-      onClose();
+      clearError(); // Очищаем предыдущие ошибки
+      await createDeposit(parseInt(depositAmount));
     }
-  }, [validateDepositForm, depositAmount, onClose]);
+  }, [validateDepositForm, depositAmount, createDeposit, clearError]);
 
   const handleWithdraw = useCallback(() => {
     if (validateWithdrawForm()) {
@@ -182,8 +212,9 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalPr
     setDepositAmount('');
     setSelectedDepositAmountButton(null);
     setDepositAmountError(null);
+    clearError(); // Очищаем ошибки API
     onClose();
-  }, [onClose]);
+  }, [onClose, clearError]);
 
   const handleWithdrawCancel = useCallback(() => {
     setWithdrawAmount('');
@@ -218,7 +249,7 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalPr
 
   // Мемоизированные кнопки депозита
   const depositAmountButtons = useMemo(() => (
-    <div className="grid grid-cols-5 gap-2">
+    <div className="grid grid-cols-5 gap-1.5">
       {DEPOSIT_AMOUNTS.map((amount) => (
         <AmountButton
           key={amount}
@@ -232,7 +263,7 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalPr
 
   // Мемоизированные кнопки вывода
   const withdrawAmountButtons = useMemo(() => (
-    <div className="grid grid-cols-5 gap-2">
+    <div className="grid grid-cols-5 gap-1.5">
       {WITHDRAW_AMOUNTS.map((amount) => (
         <AmountButton
           key={amount}
@@ -247,7 +278,7 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalPr
 
   // Мемоизированные кнопки карт
   const cardButtons = useMemo(() => (
-    <div className="grid grid-cols-4 gap-2">
+    <div className="grid grid-cols-4 gap-1.5">
       {CARD_NUMBERS.map((card, index) => (
         <CardButton
           key={`${card}-${index}`}
@@ -262,18 +293,19 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalPr
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={modalTitle}>
       {activeTab === 'deposit' ? (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3">
           {/* Поле ввода суммы депозита */}
           <div className="relative">
             <input 
               type="text" 
               value={depositAmount}
               onChange={handleDepositAmountChange}
-              className={`w-full bg-[#19191D] text-[#F9F8FC] p-4 rounded-lg outline-none text-2xl font-unbounded ${depositAmountError ? 'border border-red-500' : 'focus:ring-1 focus:ring-[#5C5ADC]'}`} 
+              disabled={isDepositLoading}
+              className={`w-full bg-[#19191D] text-[#F9F8FC] px-3 py-3 rounded-lg outline-none text-xl font-unbounded ${(depositAmountError || depositError) ? 'border border-red-500' : 'focus:ring-1 focus:ring-[#5C5ADC]'} ${isDepositLoading ? 'opacity-50 cursor-not-allowed' : ''}`} 
               placeholder="Сумма депозита"
             />
-            {depositAmountError && (
-              <p className="text-red-500 text-sm mt-1">*{depositAmountError}</p>
+            {(depositAmountError || depositError) && (
+              <p className="text-red-500 text-sm mt-1">*{depositAmountError || depositError}</p>
             )}
           </div>
           
@@ -281,13 +313,13 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalPr
           {depositAmountButtons}
           
           {/* Соглашение и кнопки действий */}
-          <div className="mt-4">
-            <p className="text-[#F9F8FC]/50 text-sm mb-4">
+          <div className="mt-2">
+            <p className="text-[#F9F8FC]/50 text-sm mb-3">
               Нажимая кнопку «Пополнить»,<br/>
               я соглашаюсь с <SmartLink href="https://example.com/terms" className="text-[#5C5ADC] hover:underline">«Договором оферты»</SmartLink>
             </p>
             
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2">
               <button 
                 onClick={handleDepositCancel}
                 className="bg-[#19191D] hover:bg-[#1E1E23] transition-colors py-2.5 px-4 rounded-lg text-[#F9F8FC] font-bold cursor-pointer outline-none focus:outline-none active:outline-none focus:ring-0 active:ring-0"
@@ -297,23 +329,24 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalPr
               </button>
               <button 
                 onClick={handleDeposit}
-                className="bg-[#5C5ADC] hover:bg-[#4A48B0] transition-colors py-2.5 px-4 rounded-lg text-[#F9F8FC] font-bold cursor-pointer outline-none focus:outline-none active:outline-none focus:ring-0 active:ring-0"
+                disabled={isDepositLoading}
+                className={`bg-[#5C5ADC] hover:bg-[#4A48B0] transition-colors py-2.5 px-4 rounded-lg text-[#F9F8FC] font-bold cursor-pointer outline-none focus:outline-none active:outline-none focus:ring-0 active:ring-0 ${isDepositLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                 type="button"
               >
-                Пополнить
+                {isDepositLoading ? 'Создание...' : 'Пополнить'}
               </button>
             </div>
           </div>
         </div>
       ) : (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3">
           {/* Поле ввода суммы вывода */}
           <div className="relative">
             <input 
               type="text" 
               value={withdrawAmount}
               onChange={handleAmountChange}
-              className={`w-full bg-[#19191D] text-[#F9F8FC] p-4 rounded-lg outline-none text-2xl font-unbounded ${amountError ? 'border border-red-500' : 'focus:ring-1 focus:ring-[#5C5ADC]'}`} 
+              className={`w-full bg-[#19191D] text-[#F9F8FC] px-3 py-3 rounded-lg outline-none text-xl font-unbounded ${amountError ? 'border border-red-500' : 'focus:ring-1 focus:ring-[#5C5ADC]'}`} 
               placeholder="Сумма вывода"
             />
             {amountError && (
@@ -331,7 +364,7 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalPr
               value={cardNumber}
               onChange={handleCardChange}
               maxLength={5}
-              className={`w-full bg-[#19191D] text-[#F9F8FC] p-4 rounded-lg outline-none text-2xl font-unbounded ${cardError ? 'border border-red-500' : 'focus:ring-1 focus:ring-[#5C5ADC]'}`} 
+              className={`w-full bg-[#19191D] text-[#F9F8FC] px-3 py-3 rounded-lg outline-none text-xl font-unbounded ${cardError ? 'border border-red-500' : 'focus:ring-1 focus:ring-[#5C5ADC]'}`} 
               placeholder="Номер карты"
             />
             {cardError && (
@@ -343,13 +376,13 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalPr
           {cardButtons}
           
           {/* Соглашение и кнопки действий */}
-          <div className="mt-4">
-            <p className="text-[#F9F8FC]/50 text-sm mb-4">
+          <div className="mt-2">
+            <p className="text-[#F9F8FC]/50 text-sm mb-3">
               Нажимая кнопку «Вывести»,<br/>
               я соглашаюсь с <SmartLink href="https://example.com/terms" className="text-[#5C5ADC] hover:underline">«Договором оферты»</SmartLink>
             </p>
             
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2">
               <button 
                 onClick={handleWithdrawCancel}
                 className="bg-[#19191D] hover:bg-[#1E1E23] transition-colors py-2.5 px-4 rounded-lg text-[#F9F8FC] font-bold cursor-pointer outline-none focus:outline-none active:outline-none focus:ring-0 active:ring-0"

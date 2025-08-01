@@ -104,14 +104,14 @@ const Modal = memo(function Modal({ isOpen, onClose, children, title }: ModalPro
           >
             {/* Заголовок */}
             {title && (
-              <div className="p-4">
+              <div className="px-4 pt-4 pb-2">
                 <h2 className="text-xl font-bold text-[#F9F8FC] font-unbounded">{title}</h2>
               </div>
             )}
             
             {/* Кнопка закрытия */}
             <button
-              className="absolute top-4 right-4 flex items-center justify-center w-8 h-8 rounded-full bg-[#19191D] text-[#F9F8FC] hover:bg-[#1E1E23] transition-colors cursor-pointer"
+              className="absolute top-3 right-3 flex items-center justify-center w-8 h-8 rounded-full bg-[#19191D] text-[#F9F8FC] hover:bg-[#1E1E23] transition-colors cursor-pointer"
               onClick={onClose}
               aria-label="Закрыть"
               type="button"
@@ -122,7 +122,7 @@ const Modal = memo(function Modal({ isOpen, onClose, children, title }: ModalPro
             </button>
             
             {/* Содержимое */}
-            <div className="p-6">
+            <div className="px-4 pb-4">
               {children}
             </div>
           </motion.div>
