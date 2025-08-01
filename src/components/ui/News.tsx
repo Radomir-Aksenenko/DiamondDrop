@@ -103,10 +103,11 @@ export default function News() {
             if (isExternal) {
               return (
                 <a
-                  href={banner.url}
+                  href="#"
                   key={banner.id}
                   className="flex-shrink-0"
                   onClick={(e) => handleBannerClick(banner.id, banner.url, e)}
+                  style={{ cursor: 'pointer' }}
                 >
                   <div 
                     className="w-[770px] h-[200px] bg-[#19191D] rounded-lg flex flex-col items-center justify-center cursor-pointer hover:opacity-90 transition-opacity relative overflow-hidden"

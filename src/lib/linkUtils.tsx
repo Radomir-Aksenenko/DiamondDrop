@@ -108,11 +108,16 @@ export function SmartLink({ href, children, className, onClick, ...props }: Smar
     handleLinkClick(href, event);
   };
 
+  // Для ссылок, которые должны открываться через SPM, не устанавливаем href
+  // чтобы предотвратить стандартную навигацию браузера
+  const linkHref = shouldOpenWithSPM(href) ? '#' : href;
+
   return (
     <a 
-      href={href} 
+      href={linkHref} 
       className={className} 
       onClick={handleClick}
+      style={{ cursor: 'pointer' }}
       {...props}
     >
       {children}
