@@ -380,9 +380,9 @@ export default function CasePage() {
               )}
               
               {selectedNumber === 2 && (
-                // Два поля горизонтально
+                // Два поля горизонтально, предметы вертикально
                 <>
-                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] flex items-center justify-center gap-2 p-2 overflow-hidden">
+                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] flex flex-col items-center justify-center gap-2 p-2 overflow-hidden">
                     {generateRandomItems(4, 'field1').map((item, index) => (
                       <CaseSlotItemCard 
                         key={`field1-${item.id}-${index}`} 
@@ -390,7 +390,7 @@ export default function CasePage() {
                       />
                     ))}
                   </div>
-                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] flex items-center justify-center gap-2 p-2 overflow-hidden">
+                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] flex flex-col items-center justify-center gap-2 p-2 overflow-hidden">
                     {generateRandomItems(4, 'field2').map((item, index) => (
                       <CaseSlotItemCard 
                         key={`field2-${item.id}-${index}`} 
