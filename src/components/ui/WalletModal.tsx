@@ -112,7 +112,7 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalPr
       // onError - при ошибке оплаты
       (error: string) => {
         console.error('Ошибка при оплате депозита:', error);
-        setDepositAmountError(`Ошибка оплаты: ${error}`);
+        setDepositAmountError(error);
       }
     );
 
