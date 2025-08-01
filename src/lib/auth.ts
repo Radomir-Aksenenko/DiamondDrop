@@ -65,8 +65,12 @@ export interface ValidationData {
  */
 export async function validateUserAndSetToken(userData: ValidationData): Promise<string> {
   try {
-    // В dev режиме тоже используем реальную валидацию с настоящими данными SPW
-    console.log('🔐 Валидируем пользователя:', userData.username);
+    // В dev режиме пропускаем авторизацию и возвращаем мок токен
+    if (isDevelopment && DEV_CONFIG.skipAuth) {
+      console.log('🔧 Dev режим: пропускаем авторизацию, используем мок токен');
+      setAuthToken(DEV_CONFIG.mockToken);
+      return DEV_CONFIG.mockToken;
+    }
 
     const response = await fetch(API_ENDPOINTS.validate, {
       method: 'POST',
