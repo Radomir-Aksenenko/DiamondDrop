@@ -368,8 +368,8 @@ export default function CasePage() {
             {/* Контейнер для полей кейсов */}
             <div className="flex w-full h-full gap-[8px]">
               {selectedNumber === 1 && (
-                // Одно поле на всю ширину с предметами
-                <div className="flex-1 h-full rounded-lg bg-[#0D0D11] flex items-center justify-center gap-2 p-2 overflow-hidden">
+                // Одно поле на всю ширину с предметами расположенными вертикально
+                <div className="flex-1 h-full rounded-lg bg-[#0D0D11] flex flex-col items-center justify-center gap-2 p-2 overflow-hidden">
                   {generateRandomItems(8, 'field1').map((item, index) => (
                     <CaseSlotItemCard 
                       key={`field1-${item.id}-${index}`} 
@@ -432,45 +432,41 @@ export default function CasePage() {
               )}
               
               {selectedNumber === 4 && (
-                // Четыре поля в сетке 2x2
-                <div className="flex-1 h-full flex flex-col gap-2">
-                  <div className="flex-1 flex gap-2">
-                    <div className="flex-1 rounded-lg bg-[#0D0D11] flex items-center justify-center gap-1 p-2 overflow-hidden">
-                      {generateRandomItems(2, 'field1').map((item, index) => (
-                        <CaseSlotItemCard 
-                          key={`field1-${item.id}-${index}`} 
-                          item={item} 
-                        />
-                      ))}
-                    </div>
-                    <div className="flex-1 rounded-lg bg-[#0D0D11] flex items-center justify-center gap-1 p-2 overflow-hidden">
-                      {generateRandomItems(2, 'field2').map((item, index) => (
-                        <CaseSlotItemCard 
-                          key={`field2-${item.id}-${index}`} 
-                          item={item} 
-                        />
-                      ))}
-                    </div>
+                // Четыре поля горизонтально в ряд
+                <>
+                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] flex items-center justify-center gap-1 p-2 overflow-hidden">
+                    {generateRandomItems(2, 'field1').map((item, index) => (
+                      <CaseSlotItemCard 
+                        key={`field1-${item.id}-${index}`} 
+                        item={item} 
+                      />
+                    ))}
                   </div>
-                  <div className="flex-1 flex gap-2">
-                    <div className="flex-1 rounded-lg bg-[#0D0D11] flex items-center justify-center gap-1 p-2 overflow-hidden">
-                      {generateRandomItems(2, 'field3').map((item, index) => (
-                        <CaseSlotItemCard 
-                          key={`field3-${item.id}-${index}`} 
-                          item={item} 
-                        />
-                      ))}
-                    </div>
-                    <div className="flex-1 rounded-lg bg-[#0D0D11] flex items-center justify-center gap-1 p-2 overflow-hidden">
-                      {generateRandomItems(2, 'field4').map((item, index) => (
-                        <CaseSlotItemCard 
-                          key={`field4-${item.id}-${index}`} 
-                          item={item} 
-                        />
-                      ))}
-                    </div>
+                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] flex items-center justify-center gap-1 p-2 overflow-hidden">
+                    {generateRandomItems(2, 'field2').map((item, index) => (
+                      <CaseSlotItemCard 
+                        key={`field2-${item.id}-${index}`} 
+                        item={item} 
+                      />
+                    ))}
                   </div>
-                </div>
+                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] flex items-center justify-center gap-1 p-2 overflow-hidden">
+                    {generateRandomItems(2, 'field3').map((item, index) => (
+                      <CaseSlotItemCard 
+                        key={`field3-${item.id}-${index}`} 
+                        item={item} 
+                      />
+                    ))}
+                  </div>
+                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] flex items-center justify-center gap-1 p-2 overflow-hidden">
+                    {generateRandomItems(2, 'field4').map((item, index) => (
+                      <CaseSlotItemCard 
+                        key={`field4-${item.id}-${index}`} 
+                        item={item} 
+                      />
+                    ))}
+                  </div>
+                </>
               )}
             </div>
           </div>
