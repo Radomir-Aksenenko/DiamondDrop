@@ -118,9 +118,25 @@ export default function CasePage() {
     return () => resizeObserver.disconnect();
   }, [caseData?.items]);
 
+  // Дополнительная инициализация скроллбара
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      updateScrollInfo();
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, []);
+
   // Вычисляем параметры для ползунка скроллбара
-  const thumbHeight = isScrollbarVisible ? Math.max((clientHeight / scrollHeight) * clientHeight, 20) : 0;
-  const thumbTop = isScrollbarVisible ? (scrollTop / (scrollHeight - clientHeight)) * (clientHeight - thumbHeight) : 0;
+  const thumbHeight = isScrollbarVisible && scrollHeight > 0 && clientHeight > 0 
+    ? Math.max((clientHeight / scrollHeight) * clientHeight, 20) 
+    : 0;
+  const maxThumbTop = clientHeight - thumbHeight;
+  const thumbTop = isScrollbarVisible && scrollHeight > clientHeight && clientHeight > 0
+    ? Math.min(Math.max((scrollTop / (scrollHeight - clientHeight)) * (clientHeight - thumbHeight), 0), maxThumbTop) 
+    : 0;
+
+
 
   // Обработка состояний загрузки и ошибки
   if (loading) {
@@ -282,19 +298,23 @@ export default function CasePage() {
         </div>
         
         {/* Правый сайдбар */}
-        <div className='flex w-[221px] p-4 flex-col items-center gap-4 rounded-xl bg-[#F9F8FC]/[0.05]' style={{ height: '585px', minHeight: '585px', maxHeight: '585px' }}>
-          <h1 className='text-[#F9F8FC] font-unbounded text-xl font-medium'>В кейсе</h1>
+        <div className='flex w-[221px] flex-col rounded-xl bg-[#F9F8FC]/[0.05]' style={{ height: '585px' }}>
+          {/* Заголовок */}
+          <div className='flex p-4 pb-2 justify-center items-center'>
+            <h1 className='text-[#F9F8FC] font-unbounded text-xl font-medium'>В кейсе</h1>
+          </div>
           
-          {/* Контейнер с кастомным скроллбаром */}
-          <div className='w-full flex-1 relative'>
-            {/* Список предметов кейса */}
+          {/* Контейнер с предметами и скроллбаром */}
+          <div className='flex-1 relative px-4 pb-4'>
+            {/* Область прокрутки */}
             <div 
               ref={scrollContainerRef}
-              className='w-full h-full overflow-y-auto overflow-x-hidden pr-2'
+              className='h-full overflow-y-auto overflow-x-hidden'
               onScroll={handleScroll}
               style={{ 
                 scrollbarWidth: 'none',
-                msOverflowStyle: 'none'
+                msOverflowStyle: 'none',
+                paddingRight: '8px'
               }}
             >
               <style jsx>{`
@@ -302,51 +322,40 @@ export default function CasePage() {
                   display: none;
                 }
               `}</style>
-              <div className='flex flex-col items-center justify-start gap-2 w-full'>
-                <div className='grid grid-cols-2 gap-2 w-full justify-items-center place-items-center'>
-                  {caseData.items && caseData.items.length > 0 ? (
-                    caseData.items.map((item, index) => (
+              
+              {/* Сетка предметов */}
+              <div className='grid grid-cols-2 gap-2 w-full'>
+                {caseData.items && caseData.items.length > 0 ? (
+                  caseData.items.map((item, index) => (
+                    <div key={index} className='w-full flex justify-center'>
                       <CaseItemCard 
-                        key={index}
                         item={item}
                         casePrice={caseData.price}
                       />
-                    ))
-                  ) : (
-                    <div className="text-[#F9F8FC]/50 font-unbounded text-sm text-center w-full col-span-2">
-                      Предметы не найдены
                     </div>
-                  )}
-                </div>
+                  ))
+                ) : (
+                  <div className="text-[#F9F8FC]/50 font-unbounded text-sm text-center w-full col-span-2 py-8">
+                    Предметы не найдены
+                  </div>
+                )}
               </div>
             </div>
             
             {/* Кастомный скроллбар */}
             {isScrollbarVisible && (
               <div 
-                className='custom-scrollbar-track absolute top-0 right-0 w-1 h-full cursor-pointer'
+                className='absolute top-0 right-0 w-1 h-full cursor-pointer'
                 onClick={handleScrollbarClick}
-                style={{
-                  background: 'transparent'
-                }}
               >
                 <div
-                  className='absolute w-1 rounded-full transition-all duration-200 cursor-grab active:cursor-grabbing'
+                  className='absolute w-1 bg-[#F9F8FC] rounded-full transition-opacity duration-200 hover:opacity-30'
                   style={{
                     height: `${thumbHeight}px`,
                     top: `${thumbTop}px`,
-                    background: 'rgba(249, 248, 252, 0.1)',
-                    borderRadius: '24px'
+                    opacity: 0.15
                   }}
                   onMouseDown={handleThumbMouseDown}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(249, 248, 252, 0.2)';
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isDragging) {
-                      e.currentTarget.style.background = 'rgba(249, 248, 252, 0.1)';
-                    }
-                  }}
                 />
               </div>
             )}
