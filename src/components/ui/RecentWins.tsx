@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useRef } from 'react';
-import RarityCard, { RarityType } from './RarityCard';
+import RarityCard from './RarityCard';
 import { usePreloadedData } from '@/components/providers/DataPreloadProvider';
 import useLiveWins, { LiveWinData } from '@/hooks/useLiveWins';
 

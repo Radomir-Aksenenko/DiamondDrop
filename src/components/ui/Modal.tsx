@@ -35,9 +35,7 @@ const modalVariants = {
   }
 };
 
-// Оптимизированные настройки анимации
-const overlayTransition = { duration: 0.15, ease: "easeOut" };
-const modalTransition = { duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] };
+
 
 /**
  * Оптимизированный компонент модального окна

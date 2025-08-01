@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { getAuthToken } from '@/lib/auth';
 import { API_BASE_URL, isDevelopment, DEV_CONFIG } from '@/lib/config';
 import { CaseData } from './useCasesAPI';
@@ -19,7 +19,7 @@ export default function useCaseAPI(caseId: string) {
   /**
    * Загружает данные кейса из API
    */
-  const fetchCaseData = async () => {
+  const fetchCaseData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -91,7 +91,7 @@ export default function useCaseAPI(caseId: string) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [caseId]);
 
   /**
    * Обновляет данные кейса
@@ -105,7 +105,7 @@ export default function useCaseAPI(caseId: string) {
     if (caseId) {
       fetchCaseData();
     }
-  }, [caseId]);
+  }, [caseId, fetchCaseData]);
 
   return {
     caseData,

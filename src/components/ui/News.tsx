@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePreloadedData } from '@/components/providers/DataPreloadProvider';
@@ -39,9 +39,9 @@ export default function News() {
   };
   
   // Функция для переключения на следующий баннер
-  const goToNext = () => {
+  const goToNext = useCallback(() => {
     setActiveIndex((prevIndex) => (prevIndex + 1) % banners.length);
-  };
+  }, [banners.length]);
   
   // Функция для переключения на предыдущий баннер
   const goToPrev = () => {
@@ -73,7 +73,7 @@ export default function News() {
     }, 15000); // 15 секунд
     
     return () => clearInterval(interval);
-  }, []);
+  }, [goToNext]);
   
   // Прокрутка к активному баннеру при изменении activeIndex
   useEffect(() => {
@@ -113,15 +113,14 @@ export default function News() {
                     className="w-[770px] h-[200px] bg-[#19191D] rounded-lg flex flex-col items-center justify-center cursor-pointer hover:opacity-90 transition-opacity relative overflow-hidden"
                   >
                     <div className="absolute inset-0 w-full h-full">
-                      <img 
+                      <Image 
                         src={banner.imageUrl} 
                         alt={`Баннер ${banners.indexOf(banner) + 1}`}
+                        fill
                         style={{ 
-                          width: '100%',
-                          height: '100%',
                           objectFit: 'cover'
                         }}
-                        loading={activeIndex === banners.indexOf(banner) ? "eager" : "lazy"}
+                        priority={activeIndex === banners.indexOf(banner)}
                       />
                     </div>
                   </div>
@@ -139,15 +138,14 @@ export default function News() {
                     className="w-[770px] h-[200px] bg-[#19191D] rounded-lg flex flex-col items-center justify-center cursor-pointer hover:opacity-90 transition-opacity relative overflow-hidden"
                   >
                     <div className="absolute inset-0 w-full h-full">
-                      <img 
+                      <Image 
                         src={banner.imageUrl} 
                         alt={`Баннер ${banners.indexOf(banner) + 1}`}
+                        fill
                         style={{ 
-                          width: '100%',
-                          height: '100%',
                           objectFit: 'cover'
                         }}
-                        loading={activeIndex === banners.indexOf(banner) ? "eager" : "lazy"}
+                        priority={activeIndex === banners.indexOf(banner)}
                       />
                     </div>
                   </div>

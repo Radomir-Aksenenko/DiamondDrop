@@ -7,7 +7,6 @@ import { CaseItem } from '@/hooks/useCasesAPI';
 // Интерфейс пропсов компонента
 interface CaseItemCardProps {
   item: CaseItem;
-  casePrice: number; // Цена кейса для расчета стоимости предмета
   className?: string;
 }
 
@@ -45,7 +44,6 @@ const rarityConfig = {
  */
 export default function CaseItemCard({ 
   item, 
-  casePrice, 
   className = '' 
 }: CaseItemCardProps) {
   const config = rarityConfig[item.rarity as keyof typeof rarityConfig] || rarityConfig.Common;

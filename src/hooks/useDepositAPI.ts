@@ -13,12 +13,7 @@ interface DepositResponse {
   card: string;
 }
 
-/**
- * Интерфейс для создания депозита
- */
-interface CreateDepositRequest {
-  amount: number;
-}
+
 
 /**
  * Хук для работы с API депозита

@@ -75,7 +75,6 @@ export default function RarityCard({
   };
 
   const imageSize = 'w-12 h-12'; // 48px для всех ориентаций
-  const textSize = isHorizontal ? 'text-xs' : 'text-sm';
 
   // Форматируем стоимость с дробными значениями
   const formatPrice = (price: number): string => {

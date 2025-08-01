@@ -8,6 +8,7 @@ import useCaseAPI from '@/hooks/useCaseAPI';
 import CaseItemCard from '@/components/ui/CaseItemCard';
 import CaseSlotItemCard from '@/components/ui/CaseSlotItemCard';
 import { API_BASE_URL } from '@/lib/config';
+import { CaseItem } from '@/hooks/useCasesAPI';
 
 /**
  * Страница отдельного кейса
@@ -23,7 +24,7 @@ export default function CasePage() {
   const [selectedNumber, setSelectedNumber] = useState(1);
   
   // Состояние для сохранения расположения предметов
-  const [savedLayouts, setSavedLayouts] = useState<{[key: string]: any[]}>({});
+  const [savedLayouts, setSavedLayouts] = useState<{[key: string]: CaseItem[]}>({});
   
   // Состояния для кастомного скроллбара
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -80,7 +81,7 @@ export default function CasePage() {
     }
     
     // Генерируем новое расположение
-    const items: any[] = [];
+    const items: CaseItem[] = [];
     for (let i = 0; i < count; i++) {
       const randomItem = getRandomItem();
       if (randomItem) {
@@ -195,6 +196,8 @@ export default function CasePage() {
     
     return () => clearTimeout(timer);
   }, []);
+
+
 
   // Вычисляем параметры для ползунка скроллбара
   const thumbHeight = isScrollbarVisible && scrollHeight > 0 && clientHeight > 0 
@@ -506,7 +509,6 @@ export default function CasePage() {
                     <div key={`${item.id}-${index}`} className='w-full flex justify-center items-start'>
                       <CaseItemCard 
                         item={item}
-                        casePrice={caseData.price}
                         className='flex-shrink-0'
                       />
                     </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
 import { APIBanner } from '@/hooks/useBannersAPI';
 import { APIUser } from '@/hooks/useUserAPI';
 import { LiveWinData } from '@/hooks/useLiveWins';
@@ -199,7 +199,7 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
   };
 
   // Функция предзагрузки всех данных
-  const preloadAllData = async (isInitialLoad = false) => {
+  const preloadAllData = useCallback(async (isInitialLoad = false) => {
     try {
       // Устанавливаем состояние загрузки только для первоначальной загрузки
       if (isInitialLoad || !hasInitialLoad) {
@@ -242,7 +242,7 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
         setIsLoading(false);
       }
     }
-  };
+  }, [hasInitialLoad]);
 
   // Функции для обновления отдельных данных
   const refreshBanners = async () => {
@@ -292,7 +292,7 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
       console.log('⏳ Ожидаем получение токена авторизации...');
       setIsLoading(true);
     }
-  }, []);
+  }, [preloadAllData]);
 
   // Отслеживаем изменения токена и перезагружаем данные
   useEffect(() => {
@@ -313,7 +313,7 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
     }, 1000);
 
     return () => clearInterval(checkTokenInterval);
-  }, [currentToken, hasInitialLoad]);
+  }, [currentToken, hasInitialLoad, preloadAllData]);
 
   // Значение контекста
   const contextValue: DataPreloadContextType = {

@@ -2,7 +2,6 @@
 
 import React, { useState, useCallback, useMemo, memo, useEffect } from 'react';
 import Modal from './Modal';
-import useSPW from '@/hooks/useSPW';
 import useDepositAPI from '@/hooks/useDepositAPI';
 import { SmartLink } from '@/lib/linkUtils';
 import { usePreloadedData } from '@/components/providers/DataPreloadProvider';
@@ -70,7 +69,6 @@ const CardButton = memo(function CardButton({
  * @param onClose - Функция закрытия модального окна
  */
 const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalProps) {
-  const { user } = useSPW();
   const { createDeposit, setupPaymentHandlers, isLoading: isDepositLoading, error: depositError, clearError } = useDepositAPI();
   const { refreshUser } = usePreloadedData();
   const [activeTab, setActiveTab] = useState('deposit');

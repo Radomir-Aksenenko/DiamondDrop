@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { RarityType } from '@/components/ui/RarityCard';
 import { hasAuthToken } from '@/lib/auth';
 
@@ -120,7 +120,7 @@ export default function useLiveWins() {
   const maxReconnectAttempts = 5;
   const reconnectAttempts = useRef(0);
 
-  const connectWebSocket = () => {
+  const connectWebSocket = useCallback(() => {
     try {
       // Проверяем поддержку WebSocket в браузере
       if (typeof WebSocket === 'undefined') {
@@ -252,7 +252,7 @@ export default function useLiveWins() {
       });
       setError('Не удалось создать подключение');
     }
-  };
+  }, []);
 
   const disconnect = () => {
     // Очищаем все таймауты
@@ -317,7 +317,7 @@ export default function useLiveWins() {
       clearTimeout(authTimeout);
       disconnect();
     };
-  }, []);
+  }, [connectWebSocket]);
 
   return {
     wins,
