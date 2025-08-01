@@ -319,9 +319,62 @@ export default function CasePage() {
             </div>
           </div>
           
-          {/* Нижний блок */}
-          <div className="flex p-[10px] items-start gap-2 rounded-xl bg-[#F9F8FC]/[0.05] w-[679px] h-[288px]">
-            d
+          {/* Нижний блок - Поля для кейсов */}
+          <div className="flex p-[10px] items-start rounded-xl bg-[#F9F8FC]/[0.05] w-[679px] h-[288px]">
+            {/* Контейнер для полей кейсов */}
+            <div className="flex w-full h-full gap-[8px]">
+              {selectedNumber === 1 && (
+                // Одно поле на всю ширину
+                <div className="flex-1 h-full rounded-lg bg-[#1A1A24] border border-[#2A2A3A]">
+                  {/* Содержимое поля кейса */}
+                </div>
+              )}
+              
+              {selectedNumber === 2 && (
+                // Два равных поля
+                <>
+                  <div className="flex-1 h-full rounded-lg bg-[#1A1A24] border border-[#2A2A3A]">
+                    {/* Содержимое поля кейса 1 */}
+                  </div>
+                  <div className="flex-1 h-full rounded-lg bg-[#1A1A24] border border-[#2A2A3A]">
+                    {/* Содержимое поля кейса 2 */}
+                  </div>
+                </>
+              )}
+              
+              {selectedNumber === 3 && (
+                // Три равных поля
+                <>
+                  <div className="flex-1 h-full rounded-lg bg-[#1A1A24] border border-[#2A2A3A]">
+                    {/* Содержимое поля кейса 1 */}
+                  </div>
+                  <div className="flex-1 h-full rounded-lg bg-[#1A1A24] border border-[#2A2A3A]">
+                    {/* Содержимое поля кейса 2 */}
+                  </div>
+                  <div className="flex-1 h-full rounded-lg bg-[#1A1A24] border border-[#2A2A3A]">
+                    {/* Содержимое поля кейса 3 */}
+                  </div>
+                </>
+              )}
+              
+              {selectedNumber === 4 && (
+                // Четыре равных поля
+                <>
+                  <div className="flex-1 h-full rounded-lg bg-[#1A1A24] border border-[#2A2A3A]">
+                    {/* Содержимое поля кейса 1 */}
+                  </div>
+                  <div className="flex-1 h-full rounded-lg bg-[#1A1A24] border border-[#2A2A3A]">
+                    {/* Содержимое поля кейса 2 */}
+                  </div>
+                  <div className="flex-1 h-full rounded-lg bg-[#1A1A24] border border-[#2A2A3A]">
+                    {/* Содержимое поля кейса 3 */}
+                  </div>
+                  <div className="flex-1 h-full rounded-lg bg-[#1A1A24] border border-[#2A2A3A]">
+                    {/* Содержимое поля кейса 4 */}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
         
