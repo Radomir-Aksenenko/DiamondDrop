@@ -5,6 +5,7 @@ import Modal from './Modal';
 import useSPW from '@/hooks/useSPW';
 import useDepositAPI from '@/hooks/useDepositAPI';
 import { SmartLink } from '@/lib/linkUtils';
+import { usePreloadedData } from '@/components/providers/DataPreloadProvider';
 
 interface WalletModalProps {
   isOpen: boolean;
@@ -71,6 +72,7 @@ const CardButton = memo(function CardButton({
 const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalProps) {
   const { user } = useSPW();
   const { createDeposit, setupPaymentHandlers, isLoading: isDepositLoading, error: depositError, clearError } = useDepositAPI();
+  const { refreshUser } = usePreloadedData();
   const [activeTab, setActiveTab] = useState('deposit');
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [depositAmount, setDepositAmount] = useState('');
@@ -88,15 +90,16 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalPr
 
     const cleanup = setupPaymentHandlers(
       // onSuccess - при успешной оплате
-      () => {
+      async () => {
         console.log('Депозит успешно выполнен');
+        // Обновляем баланс пользователя
+        await refreshUser();
         // Очищаем форму и закрываем модалку
         setDepositAmount('');
         setSelectedDepositAmountButton(null);
         setDepositAmountError(null);
         clearError();
         onClose();
-        // Здесь можно добавить обновление баланса пользователя
       },
       // onError - при ошибке оплаты
       (error: string) => {
@@ -106,7 +109,7 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalPr
     );
 
     return cleanup;
-  }, [isOpen, setupPaymentHandlers, onClose, clearError]);
+  }, [isOpen, setupPaymentHandlers, onClose, clearError, refreshUser]);
 
   // Мемоизированные обработчики для предотвращения лишних рендеров
   const handleDepositAmountSelect = useCallback((amount: string) => {
