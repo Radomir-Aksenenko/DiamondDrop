@@ -184,8 +184,8 @@ export default function CasePage() {
       </button>
 
       {/* Основной контент */}
-      <div className='flex px-6 items-end gap-2 flex-[1_0_0] self-stretch'>
-        <div className='flex flex-col justify-end items-start gap-2 flex-1 self-stretch'>
+      <div className='flex px-6 items-start gap-2 flex-[1_0_0] self-stretch'>
+        <div className='flex flex-col items-start gap-2 flex-1'>
           {/* Блок с информацией о кейсе */}
           <div className="flex flex-col items-start gap-2 self-stretch p-4 rounded-xl bg-[#F9F8FC]/[0.05] w-[679px] h-[288px]">
             <div className='flex h-[256px] items-center gap-4 self-stretch'>
@@ -276,7 +276,7 @@ export default function CasePage() {
           </div>
           
           {/* Нижний блок */}
-          <div className="flex p-[10px] items-start gap-2 flex-1 self-stretch rounded-xl bg-[#F9F8FC]/[0.05] w-[679px] h-[288px]">
+          <div className="flex p-[10px] items-start gap-2 rounded-xl bg-[#F9F8FC]/[0.05] w-[679px] h-[288px]">
             d
           </div>
         </div>
