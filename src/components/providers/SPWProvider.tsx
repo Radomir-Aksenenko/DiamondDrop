@@ -105,15 +105,16 @@ function SPWContent({ children }: { children: React.ReactNode }) {
     spw.initialize();
 
     // Обработчики событий
-    const handleReady = async () => {
+    const handleReady = () => {
       if (!mounted) return;
       
       console.log('SPW готов к работе!');
       console.log('Текущий пользователь:', spw.user);
       
-      if (spw.user) {
-        await handleUserValidation(spw.user);
-      }
+      // Не вызываем валидацию здесь, так как она будет вызвана в handleInitResponse
+      // if (spw.user) {
+      //   await handleUserValidation(spw.user);
+      // }
     };
 
     const handleInitResponse = async (user: SPWUser) => {

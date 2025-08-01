@@ -28,6 +28,13 @@ export default function CasePage() {
   const [isDragging, setIsDragging] = useState(false);
   const [isScrollbarVisible, setIsScrollbarVisible] = useState(false);
 
+  // Функция для сортировки предметов по цене (всегда от дорогих к дешевым)
+  const getSortedItems = () => {
+    if (!caseData?.items) return [];
+    
+    return [...caseData.items].sort((a, b) => b.price - a.price); // От дорогих к дешевым
+  };
+
   // Компонент для кнопок с цифрами
   const NumberButton = ({ number }: { number: number }) => (
     <motion.button 
@@ -325,9 +332,9 @@ export default function CasePage() {
               
               {/* Сетка предметов */}
               <div className='grid grid-cols-2 gap-2 w-full auto-rows-max'>
-                {caseData.items && caseData.items.length > 0 ? (
-                  caseData.items.map((item, index) => (
-                    <div key={index} className='w-full flex justify-center items-start'>
+                {getSortedItems().length > 0 ? (
+                  getSortedItems().map((item, index) => (
+                    <div key={`${item.id}-${index}`} className='w-full flex justify-center items-start'>
                       <CaseItemCard 
                         item={item}
                         casePrice={caseData.price}
