@@ -298,14 +298,14 @@ export default function CasePage() {
         </div>
         
         {/* Правый сайдбар */}
-        <div className='flex w-[221px] flex-col rounded-xl bg-[#F9F8FC]/[0.05]' style={{ height: '585px' }}>
+        <div className='flex w-[221px] flex-col rounded-xl bg-[#F9F8FC]/[0.05] overflow-hidden' style={{ height: '585px' }}>
           {/* Заголовок */}
-          <div className='flex p-4 pb-2 justify-center items-center'>
+          <div className='flex p-4 pb-2 justify-center items-center flex-shrink-0'>
             <h1 className='text-[#F9F8FC] font-unbounded text-xl font-medium'>В кейсе</h1>
           </div>
           
           {/* Контейнер с предметами и скроллбаром */}
-          <div className='flex-1 relative px-4 pb-4'>
+          <div className='flex-1 relative px-4 pb-4 min-h-0'>
             {/* Область прокрутки */}
             <div 
               ref={scrollContainerRef}
@@ -324,13 +324,14 @@ export default function CasePage() {
               `}</style>
               
               {/* Сетка предметов */}
-              <div className='grid grid-cols-2 gap-2 w-full'>
+              <div className='grid grid-cols-2 gap-2 w-full auto-rows-max'>
                 {caseData.items && caseData.items.length > 0 ? (
                   caseData.items.map((item, index) => (
-                    <div key={index} className='w-full flex justify-center'>
+                    <div key={index} className='w-full flex justify-center items-start'>
                       <CaseItemCard 
                         item={item}
                         casePrice={caseData.price}
+                        className='flex-shrink-0'
                       />
                     </div>
                   ))
@@ -345,7 +346,7 @@ export default function CasePage() {
             {/* Кастомный скроллбар */}
             {isScrollbarVisible && (
               <div 
-                className='absolute top-0 right-0 w-1 h-full cursor-pointer'
+                className='absolute top-0 right-0 w-1 h-full cursor-pointer custom-scrollbar-track'
                 onClick={handleScrollbarClick}
               >
                 <div
