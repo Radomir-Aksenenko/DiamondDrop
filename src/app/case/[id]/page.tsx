@@ -380,9 +380,9 @@ export default function CasePage() {
               )}
               
               {selectedNumber === 2 && (
-                // Два поля вертикально
-                <div className="flex-1 h-full flex flex-col gap-2">
-                  <div className="flex-1 rounded-lg bg-[#0D0D11] flex items-center justify-center gap-2 p-2 overflow-hidden">
+                // Два поля горизонтально
+                <>
+                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] flex items-center justify-center gap-2 p-2 overflow-hidden">
                     {generateRandomItems(4, 'field1').map((item, index) => (
                       <CaseSlotItemCard 
                         key={`field1-${item.id}-${index}`} 
@@ -390,7 +390,7 @@ export default function CasePage() {
                       />
                     ))}
                   </div>
-                  <div className="flex-1 rounded-lg bg-[#0D0D11] flex items-center justify-center gap-2 p-2 overflow-hidden">
+                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] flex items-center justify-center gap-2 p-2 overflow-hidden">
                     {generateRandomItems(4, 'field2').map((item, index) => (
                       <CaseSlotItemCard 
                         key={`field2-${item.id}-${index}`} 
@@ -398,13 +398,13 @@ export default function CasePage() {
                       />
                     ))}
                   </div>
-                </div>
+                </>
               )}
               
               {selectedNumber === 3 && (
-                // Три поля вертикально
-                <div className="flex-1 h-full flex flex-col gap-2">
-                  <div className="flex-1 rounded-lg bg-[#0D0D11] flex items-center justify-center gap-1 p-2 overflow-hidden">
+                // Три поля горизонтально
+                <>
+                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] flex items-center justify-center gap-1 p-2 overflow-hidden">
                     {generateRandomItems(3, 'field1').map((item, index) => (
                       <CaseSlotItemCard 
                         key={`field1-${item.id}-${index}`} 
@@ -412,7 +412,7 @@ export default function CasePage() {
                       />
                     ))}
                   </div>
-                  <div className="flex-1 rounded-lg bg-[#0D0D11] flex items-center justify-center gap-1 p-2 overflow-hidden">
+                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] flex items-center justify-center gap-1 p-2 overflow-hidden">
                     {generateRandomItems(3, 'field2').map((item, index) => (
                       <CaseSlotItemCard 
                         key={`field2-${item.id}-${index}`} 
@@ -420,7 +420,7 @@ export default function CasePage() {
                       />
                     ))}
                   </div>
-                  <div className="flex-1 rounded-lg bg-[#0D0D11] flex items-center justify-center gap-1 p-2 overflow-hidden">
+                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] flex items-center justify-center gap-1 p-2 overflow-hidden">
                     {generateRandomItems(3, 'field3').map((item, index) => (
                       <CaseSlotItemCard 
                         key={`field3-${item.id}-${index}`} 
@@ -428,13 +428,13 @@ export default function CasePage() {
                       />
                     ))}
                   </div>
-                </div>
+                </>
               )}
               
               {selectedNumber === 4 && (
-                // Четыре поля вертикально
-                <div className="flex-1 h-full flex flex-col gap-2">
-                  <div className="flex-1 rounded-lg bg-[#0D0D11] flex items-center justify-center gap-1 p-2 overflow-hidden">
+                // Четыре поля горизонтально
+                <>
+                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] flex items-center justify-center gap-1 p-2 overflow-hidden">
                     {generateRandomItems(2, 'field1').map((item, index) => (
                       <CaseSlotItemCard 
                         key={`field1-${item.id}-${index}`} 
@@ -442,7 +442,7 @@ export default function CasePage() {
                       />
                     ))}
                   </div>
-                  <div className="flex-1 rounded-lg bg-[#0D0D11] flex items-center justify-center gap-1 p-2 overflow-hidden">
+                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] flex items-center justify-center gap-1 p-2 overflow-hidden">
                     {generateRandomItems(2, 'field2').map((item, index) => (
                       <CaseSlotItemCard 
                         key={`field2-${item.id}-${index}`} 
@@ -450,7 +450,7 @@ export default function CasePage() {
                       />
                     ))}
                   </div>
-                  <div className="flex-1 rounded-lg bg-[#0D0D11] flex items-center justify-center gap-1 p-2 overflow-hidden">
+                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] flex items-center justify-center gap-1 p-2 overflow-hidden">
                     {generateRandomItems(2, 'field3').map((item, index) => (
                       <CaseSlotItemCard 
                         key={`field3-${item.id}-${index}`} 
@@ -458,7 +458,7 @@ export default function CasePage() {
                       />
                     ))}
                   </div>
-                  <div className="flex-1 rounded-lg bg-[#0D0D11] flex items-center justify-center gap-1 p-2 overflow-hidden">
+                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] flex items-center justify-center gap-1 p-2 overflow-hidden">
                     {generateRandomItems(2, 'field4').map((item, index) => (
                       <CaseSlotItemCard 
                         key={`field4-${item.id}-${index}`} 
@@ -466,7 +466,7 @@ export default function CasePage() {
                       />
                     ))}
                   </div>
-                </div>
+                </>
               )}
             </div>
           </div>
