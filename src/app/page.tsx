@@ -4,7 +4,7 @@ import CasesGrid from '../components/ui/CasesGrid';
 
 export default function Home() {
   return (
-    <div className="min-h-screen p-6">
+    <div className="min-h-screen">
       <News />
       <RecentWins />
       

@@ -27,8 +27,10 @@ export default function RootLayout({
       >
         <SPWProvider>
           <Header />
-          <main>
-            {children}
+          <main className="pt-[85px] px-6">
+            <div className="pt-4">
+              {children}
+            </div>
           </main>
         </SPWProvider>
       </body>

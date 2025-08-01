@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import useCaseAPI from '@/hooks/useCaseAPI';
 import CaseItemCard from '@/components/ui/CaseItemCard';
+import { API_BASE_URL } from '@/lib/config';
 
 /**
  * Страница отдельного кейса
@@ -33,6 +34,26 @@ export default function CasePage() {
     if (!caseData?.items) return [];
     
     return [...caseData.items].sort((a, b) => b.price - a.price); // От дорогих к дешевым
+  };
+
+  // Функция для получения правильного URL картинки кейса
+  const getCaseImageUrl = () => {
+    if (!caseData?.imageUrl) {
+      return "/09b1b0e86eb0cd8a7909f6f74b56ddc17804658d.png"; // Дефолтная картинка
+    }
+    
+    // Если URL уже полный (начинается с http/https), используем как есть
+    if (caseData.imageUrl.startsWith('http://') || caseData.imageUrl.startsWith('https://')) {
+      return caseData.imageUrl;
+    }
+    
+    // Если URL относительный, добавляем базовый URL API
+    if (caseData.imageUrl.startsWith('/')) {
+      return `${API_BASE_URL}${caseData.imageUrl}`;
+    }
+    
+    // Если URL без слеша в начале, добавляем слеш и базовый URL
+    return `${API_BASE_URL}/${caseData.imageUrl}`;
   };
 
   // Компонент для кнопок с цифрами
@@ -148,7 +169,7 @@ export default function CasePage() {
   // Обработка состояний загрузки и ошибки
   if (loading) {
     return (
-      <div className="min-h-screen py-6 flex flex-col items-center justify-center">
+      <div className="min-h-screen flex flex-col items-center justify-center">
         <div className="text-[#F9F8FC] font-unbounded text-lg">Загрузка кейса...</div>
       </div>
     );
@@ -156,7 +177,7 @@ export default function CasePage() {
 
   if (error) {
     return (
-      <div className="min-h-screen py-6 flex flex-col items-center justify-center gap-4">
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
         <div className="text-red-400 font-unbounded text-lg">Ошибка: {error}</div>
         <button 
           onClick={() => router.back()}
@@ -170,7 +191,7 @@ export default function CasePage() {
 
   if (!caseData) {
     return (
-      <div className="min-h-screen py-6 flex flex-col items-center justify-center gap-4">
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
         <div className="text-[#F9F8FC] font-unbounded text-lg">Кейс не найден</div>
         <button 
           onClick={() => router.back()}
@@ -183,11 +204,11 @@ export default function CasePage() {
   }
 
   return (
-    <div className="min-h-screen py-6 flex flex-col items-start gap-4 flex-1 self-stretch">
+    <div className="h-[calc(100vh-85px-1rem)] flex flex-col items-start gap-4 flex-1 self-stretch overflow-hidden">
       {/* Кнопка назад */}
       <button 
         onClick={() => router.back()}
-        className="flex w-full h-[42px] px-6 items-center gap-4 cursor-pointer"
+        className="flex w-full h-[42px] items-center gap-4 cursor-pointer"
       >
         <motion.div 
           className="flex w-[42px] h-[42px] flex-col justify-center items-center gap-[10px] flex-shrink-0 rounded-[8px] bg-[#F9F8FC]/[0.05]"
@@ -207,14 +228,14 @@ export default function CasePage() {
       </button>
 
       {/* Основной контент */}
-      <div className='flex px-6 items-start gap-2 flex-[1_0_0] self-stretch'>
+      <div className='flex items-start gap-2 flex-[1_0_0] self-stretch'>
         <div className='flex flex-col items-start gap-2 flex-1'>
           {/* Блок с информацией о кейсе */}
           <div className="flex flex-col items-start gap-2 self-stretch p-4 rounded-xl bg-[#F9F8FC]/[0.05] w-[679px] h-[288px]">
             <div className='flex h-[256px] items-center gap-4 self-stretch'>
               {/* Изображение кейса */}
               <Image
-                src={caseData.imageUrl || "/09b1b0e86eb0cd8a7909f6f74b56ddc17804658d.png"}
+                src={getCaseImageUrl()}
                 alt={`Изображение кейса ${caseData.name}`}
                 width={256}
                 height={256}

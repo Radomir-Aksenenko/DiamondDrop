@@ -32,7 +32,7 @@ export default function Header() {
   const closeUpgradeModal = () => setIsUpgradeModalOpen(false);
 
   return (
-    <header className="relative">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-[#0D0D11]">
       <div className="h-[82px] px-6 py-4 flex items-center justify-between">
           <div className='flex gap-2 items-center'>
               <Image 

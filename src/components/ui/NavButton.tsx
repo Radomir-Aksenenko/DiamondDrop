@@ -3,7 +3,6 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
 
 // Импортируем SVG-иконки как React-компоненты
 import AboutIcon from '../icons/AboutIcon';
@@ -42,56 +41,6 @@ export default function NavButton({ icon, href, label, onClick }: NavButtonProps
     }
   };
   
-  // Варианты анимации для контейнера иконки
-  const iconContainerVariants = {
-    initial: { scale: 1 },
-    hover: { scale: 1.1, transition: { duration: 0.2 } },
-    tap: { scale: 0.95 },
-    active: isActive ? {
-      scale: 1.05,
-      transition: {
-        duration: 0.3,
-        ease: "easeOut"
-      }
-    } : {}
-  };
-
-  // Варианты анимации для иконки
-  const iconVariants = {
-    initial: { rotate: 0 },
-    hover: { rotate: isActive ? 0 : 5, transition: { duration: 0.3 } },
-    tap: { rotate: isActive ? 0 : 2 },
-    active: isActive ? {
-      opacity: 1,
-      transition: {
-        duration: 0.3,
-        ease: "easeOut"
-      }
-    } : {}
-  };
-
-  // Варианты анимации для текста
-  const textVariants = {
-    initial: { opacity: isActive ? 1 : 0.7 },
-    hover: { opacity: 1, transition: { duration: 0.2 } },
-    tap: { opacity: 1 },
-    active: isActive ? {
-      opacity: 1,
-      transition: {
-        duration: 0.3,
-        ease: "easeOut"
-      }
-    } : {}
-  };
-
-  // Варианты анимации для фона кнопки
-  const buttonBgVariants = {
-    initial: { backgroundColor: 'rgba(25, 25, 29, 0)' },
-    hover: { backgroundColor: 'rgba(25, 25, 29, 1)', transition: { duration: 0.2 } },
-    tap: { backgroundColor: 'rgba(25, 25, 29, 1)' },
-    active: { backgroundColor: 'rgba(25, 25, 29, 1)' }
-  };
-
   const handleClick = () => {
     if (onClick) {
       onClick();
@@ -99,48 +48,49 @@ export default function NavButton({ icon, href, label, onClick }: NavButtonProps
   };
 
   const content = (
-    <motion.div
-      initial="initial"
-      animate={isActive ? "active" : "initial"}
-      whileHover="hover"
-      whileTap="tap"
-      variants={buttonBgVariants}
-      className={isActive ? 'inline-flex items-center gap-2 p-2 rounded-full text-[#F9F8FC]' : 'inline-flex items-center gap-2 p-2 rounded-full text-[#F9F8FC]/70 hover:text-[#F9F8FC]'}
-      layout
-      transition={{ type: "spring", stiffness: 400, damping: 25 }}
+    <div
+      className={`inline-flex items-center gap-2 p-2 rounded-full transition-all duration-300 ease-out ${
+        isActive 
+          ? 'text-[#F9F8FC] bg-[#19191D]' 
+          : 'text-[#F9F8FC]/70 hover:text-[#F9F8FC] hover:bg-[#19191D]'
+      }`}
     >
-      <motion.div 
-          className={isActive ? 'flex flex-col justify-center items-center w-[30px] h-[30px] gap-[10px] aspect-square rounded-[42px] bg-[#5C5ADC]' : 'flex flex-col justify-center items-center w-[30px] h-[30px] gap-[10px] aspect-square rounded-[42px] bg-[#F9F8FC]/5'}
-          transition={{ duration: 0.3, ease: "easeOut" }}
+      <div 
+        className={`flex flex-col justify-center items-center w-[30px] h-[30px] gap-[10px] aspect-square rounded-[42px] transition-all duration-300 ease-out ${
+          isActive 
+            ? 'bg-[#5C5ADC]' 
+            : 'bg-[#F9F8FC]/5'
+        }`}
+      >
+        <div 
+          className={`transition-colors duration-300 ease-out ${isActive ? 'text-[#F9F8FC]' : 'text-[#89898D]'}`}
         >
-          <motion.div 
-            className={isActive ? 'text-[#F9F8FC]' : 'text-[#89898D]'}
-          >
-            {getIconComponent()}
-          </motion.div>
-        </motion.div>
+          {getIconComponent()}
+        </div>
+      </div>
       
       {label && (
-        <motion.span 
-          className={isActive ? 'flex items-center text-base font-bold pr-1 text-[#F9F8FC]' : 'flex items-center text-base font-bold pr-1 text-[#838286]'}
-          layout
+        <span 
+          className={`flex items-center text-base font-bold pr-1 transition-all duration-300 ease-out ${
+            isActive ? 'text-[#F9F8FC]' : 'text-[#838286]'
+          }`}
         >
           {label}
-        </motion.span>
+        </span>
       )}
-    </motion.div>
+    </div>
   );
 
   if (onClick) {
     return (
-      <div onClick={handleClick} className="inline-block cursor-pointer">
+      <div onClick={handleClick} className="inline-block cursor-pointer transition-all duration-300 ease-out">
         {content}
       </div>
     );
   }
 
   return (
-    <Link href={href || '#'} className="inline-block cursor-pointer">
+    <Link href={href || '#'} className="inline-block cursor-pointer transition-all duration-300 ease-out">
       {content}
     </Link>
   );
