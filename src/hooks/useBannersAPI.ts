@@ -31,13 +31,7 @@ export default function useBannersAPI() {
       setLoading(true);
       setError(null);
 
-      // В dev режиме используем мок данные
-      if (isDevelopment && DEV_CONFIG.skipAuth) {
-        console.log('🔧 Dev режим: используем мок баннеры');
-        setBanners([...DEV_CONFIG.mockBanners]);
-        setLoading(false);
-        return;
-      }
+      // В dev режиме тоже используем реальные данные из API
 
       const token = getAuthToken();
       if (!token) {

@@ -23,8 +23,8 @@ export const API_ENDPOINTS = {
 
 // Настройки для dev режима
 export const DEV_CONFIG = {
-  // Пропускать авторизацию в dev режиме
-  skipAuth: isDevelopment,
+  // Пропускать авторизацию в dev режиме (отключено для использования реальных данных SPW)
+  skipAuth: false,
   // Мок данные для dev режима
   mockUser: {
     id: 'dev-user-123',

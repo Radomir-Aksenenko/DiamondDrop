@@ -1,8 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { getAuthToken, hasAuthToken } from '@/lib/auth';
-import { API_ENDPOINTS, DEV_CONFIG, isDevelopment } from '@/lib/config';
+import { usePreloadedData } from '@/components/providers/DataPreloadProvider';
 
 /**
  * Интерфейс данных пользователя из API
@@ -18,90 +16,17 @@ export interface APIUser {
 
 /**
  * Хук для получения данных пользователя из API
+ * Теперь использует предзагруженные данные из DataPreloadProvider для избежания дублирования запросов
  * @returns {Object} Объект с данными пользователя, состоянием загрузки и ошибкой
  */
 export default function useUserAPI() {
-  const [user, setUser] = useState<APIUser | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  const [tokenState, setTokenState] = useState<string | null>(getAuthToken());
-
-  /**
-   * Загружает данные пользователя из API
-   */
-  const fetchUserData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      // В dev режиме используем мок данные
-      if (isDevelopment && DEV_CONFIG.skipAuth) {
-        console.log('🔧 Dev режим: используем мок пользователя');
-        setUser(DEV_CONFIG.mockUser);
-        setLoading(false);
-        return;
-      }
-
-      const token = getAuthToken();
-      if (!token) {
-        setUser(null);
-        setLoading(false);
-        return;
-      }
-
-      const response = await fetch(API_ENDPOINTS.users.me, {
-        method: 'GET',
-        headers: {
-          'accept': '*/*',
-          'Authorization': `${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`Ошибка API: ${response.status} ${response.statusText}`);
-      }
-
-      const userData = await response.json();
-      setUser(userData);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Неизвестная ошибка';
-      setError(errorMessage);
-      console.error('Ошибка при загрузке данных пользователя:', errorMessage);
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /**
-   * Обновляет данные пользователя
-   */
-  const refreshUser = () => {
-    fetchUserData();
-  };
-
-  useEffect(() => {
-    fetchUserData();
-  }, []);
-
-  // Отслеживаем изменения токена
-  useEffect(() => {
-    const checkTokenInterval = setInterval(() => {
-      const currentToken = getAuthToken();
-      if (currentToken !== tokenState) {
-        setTokenState(currentToken);
-        fetchUserData();
-      }
-    }, 1000);
-
-    return () => clearInterval(checkTokenInterval);
-  }, [tokenState]);
+  const { user, loading, error, refreshUser, isAuthenticated } = usePreloadedData();
 
   return {
     user,
     loading,
     error,
     refreshUser,
-    isAuthenticated: hasAuthToken(),
+    isAuthenticated,
   };
 }

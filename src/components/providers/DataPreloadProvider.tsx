@@ -105,12 +105,6 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
   // Функция загрузки баннеров
   const loadBanners = async (): Promise<APIBanner[]> => {
     try {
-      // В dev режиме используем мок данные
-      if (isDevelopment && DEV_CONFIG.skipAuth) {
-        console.log('🔧 Dev режим: используем мок баннеры');
-        return [...mockBanners];
-      }
-
       const token = getAuthToken();
       if (!token) {
         // Если токен не найден, возвращаем дефолтный баннер
@@ -148,11 +142,7 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
   // Функция загрузки данных пользователя
   const loadUser = async (): Promise<APIUser | null> => {
     try {
-      // В dev режиме используем мок данные
-      if (isDevelopment && DEV_CONFIG.skipAuth) {
-        console.log('🔧 Dev режим: используем мок пользователя');
-        return { ...mockUser };
-      }
+      // В dev режиме тоже используем реальные данные из API
 
       const token = getAuthToken();
       if (!token) {
@@ -183,12 +173,6 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
     // Для живых выигрышей мы используем WebSocket, 
     // но можем загрузить начальные данные из API или использовать моки
     try {
-      // В dev режиме или как fallback используем мок данные
-      if (isDevelopment && DEV_CONFIG.skipAuth) {
-        console.log('🔧 Dev режим: используем мок выигрыши');
-        return [...mockLiveWins];
-      }
-
       // Здесь можно добавить загрузку начальных выигрышей из API
       // Пока используем моки как fallback
       return [...mockLiveWins];
@@ -268,12 +252,11 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
     await preloadAllData(true); // Принудительная перезагрузка с показом состояния загрузки
   };
 
-  // Запускаем предзагрузку при монтировании только если есть токен или в dev режиме
+  // Запускаем предзагрузку при монтировании только если есть токен
   useEffect(() => {
     const token = getAuthToken();
-    const shouldLoad = token || (isDevelopment && DEV_CONFIG.skipAuth);
     
-    if (shouldLoad) {
+    if (token) {
       preloadAllData(true);
     } else {
       // Если токена нет, показываем состояние ожидания токена

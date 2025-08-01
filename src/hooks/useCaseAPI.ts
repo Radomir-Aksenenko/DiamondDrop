@@ -24,38 +24,7 @@ export default function useCaseAPI(caseId: string) {
       setLoading(true);
       setError(null);
 
-      // В dev режиме используем моковые данные
-      if (isDevelopment && DEV_CONFIG.skipAuth) {
-        console.log('🔧 Dev режим: используем мок данные для кейса', caseId);
-        
-        // Имитируем задержку сети
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // Ищем кейс в моковых данных
-        const mockCase = DEV_CONFIG.mockCases.find(c => c.id === caseId);
-        
-        if (mockCase) {
-          // Добавляем случайные предметы если их нет
-          const caseWithItems = {
-            ...mockCase,
-            description: mockCase.description || null,
-            items: mockCase.items || generateRandomItems(mockCase.price)
-          };
-          setCaseData(caseWithItems);
-        } else {
-          // Если кейс не найден, создаем дефолтный с случайными предметами
-          const defaultCase: CaseData = {
-            id: caseId,
-            name: 'Случайный кейс',
-            description: 'Этот кейс был сгенерирован автоматически в dev режиме',
-            imageUrl: '/09b1b0e86eb0cd8a7909f6f74b56ddc17804658d.png',
-            price: 16,
-            items: generateRandomItems(16)
-          };
-          setCaseData(defaultCase);
-        }
-        return;
-      }
+      // В dev режиме тоже используем реальные данные из API
 
       const token = getAuthToken();
       if (!token) {
