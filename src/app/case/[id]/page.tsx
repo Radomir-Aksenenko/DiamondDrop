@@ -10,6 +10,21 @@ import CaseSlotItemCard from '@/components/ui/CaseSlotItemCard';
 import { API_BASE_URL } from '@/lib/config';
 import { CaseItem } from '@/hooks/useCasesAPI';
 
+// Константа для токена авторизации
+const AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI2ODhjYWQ2YWJlNjU0MWU5ZTgzMWFiZTciLCJwZXJtaXNzaW9uIjoiVXNlciIsIm5iZiI6MTc1NDA0OTg5OCwiZXhwIjoxNzU0MDUzNDk4LCJpYXQiOjE3NTQwNDk4OTgsImlzcyI6Im1yLnJhZmFlbGxvIn0.wlwEt3aTPnizjaW0z0iG5cFImxh_MHsDV10D97UrPSU'
+
+// Интерфейс для результата открытия кейса
+interface CaseOpenResult {
+  id: string
+  name: string
+  description: string
+  imageUrl: string
+  amount: number
+  price: number
+  percentChance: number
+  rarity: 'Common' | 'Uncommon' | 'Rare' | 'Epic' | 'Legendary'
+}
+
 /**
  * Страница отдельного кейса
  */
@@ -25,6 +40,9 @@ export default function CasePage() {
   
   // Состояние для сохранения расположения предметов
   const [savedLayouts, setSavedLayouts] = useState<{[key: string]: CaseItem[]}>({});
+  
+  // Состояния для анимации рулетки
+  const [isSpinning, setIsSpinning] = useState(false);
   
   // Состояния для кастомного скроллбара
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -96,6 +114,89 @@ export default function CasePage() {
     }));
     
     return items;
+  };
+
+  // Функция для открытия кейсов через API
+  const openCase = async (isDemo: boolean = false) => {
+    if (isSpinning || !caseData) return;
+    
+    try {
+      setIsSpinning(true);
+      
+      // Используем константу токена авторизации
+      const token = AUTH_TOKEN;
+      
+      const response = await fetch(`${API_BASE_URL}/cases/${caseId}/opens?amount=${selectedNumber}&demo=${isDemo}`, {
+        method: 'POST',
+        headers: {
+          'accept': '*/*',
+          'Authorization': token,
+          'Content-Type': 'application/json'
+        },
+        body: ''
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const results: CaseOpenResult[] = await response.json();
+      
+      // Запускаем анимацию рулетки
+      startSpinAnimation(results);
+      
+    } catch (error) {
+      console.error('Ошибка при открытии кейса:', error);
+      setIsSpinning(false);
+    }
+  };
+
+  // Функция для запуска анимации рулетки
+  const startSpinAnimation = (results: CaseOpenResult[]) => {
+    const duration = isFastMode ? 2000 : 4000; // 2 или 4 секунды
+    
+    // Для каждого поля создаем анимацию
+    for (let i = 0; i < selectedNumber; i++) {
+      const fieldKey = `field${i + 1}`;
+      const targetItem = results[i];
+      
+      if (targetItem) {
+        // Находим позицию целевого предмета в рулетке
+        const currentItems = generateRandomItems(
+          selectedNumber === 1 ? 15 : selectedNumber === 2 ? 8 : selectedNumber === 3 ? 6 : 5,
+          fieldKey
+        );
+        
+        // Преобразуем результат API в формат CaseItem для совместимости
+        const targetCaseItem: CaseItem = {
+          id: targetItem.id,
+          name: targetItem.name,
+          description: targetItem.description,
+          imageUrl: targetItem.imageUrl,
+          amount: targetItem.amount,
+          price: targetItem.price,
+          percentChance: targetItem.percentChance,
+          rarity: targetItem.rarity
+        };
+        
+        // Заменяем один из предметов на целевой результат
+        const targetIndex = Math.floor(currentItems.length / 2); // Останавливаемся в центре
+        currentItems[targetIndex] = { ...targetCaseItem, id: `${targetCaseItem.id}-${fieldKey}-${targetIndex}` };
+        
+        // Обновляем сохраненные расположения
+        setSavedLayouts(prev => ({
+          ...prev,
+          [`${selectedNumber}-${fieldKey}`]: currentItems
+        }));
+        
+        // Анимация уже настроена через изменение savedLayouts
+      }
+    }
+    
+    // Завершаем анимацию
+    setTimeout(() => {
+      setIsSpinning(false);
+    }, duration + 500);
   };
 
   // Компонент для кнопок с цифрами
@@ -335,25 +436,39 @@ export default function CasePage() {
                 {/* Кнопки действий */}
                 <div className='flex items-center gap-2'>
                   <motion.button 
-                    className='flex px-4 py-3 justify-center items-center gap-2 rounded-xl bg-[#5C5ADC] transition-colors duration-200'
-                    whileHover={{ backgroundColor: "#6462DE" }}
-                    whileTap={{ scale: 0.98 }}
+                    onClick={() => openCase(false)}
+                    disabled={isSpinning}
+                    className={`flex px-4 py-3 justify-center items-center gap-2 rounded-xl transition-colors duration-200 ${
+                      isSpinning 
+                        ? 'bg-[#5C5ADC]/50 cursor-not-allowed' 
+                        : 'bg-[#5C5ADC] cursor-pointer'
+                    }`}
+                    whileHover={!isSpinning ? { backgroundColor: "#6462DE" } : {}}
+                    whileTap={!isSpinning ? { scale: 0.98 } : {}}
                     transition={{ type: "spring", stiffness: 400, damping: 17 }}
                   >
-                    <span className="text-[#F9F8FC] font-unbounded text-sm font-medium cursor-pointer">
-                      Открыть {selectedNumber} {selectedNumber === 1 ? 'кейс' : 'кейса'}
+                    <span className="text-[#F9F8FC] font-unbounded text-sm font-medium">
+                      {isSpinning ? 'Открываем...' : `Открыть ${selectedNumber} ${selectedNumber === 1 ? 'кейс' : 'кейса'}`}
                     </span>
-                    <span className="text-[#F9F8FC] font-unbounded text-sm font-medium opacity-50 cursor-pointer">·</span>
-                    <span className='text-[#F9F8FC] font-unbounded text-sm font-medium opacity-50 cursor-pointer'>
-                      {selectedNumber * caseData.price}
-                    </span>
-                    <span className='text-[#F9F8FC] font-unbounded text-[10px] font-medium opacity-50 cursor-pointer'>АР</span>
+                    {!isSpinning && (
+                      <>
+                        <span className="text-[#F9F8FC] font-unbounded text-sm font-medium opacity-50">·</span>
+                        <span className='text-[#F9F8FC] font-unbounded text-sm font-medium opacity-50'>
+                          {selectedNumber * caseData.price}
+                        </span>
+                        <span className='text-[#F9F8FC] font-unbounded text-[10px] font-medium opacity-50'>АР</span>
+                      </>
+                    )}
                   </motion.button>
                   
                   <motion.button 
-                    className='flex px-4 py-3 justify-center items-center gap-[10px] rounded-[8px] bg-[#F9F8FC]/[0.05] text-[#F9F8FC] font-unbounded text-sm font-medium transition-colors duration-200 cursor-pointer'
-                    whileHover={{ backgroundColor: "#242428" }}
-                    whileTap={{ scale: 0.98 }}
+                    onClick={() => openCase(true)}
+                    disabled={isSpinning}
+                    className={`flex px-4 py-3 justify-center items-center gap-[10px] rounded-[8px] bg-[#F9F8FC]/[0.05] text-[#F9F8FC] font-unbounded text-sm font-medium transition-colors duration-200 ${
+                      isSpinning ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+                    }`}
+                    whileHover={!isSpinning ? { backgroundColor: "#242428" } : {}}
+                    whileTap={!isSpinning ? { scale: 0.98 } : {}}
                     transition={{ type: "spring", stiffness: 400, damping: 17 }}
                   >
                     Демо
