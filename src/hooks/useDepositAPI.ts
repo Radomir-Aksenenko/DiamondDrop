@@ -51,8 +51,8 @@ export default function useDepositAPI() {
         
         // Специальная обработка ошибки недостатка средств
         if (response.status === 400 && errorData.error === "error._server.transactions.pay.senderNotEnoughBalance") {
-          console.log('💳 Обнаружена ошибка недостатка средств на карте:', errorData);
-          throw new Error("Недостаточно средств на карте");
+          console.log('💳 Обнаружена ошибка недостатка средств:', errorData);
+          throw new Error("Недостаточно средств");
         }
         
         throw new Error(errorData.message || `Ошибка сервера: ${response.status}`);
@@ -110,7 +110,7 @@ export default function useDepositAPI() {
       let errorMessage = "Ошибка оплаты";
       if (err.includes("senderNotEnoughBalance")) {
         console.log('💳 Обнаружена ошибка недостатка средств в handlePaymentError:', err);
-        errorMessage = "Недостаточно средств на карте";
+        errorMessage = "Недостаточно средств";
       }
       
       setError(errorMessage);
