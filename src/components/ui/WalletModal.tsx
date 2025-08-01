@@ -309,13 +309,12 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalPr
         <div className="flex flex-col gap-4">
           {/* Поле ввода суммы вывода */}
           <div className="relative">
-            <label className="text-[#F9F8FC]/70 text-sm mb-1 block">Сумма вывода</label>
             <input 
               type="text" 
               value={withdrawAmount}
               onChange={handleAmountChange}
-              className={`w-full bg-[#19191D] text-[#F9F8FC] p-4 rounded-lg outline-none ${amountError ? 'border border-red-500' : 'focus:ring-1 focus:ring-[#5C5ADC]'}`} 
-              placeholder="Введите сумму"
+              className={`w-full bg-[#19191D] text-[#F9F8FC] p-4 rounded-lg outline-none text-2xl font-unbounded ${amountError ? 'border border-red-500' : 'focus:ring-1 focus:ring-[#5C5ADC]'}`} 
+              placeholder="Сумма вывода"
             />
             {amountError && (
               <p className="text-red-500 text-sm mt-1">*{amountError}</p>
@@ -326,15 +325,14 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalPr
           {withdrawAmountButtons}
           
           {/* Поле ввода номера карты */}
-          <div className="relative mt-2">
-            <label className="text-[#F9F8FC]/70 text-sm mb-1 block">Номер карты</label>
+          <div className="relative">
             <input 
               type="text" 
               value={cardNumber}
               onChange={handleCardChange}
               maxLength={5}
-              className={`w-full bg-[#19191D] text-[#F9F8FC] p-4 rounded-lg outline-none ${cardError ? 'border border-red-500' : 'focus:ring-1 focus:ring-[#5C5ADC]'}`} 
-              placeholder="Введите номер карты"
+              className={`w-full bg-[#19191D] text-[#F9F8FC] p-4 rounded-lg outline-none text-2xl font-unbounded ${cardError ? 'border border-red-500' : 'focus:ring-1 focus:ring-[#5C5ADC]'}`} 
+              placeholder="Номер карты"
             />
             {cardError && (
               <p className="text-red-500 text-sm mt-1">*{cardError}</p>
