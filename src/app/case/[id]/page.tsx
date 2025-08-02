@@ -566,10 +566,10 @@ export default function CasePage() {
           {/* Нижний блок - Поля для кейсов */}
           <div className="flex p-[10px] items-start rounded-xl bg-[#F9F8FC]/[0.05] w-[679px] h-[288px]">
             {/* Контейнер для полей кейсов */}
-            <div className="flex w-full h-full gap-[8px]">
+            <div className={`flex w-full h-full gap-[8px] ${selectedNumber === 1 ? 'justify-center' : ''}`}>
               {selectedNumber === 1 && (
-                // Одно поле на всю ширину с предметами расположенными горизонтально
-                <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
+                // Одно поле по центру с предметами расположенными горизонтально
+                <div className="w-[400px] h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
                   {/* Контейнер для рулетки с анимацией */}
                   <div 
                     className="flex items-center gap-2 p-2 transition-transform duration-[5000ms] ease-out"
