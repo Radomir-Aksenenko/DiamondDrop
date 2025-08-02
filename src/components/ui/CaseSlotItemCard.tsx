@@ -54,7 +54,7 @@ export default function CaseSlotItemCard({
   // Стили карточки
   const cardStyles = {
     display: 'flex',
-    width: '80px',
+    width: '76px',
     height: '100px',
     padding: '8px',
     alignItems: 'center',

@@ -221,7 +221,7 @@ export default function CasePage() {
         }));
         
         // Вычисляем размеры карточек
-        const cardWidth = selectedNumber === 1 ? 120 : 100;
+        const cardWidth = 76; // Единый размер для всех рулеток
         const cardHeight = 100;
         const gap = 8;
         
@@ -255,7 +255,7 @@ export default function CasePage() {
           const targetIndex = Math.floor(itemCount * 0.8);
           
           // Вычисляем размеры карточек
-          const cardWidth = selectedNumber === 1 ? 120 : 100;
+          const cardWidth = 76; // Единый размер для всех рулеток
           const cardHeight = 100;
           const gap = 8;
           
@@ -566,10 +566,10 @@ export default function CasePage() {
           {/* Нижний блок - Поля для кейсов */}
           <div className="flex p-[10px] items-start rounded-xl bg-[#F9F8FC]/[0.05] w-[679px] h-[288px]">
             {/* Контейнер для полей кейсов */}
-            <div className={`flex w-full h-full gap-[8px] ${selectedNumber === 1 ? 'justify-center' : ''}`}>
+            <div className="flex w-full h-full gap-[8px]">
               {selectedNumber === 1 && (
-                // Одно поле по центру с предметами расположенными горизонтально
-                <div className="w-[400px] h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
+                // Одно поле на всю ширину с предметами расположенными горизонтально
+                <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden flex justify-center items-center">
                   {/* Контейнер для рулетки с анимацией */}
                   <div 
                     className="flex items-center gap-2 p-2 transition-transform duration-[5000ms] ease-out"
@@ -587,9 +587,9 @@ export default function CasePage() {
                   </div>
                   
                   {/* Белая палочка по центру */}
-                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1 h-full bg-white/80 z-10 pointer-events-none">
-                    <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-3 h-3 bg-white/80 rotate-45"></div>
-                    <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-3 h-3 bg-white/80 rotate-45"></div>
+                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1 h-full bg-gradient-to-b from-white/90 via-white to-white/90 z-10 pointer-events-none shadow-lg shadow-white/20">
+                    <div className="absolute top-3 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-white rotate-45 shadow-lg shadow-white/30 border border-white/20"></div>
+                    <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-white rotate-45 shadow-lg shadow-white/30 border border-white/20"></div>
                   </div>
                 </div>
               )}
@@ -615,9 +615,9 @@ export default function CasePage() {
                     </div>
                     
                     {/* Белая палочка по центру */}
-                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-white/80 z-10 pointer-events-none">
-                      <div className="absolute top-1/2 left-2 transform -translate-y-1/2 w-3 h-3 bg-white/80 rotate-45"></div>
-                      <div className="absolute top-1/2 right-2 transform -translate-y-1/2 w-3 h-3 bg-white/80 rotate-45"></div>
+                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-gradient-to-r from-white/90 via-white to-white/90 z-10 pointer-events-none shadow-lg shadow-white/20">
+                      <div className="absolute top-1/2 left-3 transform -translate-y-1/2 w-4 h-4 bg-white rotate-45 shadow-lg shadow-white/30 border border-white/20"></div>
+                      <div className="absolute top-1/2 right-3 transform -translate-y-1/2 w-4 h-4 bg-white rotate-45 shadow-lg shadow-white/30 border border-white/20"></div>
                     </div>
                   </div>
                   <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
@@ -638,9 +638,9 @@ export default function CasePage() {
                     </div>
                     
                     {/* Белая палочка по центру */}
-                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-white/80 z-10 pointer-events-none">
-                      <div className="absolute top-1/2 left-2 transform -translate-y-1/2 w-3 h-3 bg-white/80 rotate-45"></div>
-                      <div className="absolute top-1/2 right-2 transform -translate-y-1/2 w-3 h-3 bg-white/80 rotate-45"></div>
+                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-gradient-to-r from-white/90 via-white to-white/90 z-10 pointer-events-none shadow-lg shadow-white/20">
+                      <div className="absolute top-1/2 left-3 transform -translate-y-1/2 w-4 h-4 bg-white rotate-45 shadow-lg shadow-white/30 border border-white/20"></div>
+                      <div className="absolute top-1/2 right-3 transform -translate-y-1/2 w-4 h-4 bg-white rotate-45 shadow-lg shadow-white/30 border border-white/20"></div>
                     </div>
                   </div>
                 </>
@@ -667,9 +667,9 @@ export default function CasePage() {
                     </div>
                     
                     {/* Белая палочка по центру */}
-                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-white/80 z-10 pointer-events-none">
-                      <div className="absolute top-1/2 left-2 transform -translate-y-1/2 w-3 h-3 bg-white/80 rotate-45"></div>
-                      <div className="absolute top-1/2 right-2 transform -translate-y-1/2 w-3 h-3 bg-white/80 rotate-45"></div>
+                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-gradient-to-r from-white/90 via-white to-white/90 z-10 pointer-events-none shadow-lg shadow-white/20">
+                      <div className="absolute top-1/2 left-3 transform -translate-y-1/2 w-4 h-4 bg-white rotate-45 shadow-lg shadow-white/30 border border-white/20"></div>
+                      <div className="absolute top-1/2 right-3 transform -translate-y-1/2 w-4 h-4 bg-white rotate-45 shadow-lg shadow-white/30 border border-white/20"></div>
                     </div>
                   </div>
                   <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
@@ -690,9 +690,9 @@ export default function CasePage() {
                     </div>
                     
                     {/* Белая палочка по центру */}
-                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-white/80 z-10 pointer-events-none">
-                      <div className="absolute top-1/2 left-2 transform -translate-y-1/2 w-3 h-3 bg-white/80 rotate-45"></div>
-                      <div className="absolute top-1/2 right-2 transform -translate-y-1/2 w-3 h-3 bg-white/80 rotate-45"></div>
+                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-gradient-to-r from-white/90 via-white to-white/90 z-10 pointer-events-none shadow-lg shadow-white/20">
+                      <div className="absolute top-1/2 left-3 transform -translate-y-1/2 w-4 h-4 bg-white rotate-45 shadow-lg shadow-white/30 border border-white/20"></div>
+                      <div className="absolute top-1/2 right-3 transform -translate-y-1/2 w-4 h-4 bg-white rotate-45 shadow-lg shadow-white/30 border border-white/20"></div>
                     </div>
                   </div>
                   <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
@@ -713,9 +713,9 @@ export default function CasePage() {
                     </div>
                     
                     {/* Белая палочка по центру */}
-                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-white/80 z-10 pointer-events-none">
-                      <div className="absolute top-1/2 left-2 transform -translate-y-1/2 w-3 h-3 bg-white/80 rotate-45"></div>
-                      <div className="absolute top-1/2 right-2 transform -translate-y-1/2 w-3 h-3 bg-white/80 rotate-45"></div>
+                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-gradient-to-r from-white/90 via-white to-white/90 z-10 pointer-events-none shadow-lg shadow-white/20">
+                      <div className="absolute top-1/2 left-3 transform -translate-y-1/2 w-4 h-4 bg-white rotate-45 shadow-lg shadow-white/30 border border-white/20"></div>
+                      <div className="absolute top-1/2 right-3 transform -translate-y-1/2 w-4 h-4 bg-white rotate-45 shadow-lg shadow-white/30 border border-white/20"></div>
                     </div>
                   </div>
                 </>
@@ -742,9 +742,9 @@ export default function CasePage() {
                     </div>
                     
                     {/* Белая палочка по центру */}
-                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-white/80 z-10 pointer-events-none">
-                      <div className="absolute top-1/2 left-2 transform -translate-y-1/2 w-3 h-3 bg-white/80 rotate-45"></div>
-                      <div className="absolute top-1/2 right-2 transform -translate-y-1/2 w-3 h-3 bg-white/80 rotate-45"></div>
+                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-gradient-to-r from-white/90 via-white to-white/90 z-10 pointer-events-none shadow-lg shadow-white/20">
+                      <div className="absolute top-1/2 left-3 transform -translate-y-1/2 w-4 h-4 bg-white rotate-45 shadow-lg shadow-white/30 border border-white/20"></div>
+                      <div className="absolute top-1/2 right-3 transform -translate-y-1/2 w-4 h-4 bg-white rotate-45 shadow-lg shadow-white/30 border border-white/20"></div>
                     </div>
                   </div>
                   <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
@@ -765,9 +765,9 @@ export default function CasePage() {
                     </div>
                     
                     {/* Белая палочка по центру */}
-                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-white/80 z-10 pointer-events-none">
-                      <div className="absolute top-1/2 left-2 transform -translate-y-1/2 w-3 h-3 bg-white/80 rotate-45"></div>
-                      <div className="absolute top-1/2 right-2 transform -translate-y-1/2 w-3 h-3 bg-white/80 rotate-45"></div>
+                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-gradient-to-r from-white/90 via-white to-white/90 z-10 pointer-events-none shadow-lg shadow-white/20">
+                      <div className="absolute top-1/2 left-3 transform -translate-y-1/2 w-4 h-4 bg-white rotate-45 shadow-lg shadow-white/30 border border-white/20"></div>
+                      <div className="absolute top-1/2 right-3 transform -translate-y-1/2 w-4 h-4 bg-white rotate-45 shadow-lg shadow-white/30 border border-white/20"></div>
                     </div>
                   </div>
                   <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
@@ -788,9 +788,9 @@ export default function CasePage() {
                     </div>
                     
                     {/* Белая палочка по центру */}
-                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-white/80 z-10 pointer-events-none">
-                      <div className="absolute top-1/2 left-2 transform -translate-y-1/2 w-3 h-3 bg-white/80 rotate-45"></div>
-                      <div className="absolute top-1/2 right-2 transform -translate-y-1/2 w-3 h-3 bg-white/80 rotate-45"></div>
+                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-gradient-to-r from-white/90 via-white to-white/90 z-10 pointer-events-none shadow-lg shadow-white/20">
+                      <div className="absolute top-1/2 left-3 transform -translate-y-1/2 w-4 h-4 bg-white rotate-45 shadow-lg shadow-white/30 border border-white/20"></div>
+                      <div className="absolute top-1/2 right-3 transform -translate-y-1/2 w-4 h-4 bg-white rotate-45 shadow-lg shadow-white/30 border border-white/20"></div>
                     </div>
                   </div>
                   <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
@@ -811,9 +811,9 @@ export default function CasePage() {
                     </div>
                     
                     {/* Белая палочка по центру */}
-                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-white/80 z-10 pointer-events-none">
-                      <div className="absolute top-1/2 left-2 transform -translate-y-1/2 w-3 h-3 bg-white/80 rotate-45"></div>
-                      <div className="absolute top-1/2 right-2 transform -translate-y-1/2 w-3 h-3 bg-white/80 rotate-45"></div>
+                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-gradient-to-r from-white/90 via-white to-white/90 z-10 pointer-events-none shadow-lg shadow-white/20">
+                      <div className="absolute top-1/2 left-3 transform -translate-y-1/2 w-4 h-4 bg-white rotate-45 shadow-lg shadow-white/30 border border-white/20"></div>
+                      <div className="absolute top-1/2 right-3 transform -translate-y-1/2 w-4 h-4 bg-white rotate-45 shadow-lg shadow-white/30 border border-white/20"></div>
                     </div>
                   </div>
                 </>
