@@ -261,12 +261,12 @@ export default function CasePage() {
         
         if (selectedNumber === 1) {
           // Горизонтальная прокрутка
-          initialOffset = 0; // Начинаем с начала дублированных предметов
-          finalOffset = -(adjustedTargetIndex * (cardWidth + gap)) + (cardWidth / 2);
+          initialOffset = duplicateCount * (cardWidth + gap); // Начинаем с конца дублированных предметов
+          finalOffset = -(adjustedTargetIndex * (cardWidth + gap)) + (cardWidth / 2) + initialOffset;
         } else {
           // Вертикальная прокрутка
-          initialOffset = 0; // Начинаем с начала дублированных предметов
-          finalOffset = -(adjustedTargetIndex * (cardHeight + gap)) + (cardHeight / 2);
+          initialOffset = duplicateCount * (cardHeight + gap); // Начинаем с конца дублированных предметов
+          finalOffset = -(adjustedTargetIndex * (cardHeight + gap)) + (cardHeight / 2) + initialOffset;
         }
         
         // Устанавливаем начальную позицию
