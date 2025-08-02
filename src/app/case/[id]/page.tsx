@@ -43,6 +43,7 @@ export default function CasePage() {
   
   // Состояния для анимации рулетки
   const [isSpinning, setIsSpinning] = useState(false);
+  const [animationOffsets, setAnimationOffsets] = useState<{[key: string]: number}>({});
   
   // Состояния для кастомного скроллбара
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -153,7 +154,10 @@ export default function CasePage() {
 
   // Функция для запуска анимации рулетки
   const startSpinAnimation = (results: CaseOpenResult[]) => {
-    const duration = isFastMode ? 2000 : 4000; // 2 или 4 секунды
+    const duration = isFastMode ? 3000 : 5000; // 3 или 5 секунд
+    
+    // Сбрасываем предыдущие смещения
+    setAnimationOffsets({});
     
     // Для каждого поля создаем анимацию
     for (let i = 0; i < selectedNumber; i++) {
@@ -161,11 +165,9 @@ export default function CasePage() {
       const targetItem = results[i];
       
       if (targetItem) {
-        // Находим позицию целевого предмета в рулетке
-        const currentItems = generateRandomItems(
-          selectedNumber === 1 ? 15 : selectedNumber === 2 ? 8 : selectedNumber === 3 ? 6 : 5,
-          fieldKey
-        );
+        // Генерируем больше предметов для эффекта рулетки
+        const itemCount = selectedNumber === 1 ? 50 : 30; // Больше предметов для длинной рулетки
+        const currentItems = generateRandomItems(itemCount, fieldKey);
         
         // Преобразуем результат API в формат CaseItem для совместимости
         const targetCaseItem: CaseItem = {
@@ -179,8 +181,8 @@ export default function CasePage() {
           rarity: targetItem.rarity
         };
         
-        // Заменяем один из предметов на целевой результат
-        const targetIndex = Math.floor(currentItems.length / 2); // Останавливаемся в центре
+        // Размещаем выигрышный предмет в конце списка (где остановится рулетка)
+        const targetIndex = Math.floor(itemCount * 0.8); // 80% от длины списка
         currentItems[targetIndex] = { ...targetCaseItem, id: `${targetCaseItem.id}-${fieldKey}-${targetIndex}` };
         
         // Обновляем сохраненные расположения
@@ -189,7 +191,35 @@ export default function CasePage() {
           [`${selectedNumber}-${fieldKey}`]: currentItems
         }));
         
-        // Анимация уже настроена через изменение savedLayouts
+        // Вычисляем размеры карточек в зависимости от количества полей
+        const cardWidth = selectedNumber === 1 ? 120 : 100;
+        const cardHeight = selectedNumber === 1 ? 120 : 100;
+        const gap = 8;
+        
+        // Начальное смещение (рулетка начинает с начала)
+        const initialOffset = 0;
+        setAnimationOffsets(prev => ({
+          ...prev,
+          [fieldKey]: initialOffset
+        }));
+        
+        // Запускаем анимацию с задержкой
+        setTimeout(() => {
+          // Вычисляем финальное смещение для остановки на выигрышном предмете
+          let finalOffset;
+          if (selectedNumber === 1) {
+            // Горизонтальная прокрутка
+            finalOffset = -(targetIndex * (cardWidth + gap)) + (cardWidth / 2);
+          } else {
+            // Вертикальная прокрутка
+            finalOffset = -(targetIndex * (cardHeight + gap)) + (cardHeight / 2);
+          }
+          
+          setAnimationOffsets(prev => ({
+            ...prev,
+            [fieldKey]: finalOffset
+          }));
+        }, 100);
       }
     }
     
@@ -484,34 +514,79 @@ export default function CasePage() {
             <div className="flex w-full h-full gap-[8px]">
               {selectedNumber === 1 && (
                 // Одно поле на всю ширину с предметами расположенными горизонтально
-                <div className="flex-1 h-full rounded-lg bg-[#0D0D11] flex items-center justify-start gap-2 p-2 overflow-hidden">
-                  {generateRandomItems(15, 'field1').map((item, index) => (
-                    <CaseSlotItemCard 
-                      key={`field1-${item.id}-${index}`} 
-                      item={item} 
-                    />
-                  ))}
-                </div>
-              )}
-              
-              {selectedNumber === 2 && (
-                // Два поля горизонтально, предметы вертикально
-                <>
-                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] flex flex-col items-center justify-start gap-2 p-2 overflow-hidden">
-                    {generateRandomItems(8, 'field1').map((item, index) => (
+                <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
+                  {/* Контейнер для рулетки с анимацией */}
+                  <div 
+                    className="flex items-center gap-2 p-2 transition-transform duration-[5000ms] ease-out"
+                    style={{
+                      transform: `translateX(${animationOffsets['field1'] || 0}px)`,
+                      transitionDuration: isSpinning ? (isFastMode ? '3000ms' : '5000ms') : '0ms'
+                    }}
+                  >
+                    {generateRandomItems(selectedNumber === 1 ? 50 : 30, 'field1').map((item, index) => (
                       <CaseSlotItemCard 
                         key={`field1-${item.id}-${index}`} 
                         item={item} 
                       />
                     ))}
                   </div>
-                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] flex flex-col items-center justify-start gap-2 p-2 overflow-hidden">
-                    {generateRandomItems(8, 'field2').map((item, index) => (
-                      <CaseSlotItemCard 
-                        key={`field2-${item.id}-${index}`} 
-                        item={item} 
-                      />
-                    ))}
+                  
+                  {/* Белая палочка по центру */}
+                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1 h-full bg-white/80 z-10 pointer-events-none">
+                    <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-3 h-3 bg-white/80 rotate-45"></div>
+                    <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-3 h-3 bg-white/80 rotate-45"></div>
+                  </div>
+                </div>
+              )}
+              
+              {selectedNumber === 2 && (
+                // Два поля горизонтально, предметы вертикально
+                <>
+                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
+                    {/* Контейнер для рулетки с анимацией */}
+                    <div 
+                      className="flex flex-col items-center gap-2 p-2 transition-transform duration-[5000ms] ease-out"
+                      style={{
+                        transform: `translateY(${animationOffsets['field1'] || 0}px)`,
+                        transitionDuration: isSpinning ? (isFastMode ? '3000ms' : '5000ms') : '0ms'
+                      }}
+                    >
+                      {generateRandomItems(30, 'field1').map((item, index) => (
+                        <CaseSlotItemCard 
+                          key={`field1-${item.id}-${index}`} 
+                          item={item} 
+                        />
+                      ))}
+                    </div>
+                    
+                    {/* Белая палочка по центру */}
+                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-white/80 z-10 pointer-events-none">
+                      <div className="absolute top-1/2 left-2 transform -translate-y-1/2 w-3 h-3 bg-white/80 rotate-45"></div>
+                      <div className="absolute top-1/2 right-2 transform -translate-y-1/2 w-3 h-3 bg-white/80 rotate-45"></div>
+                    </div>
+                  </div>
+                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
+                    {/* Контейнер для рулетки с анимацией */}
+                    <div 
+                      className="flex flex-col items-center gap-2 p-2 transition-transform duration-[5000ms] ease-out"
+                      style={{
+                        transform: `translateY(${animationOffsets['field2'] || 0}px)`,
+                        transitionDuration: isSpinning ? (isFastMode ? '3000ms' : '5000ms') : '0ms'
+                      }}
+                    >
+                      {generateRandomItems(30, 'field2').map((item, index) => (
+                        <CaseSlotItemCard 
+                          key={`field2-${item.id}-${index}`} 
+                          item={item} 
+                        />
+                      ))}
+                    </div>
+                    
+                    {/* Белая палочка по центру */}
+                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-white/80 z-10 pointer-events-none">
+                      <div className="absolute top-1/2 left-2 transform -translate-y-1/2 w-3 h-3 bg-white/80 rotate-45"></div>
+                      <div className="absolute top-1/2 right-2 transform -translate-y-1/2 w-3 h-3 bg-white/80 rotate-45"></div>
+                    </div>
                   </div>
                 </>
               )}
@@ -519,29 +594,74 @@ export default function CasePage() {
               {selectedNumber === 3 && (
                 // Три поля горизонтально, предметы вертикально
                 <>
-                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] flex flex-col items-center justify-start gap-2 p-2 overflow-hidden">
-                    {generateRandomItems(6, 'field1').map((item, index) => (
-                      <CaseSlotItemCard 
-                        key={`field1-${item.id}-${index}`} 
-                        item={item} 
-                      />
-                    ))}
+                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
+                    {/* Контейнер для рулетки с анимацией */}
+                    <div 
+                      className="flex flex-col items-center gap-2 p-2 transition-transform duration-[5000ms] ease-out"
+                      style={{
+                        transform: `translateY(${animationOffsets['field1'] || 0}px)`,
+                        transitionDuration: isSpinning ? (isFastMode ? '3000ms' : '5000ms') : '0ms'
+                      }}
+                    >
+                      {generateRandomItems(30, 'field1').map((item, index) => (
+                        <CaseSlotItemCard 
+                          key={`field1-${item.id}-${index}`} 
+                          item={item} 
+                        />
+                      ))}
+                    </div>
+                    
+                    {/* Белая палочка по центру */}
+                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-white/80 z-10 pointer-events-none">
+                      <div className="absolute top-1/2 left-2 transform -translate-y-1/2 w-3 h-3 bg-white/80 rotate-45"></div>
+                      <div className="absolute top-1/2 right-2 transform -translate-y-1/2 w-3 h-3 bg-white/80 rotate-45"></div>
+                    </div>
                   </div>
-                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] flex flex-col items-center justify-start gap-2 p-2 overflow-hidden">
-                    {generateRandomItems(6, 'field2').map((item, index) => (
-                      <CaseSlotItemCard 
-                        key={`field2-${item.id}-${index}`} 
-                        item={item} 
-                      />
-                    ))}
+                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
+                    {/* Контейнер для рулетки с анимацией */}
+                    <div 
+                      className="flex flex-col items-center gap-2 p-2 transition-transform duration-[5000ms] ease-out"
+                      style={{
+                        transform: `translateY(${animationOffsets['field2'] || 0}px)`,
+                        transitionDuration: isSpinning ? (isFastMode ? '3000ms' : '5000ms') : '0ms'
+                      }}
+                    >
+                      {generateRandomItems(30, 'field2').map((item, index) => (
+                        <CaseSlotItemCard 
+                          key={`field2-${item.id}-${index}`} 
+                          item={item} 
+                        />
+                      ))}
+                    </div>
+                    
+                    {/* Белая палочка по центру */}
+                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-white/80 z-10 pointer-events-none">
+                      <div className="absolute top-1/2 left-2 transform -translate-y-1/2 w-3 h-3 bg-white/80 rotate-45"></div>
+                      <div className="absolute top-1/2 right-2 transform -translate-y-1/2 w-3 h-3 bg-white/80 rotate-45"></div>
+                    </div>
                   </div>
-                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] flex flex-col items-center justify-start gap-2 p-2 overflow-hidden">
-                    {generateRandomItems(6, 'field3').map((item, index) => (
-                      <CaseSlotItemCard 
-                        key={`field3-${item.id}-${index}`} 
-                        item={item} 
-                      />
-                    ))}
+                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
+                    {/* Контейнер для рулетки с анимацией */}
+                    <div 
+                      className="flex flex-col items-center gap-2 p-2 transition-transform duration-[5000ms] ease-out"
+                      style={{
+                        transform: `translateY(${animationOffsets['field3'] || 0}px)`,
+                        transitionDuration: isSpinning ? (isFastMode ? '3000ms' : '5000ms') : '0ms'
+                      }}
+                    >
+                      {generateRandomItems(30, 'field3').map((item, index) => (
+                        <CaseSlotItemCard 
+                          key={`field3-${item.id}-${index}`} 
+                          item={item} 
+                        />
+                      ))}
+                    </div>
+                    
+                    {/* Белая палочка по центру */}
+                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-white/80 z-10 pointer-events-none">
+                      <div className="absolute top-1/2 left-2 transform -translate-y-1/2 w-3 h-3 bg-white/80 rotate-45"></div>
+                      <div className="absolute top-1/2 right-2 transform -translate-y-1/2 w-3 h-3 bg-white/80 rotate-45"></div>
+                    </div>
                   </div>
                 </>
               )}
@@ -549,37 +669,97 @@ export default function CasePage() {
               {selectedNumber === 4 && (
                 // Четыре поля горизонтально, предметы вертикально
                 <>
-                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] flex flex-col items-center justify-start gap-2 p-2 overflow-hidden">
-                    {generateRandomItems(5, 'field1').map((item, index) => (
-                      <CaseSlotItemCard 
-                        key={`field1-${item.id}-${index}`} 
-                        item={item} 
-                      />
-                    ))}
+                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
+                    {/* Контейнер для рулетки с анимацией */}
+                    <div 
+                      className="flex flex-col items-center gap-2 p-2 transition-transform duration-[5000ms] ease-out"
+                      style={{
+                        transform: `translateY(${animationOffsets['field1'] || 0}px)`,
+                        transitionDuration: isSpinning ? (isFastMode ? '3000ms' : '5000ms') : '0ms'
+                      }}
+                    >
+                      {generateRandomItems(30, 'field1').map((item, index) => (
+                        <CaseSlotItemCard 
+                          key={`field1-${item.id}-${index}`} 
+                          item={item} 
+                        />
+                      ))}
+                    </div>
+                    
+                    {/* Белая палочка по центру */}
+                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-white/80 z-10 pointer-events-none">
+                      <div className="absolute top-1/2 left-2 transform -translate-y-1/2 w-3 h-3 bg-white/80 rotate-45"></div>
+                      <div className="absolute top-1/2 right-2 transform -translate-y-1/2 w-3 h-3 bg-white/80 rotate-45"></div>
+                    </div>
                   </div>
-                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] flex flex-col items-center justify-start gap-2 p-2 overflow-hidden">
-                    {generateRandomItems(5, 'field2').map((item, index) => (
-                      <CaseSlotItemCard 
-                        key={`field2-${item.id}-${index}`} 
-                        item={item} 
-                      />
-                    ))}
+                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
+                    {/* Контейнер для рулетки с анимацией */}
+                    <div 
+                      className="flex flex-col items-center gap-2 p-2 transition-transform duration-[5000ms] ease-out"
+                      style={{
+                        transform: `translateY(${animationOffsets['field2'] || 0}px)`,
+                        transitionDuration: isSpinning ? (isFastMode ? '3000ms' : '5000ms') : '0ms'
+                      }}
+                    >
+                      {generateRandomItems(30, 'field2').map((item, index) => (
+                        <CaseSlotItemCard 
+                          key={`field2-${item.id}-${index}`} 
+                          item={item} 
+                        />
+                      ))}
+                    </div>
+                    
+                    {/* Белая палочка по центру */}
+                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-white/80 z-10 pointer-events-none">
+                      <div className="absolute top-1/2 left-2 transform -translate-y-1/2 w-3 h-3 bg-white/80 rotate-45"></div>
+                      <div className="absolute top-1/2 right-2 transform -translate-y-1/2 w-3 h-3 bg-white/80 rotate-45"></div>
+                    </div>
                   </div>
-                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] flex flex-col items-center justify-start gap-2 p-2 overflow-hidden">
-                    {generateRandomItems(5, 'field3').map((item, index) => (
-                      <CaseSlotItemCard 
-                        key={`field3-${item.id}-${index}`} 
-                        item={item} 
-                      />
-                    ))}
+                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
+                    {/* Контейнер для рулетки с анимацией */}
+                    <div 
+                      className="flex flex-col items-center gap-2 p-2 transition-transform duration-[5000ms] ease-out"
+                      style={{
+                        transform: `translateY(${animationOffsets['field3'] || 0}px)`,
+                        transitionDuration: isSpinning ? (isFastMode ? '3000ms' : '5000ms') : '0ms'
+                      }}
+                    >
+                      {generateRandomItems(30, 'field3').map((item, index) => (
+                        <CaseSlotItemCard 
+                          key={`field3-${item.id}-${index}`} 
+                          item={item} 
+                        />
+                      ))}
+                    </div>
+                    
+                    {/* Белая палочка по центру */}
+                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-white/80 z-10 pointer-events-none">
+                      <div className="absolute top-1/2 left-2 transform -translate-y-1/2 w-3 h-3 bg-white/80 rotate-45"></div>
+                      <div className="absolute top-1/2 right-2 transform -translate-y-1/2 w-3 h-3 bg-white/80 rotate-45"></div>
+                    </div>
                   </div>
-                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] flex flex-col items-center justify-start gap-2 p-2 overflow-hidden">
-                    {generateRandomItems(5, 'field4').map((item, index) => (
-                      <CaseSlotItemCard 
-                        key={`field4-${item.id}-${index}`} 
-                        item={item} 
-                      />
-                    ))}
+                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
+                    {/* Контейнер для рулетки с анимацией */}
+                    <div 
+                      className="flex flex-col items-center gap-2 p-2 transition-transform duration-[5000ms] ease-out"
+                      style={{
+                        transform: `translateY(${animationOffsets['field4'] || 0}px)`,
+                        transitionDuration: isSpinning ? (isFastMode ? '3000ms' : '5000ms') : '0ms'
+                      }}
+                    >
+                      {generateRandomItems(30, 'field4').map((item, index) => (
+                        <CaseSlotItemCard 
+                          key={`field4-${item.id}-${index}`} 
+                          item={item} 
+                        />
+                      ))}
+                    </div>
+                    
+                    {/* Белая палочка по центру */}
+                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-white/80 z-10 pointer-events-none">
+                      <div className="absolute top-1/2 left-2 transform -translate-y-1/2 w-3 h-3 bg-white/80 rotate-45"></div>
+                      <div className="absolute top-1/2 right-2 transform -translate-y-1/2 w-3 h-3 bg-white/80 rotate-45"></div>
+                    </div>
                   </div>
                 </>
               )}
