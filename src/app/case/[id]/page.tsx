@@ -85,7 +85,7 @@ export default function CasePage() {
   };
 
   // Функция для генерации массива случайных предметов для слота с сохранением состояния
-  const generateRandomItems = (count: number = 8, fieldKey: string) => {
+  const generateRandomItems = (fieldKey: string) => {
     if (!caseData?.items || caseData.items.length === 0) return [];
     
     // Создаем уникальный ключ для сохранения расположения
@@ -96,22 +96,37 @@ export default function CasePage() {
       return savedLayouts[layoutKey];
     }
     
-    // Генерируем новое расположение
+    // Для бесконечной рулетки генерируем больше предметов
+    const baseItemCount = selectedNumber === 1 ? 200 : 150;
     const items: CaseItem[] = [];
-    for (let i = 0; i < count; i++) {
+    
+    // Генерируем основные предметы
+    for (let i = 0; i < baseItemCount; i++) {
       const randomItem = getRandomItem();
       if (randomItem) {
         items.push({ ...randomItem, id: `${randomItem.id}-${fieldKey}-${i}` });
       }
     }
     
+    // Дублируем предметы в начале для создания эффекта бесконечности
+    const duplicateCount = 50;
+    const duplicatedItems = [];
+    for (let j = 0; j < duplicateCount; j++) {
+      const sourceIndex = j % items.length;
+      const duplicatedItem = { ...items[sourceIndex], id: `${items[sourceIndex].id}-dup-${j}` };
+      duplicatedItems.push(duplicatedItem);
+    }
+    
+    // Объединяем дублированные предметы с основными
+    const finalItems = [...duplicatedItems, ...items];
+    
     // Сохраняем расположение
     setSavedLayouts(prev => ({
       ...prev,
-      [layoutKey]: items
+      [layoutKey]: finalItems
     }));
     
-    return items;
+    return finalItems;
   };
 
   // Функция для открытия кейсов через API
@@ -189,12 +204,12 @@ export default function CasePage() {
       const fieldControl = controls[i];
       
       if (targetItem && fieldControl) {
-        // Генерируем больше предметов для эффекта рулетки (бесконечная прокрутка)
-        const itemCount = selectedNumber === 1 ? 120 : 80;
+        // Генерируем много предметов для эффекта бесконечной рулетки
+        const baseItemCount = selectedNumber === 1 ? 200 : 150;
         const currentItems: CaseItem[] = [];
         
         // Генерируем случайные предметы
-        for (let j = 0; j < itemCount; j++) {
+        for (let j = 0; j < baseItemCount; j++) {
           const randomItem = getRandomItem();
           if (randomItem) {
             currentItems.push({ ...randomItem, id: `${randomItem.id}-${fieldKey}-${j}` });
@@ -213,14 +228,26 @@ export default function CasePage() {
           rarity: targetItem.rarity
         };
         
-        // Размещаем выигрышный предмет в позиции для остановки
-        const targetIndex = Math.floor(itemCount * 0.8);
+        // Размещаем выигрышный предмет в позиции для остановки (ближе к концу)
+        const targetIndex = Math.floor(baseItemCount * 0.85);
         currentItems[targetIndex] = { ...targetCaseItem, id: `${targetCaseItem.id}-${fieldKey}-${targetIndex}` };
+        
+        // Дублируем предметы в начале для создания эффекта бесконечности
+        const duplicateCount = 50;
+        const duplicatedItems = [];
+        for (let j = 0; j < duplicateCount; j++) {
+          const sourceIndex = j % currentItems.length;
+          const duplicatedItem = { ...currentItems[sourceIndex], id: `${currentItems[sourceIndex].id}-dup-${j}` };
+          duplicatedItems.push(duplicatedItem);
+        }
+        
+        // Объединяем дублированные предметы с основными
+        const finalItems = [...duplicatedItems, ...currentItems];
         
         // Обновляем сохраненные расположения
         setSavedLayouts(prev => ({
           ...prev,
-          [`${selectedNumber}-${fieldKey}`]: currentItems
+          [`${selectedNumber}-${fieldKey}`]: finalItems
         }));
         
         // Вычисляем размеры карточек
@@ -230,26 +257,28 @@ export default function CasePage() {
         
         // Начальное и финальное смещение
         let initialOffset, finalOffset;
+        const adjustedTargetIndex = targetIndex + duplicateCount; // Учитываем дублированные предметы
+        
         if (selectedNumber === 1) {
           // Горизонтальная прокрутка
-          initialOffset = cardWidth * 5;
-          finalOffset = -(targetIndex * (cardWidth + gap)) + (cardWidth / 2);
+          initialOffset = 0; // Начинаем с начала дублированных предметов
+          finalOffset = -(adjustedTargetIndex * (cardWidth + gap)) + (cardWidth / 2);
         } else {
           // Вертикальная прокрутка
-          initialOffset = cardHeight * 5;
-          finalOffset = -(targetIndex * (cardHeight + gap)) + (cardHeight / 2);
+          initialOffset = 0; // Начинаем с начала дублированных предметов
+          finalOffset = -(adjustedTargetIndex * (cardHeight + gap)) + (cardHeight / 2);
         }
         
         // Устанавливаем начальную позицию
         fieldControl.set(selectedNumber === 1 ? { x: initialOffset } : { y: initialOffset });
         
-        // Создаем анимацию
+        // Создаем анимацию с эффектом ускорения и замедления
         const animationPromise = fieldControl.start({
           ...(selectedNumber === 1 ? { x: finalOffset } : { y: finalOffset }),
           transition: {
             duration: duration,
-            ease: [0.25, 0.46, 0.45, 0.94], // Кастомная easing функция для реалистичности
-            times: [0, 0.7, 1], // Ускорение в начале, замедление в конце
+            ease: [0.11, 0, 0.5, 0], // Более плавное ускорение и резкое замедление
+            times: [0, 0.8, 1], // Быстрое ускорение, затем замедление
           }
         });
         
@@ -468,7 +497,7 @@ export default function CasePage() {
                     className="flex items-center gap-2 p-2"
                     animate={field1Controls}
                   >
-                    {(savedLayouts[`${selectedNumber}-field1`] || generateRandomItems(120, 'field1')).map((item, index) => (
+                    {(savedLayouts[`${selectedNumber}-field1`] || generateRandomItems('field1')).map((item, index) => (
                       <CaseSlotItemCard 
                         key={`field1-${item.id}-${index}`} 
                         item={item} 
@@ -491,7 +520,7 @@ export default function CasePage() {
                     className="flex flex-col items-center gap-2 p-2"
                     animate={field1Controls}
                   >
-                      {(savedLayouts[`${selectedNumber}-field1`] || generateRandomItems(80, 'field1')).map((item, index) => (
+                      {(savedLayouts[`${selectedNumber}-field1`] || generateRandomItems('field1')).map((item, index) => (
                         <CaseSlotItemCard 
                           key={`field1-${item.id}-${index}`} 
                           item={item} 
@@ -509,7 +538,7 @@ export default function CasePage() {
                       className="flex flex-col items-center gap-2 p-2"
                       animate={field2Controls}
                     >
-                      {(savedLayouts[`${selectedNumber}-field2`] || generateRandomItems(80, 'field2')).map((item, index) => (
+                      {(savedLayouts[`${selectedNumber}-field2`] || generateRandomItems('field2')).map((item, index) => (
                         <CaseSlotItemCard 
                           key={`field2-${item.id}-${index}`} 
                           item={item} 
@@ -533,7 +562,7 @@ export default function CasePage() {
                       className="flex flex-col items-center gap-2 p-2"
                       animate={field1Controls}
                     >
-                      {(savedLayouts[`${selectedNumber}-field1`] || generateRandomItems(60, 'field1')).map((item, index) => (
+                      {(savedLayouts[`${selectedNumber}-field1`] || generateRandomItems('field1')).map((item, index) => (
                         <CaseSlotItemCard 
                           key={`field1-${item.id}-${index}`} 
                           item={item} 
@@ -551,7 +580,7 @@ export default function CasePage() {
                       className="flex flex-col items-center gap-2 p-2"
                       animate={field2Controls}
                     >
-                      {(savedLayouts[`${selectedNumber}-field2`] || generateRandomItems(60, 'field2')).map((item, index) => (
+                      {(savedLayouts[`${selectedNumber}-field2`] || generateRandomItems('field2')).map((item, index) => (
                         <CaseSlotItemCard 
                           key={`field2-${item.id}-${index}`} 
                           item={item} 
@@ -569,7 +598,7 @@ export default function CasePage() {
                       className="flex flex-col items-center gap-2 p-2"
                       animate={field3Controls}
                     >
-                      {(savedLayouts[`${selectedNumber}-field3`] || generateRandomItems(80, 'field3')).map((item, index) => (
+                      {(savedLayouts[`${selectedNumber}-field3`] || generateRandomItems('field3')).map((item, index) => (
                         <CaseSlotItemCard 
                           key={`field3-${item.id}-${index}`} 
                           item={item} 
@@ -593,7 +622,7 @@ export default function CasePage() {
                       className="flex flex-col items-center gap-2 p-2"
                       animate={field1Controls}
                     >
-                      {(savedLayouts[`${selectedNumber}-field1`] || generateRandomItems(60, 'field1')).map((item, index) => (
+                      {(savedLayouts[`${selectedNumber}-field1`] || generateRandomItems('field1')).map((item, index) => (
                         <CaseSlotItemCard 
                           key={`field1-${item.id}-${index}`} 
                           item={item} 
@@ -611,7 +640,7 @@ export default function CasePage() {
                       className="flex flex-col items-center gap-2 p-2"
                       animate={field2Controls}
                     >
-                      {(savedLayouts[`${selectedNumber}-field2`] || generateRandomItems(60, 'field2')).map((item, index) => (
+                      {(savedLayouts[`${selectedNumber}-field2`] || generateRandomItems('field2')).map((item, index) => (
                         <CaseSlotItemCard 
                           key={`field2-${item.id}-${index}`} 
                           item={item} 
@@ -629,7 +658,7 @@ export default function CasePage() {
                       className="flex flex-col items-center gap-2 p-2"
                       animate={field3Controls}
                     >
-                      {(savedLayouts[`${selectedNumber}-field3`] || generateRandomItems(60, 'field3')).map((item, index) => (
+                      {(savedLayouts[`${selectedNumber}-field3`] || generateRandomItems('field3')).map((item, index) => (
                         <CaseSlotItemCard 
                           key={`field3-${item.id}-${index}`} 
                           item={item} 
@@ -647,7 +676,7 @@ export default function CasePage() {
                       className="flex flex-col items-center gap-2 p-2"
                       animate={field4Controls}
                     >
-                      {(savedLayouts[`${selectedNumber}-field4`] || generateRandomItems(80, 'field4')).map((item, index) => (
+                      {(savedLayouts[`${selectedNumber}-field4`] || generateRandomItems('field4')).map((item, index) => (
                         <CaseSlotItemCard 
                           key={`field4-${item.id}-${index}`} 
                           item={item} 
