@@ -191,7 +191,7 @@ export default function CasePage() {
   // Функция для запуска анимации рулетки
   const startSpinAnimation = async (results: CaseOpenResult[]) => {
     console.log('Запуск анимации для результатов:', results);
-    const duration = 4; // Рулетка крутится ровно 4 секунды и останавливается на призе
+    const duration = isFastMode ? 2 : 4; // Учитываем быстрый режим
     
     // Очищаем старые расположения для текущей конфигурации
     setSavedLayouts(prev => {
@@ -216,8 +216,8 @@ export default function CasePage() {
       const fieldControl = controls[i];
       
       if (targetItem && fieldControl) {
-        // Создаем достаточно предметов для бесконечной анимации
-        const baseItemCount = selectedNumber === 1 ? 2000 : 500; // Значительно увеличиваем количество карточек
+        // Создаем оптимальное количество предметов для плавной анимации
+        const baseItemCount = selectedNumber === 1 ? 300 : 200; // Оптимизируем для производительности
         const currentItems: CaseItem[] = [];
         
         // Генерируем случайные предметы
@@ -245,11 +245,11 @@ export default function CasePage() {
         currentItems[targetIndex] = { ...targetCaseItem, id: `${targetCaseItem.id}-${fieldKey}-target` };
         
         // Создаем циклический массив для бесконечной анимации
-        const cycleLength = selectedNumber === 1 ? Math.min(200, baseItemCount) : Math.min(100, baseItemCount); // Еще больше карточек в цикле
+        const cycleLength = selectedNumber === 1 ? Math.min(50, baseItemCount) : Math.min(40, baseItemCount); // Оптимизированное количество карточек в цикле
         const infiniteItems: CaseItem[] = [];
         
-        // Добавляем огромное количество циклов для гарантированно бесконечной прокрутки
-        const cycleCount = selectedNumber === 1 ? 30 : 20; // Значительно больше циклов
+        // Добавляем оптимальное количество циклов для плавной прокрутки
+        const cycleCount = selectedNumber === 1 ? 6 : 5; // Оптимизированное количество циклов
         for (let cycle = 0; cycle < cycleCount; cycle++) {
           for (let j = 0; j < cycleLength; j++) {
             const sourceIndex = j % currentItems.length;
@@ -298,14 +298,35 @@ export default function CasePage() {
           // Устанавливаем начальную позицию
           fieldControl.set({ x: initialOffset });
           
-          // Создаем плавную анимацию с замедлением
-          animationPromise = fieldControl.start({
-            x: finalOffset,
-            transition: {
-              duration: duration,
-              ease: [0.25, 0.46, 0.45, 0.94], // Плавное ускорение и замедление
-            }
-          });
+          // Создаем многоэтапную анимацию для плавного разгона и замедления
+          animationPromise = (async () => {
+            // Этап 1: Быстрый разгон (0.3 секунды)
+            await fieldControl.start({
+              x: finalOffset * 0.15, // 15% от финальной позиции
+              transition: {
+                duration: duration * 0.075, // 7.5% от общего времени
+                ease: [0.55, 0.085, 0.68, 0.53], // Быстрый разгон
+              }
+            });
+            
+            // Этап 2: Основная прокрутка с постоянной скоростью (2.5 секунды)
+            await fieldControl.start({
+              x: finalOffset * 0.85, // 85% от финальной позиции
+              transition: {
+                duration: duration * 0.625, // 62.5% от общего времени
+                ease: "linear", // Постоянная скорость
+              }
+            });
+            
+            // Этап 3: Плавное замедление до финальной позиции (1.2 секунды)
+            await fieldControl.start({
+              x: finalOffset,
+              transition: {
+                duration: duration * 0.3, // 30% от общего времени
+                ease: [0.215, 0.61, 0.355, 1], // Плавное замедление
+              }
+            });
+          })();
           
         } else {
           // Вертикальная прокрутка для нескольких кейсов (сверху вниз)
@@ -322,14 +343,35 @@ export default function CasePage() {
           // Устанавливаем начальную позицию
           fieldControl.set({ y: initialOffset });
           
-          // Создаем плавную анимацию с замедлением
-          animationPromise = fieldControl.start({
-            y: finalOffset,
-            transition: {
-              duration: duration,
-              ease: [0.25, 0.46, 0.45, 0.94], // Плавное ускорение и замедление
-            }
-          });
+          // Создаем многоэтапную анимацию для плавного разгона и замедления
+          animationPromise = (async () => {
+            // Этап 1: Быстрый разгон (0.3 секунды)
+            await fieldControl.start({
+              y: finalOffset * 0.15, // 15% от финальной позиции
+              transition: {
+                duration: duration * 0.075, // 7.5% от общего времени
+                ease: [0.55, 0.085, 0.68, 0.53], // Быстрый разгон
+              }
+            });
+            
+            // Этап 2: Основная прокрутка с постоянной скоростью (2.5 секунды)
+            await fieldControl.start({
+              y: finalOffset * 0.85, // 85% от финальной позиции
+              transition: {
+                duration: duration * 0.625, // 62.5% от общего времени
+                ease: "linear", // Постоянная скорость
+              }
+            });
+            
+            // Этап 3: Плавное замедление до финальной позиции (1.2 секунды)
+            await fieldControl.start({
+              y: finalOffset,
+              transition: {
+                duration: duration * 0.3, // 30% от общего времени
+                ease: [0.215, 0.61, 0.355, 1], // Плавное замедление
+              }
+            });
+          })();
         }
         
         animationPromises.push(animationPromise);
