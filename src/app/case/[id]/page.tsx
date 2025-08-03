@@ -257,10 +257,17 @@ export default function CasePage() {
         // Добавляем основные предметы
         infiniteItems.push(...currentItems);
         
-        // Размещаем выигрышный предмет в позиции для остановки (ближе к началу финального массива)
-        const targetIndex = infiniteItems.length + Math.floor(baseItemCount * 0.3); // Позиция выигрышного предмета в начале финального массива
+        // Добавляем дополнительные предметы перед выигрышным (для создания эффекта прокрутки)
+        const additionalItemsBeforeWin = selectedNumber === 1 ? Math.floor(baseItemCount * 0.3) : Math.floor(baseItemCount * 0.2);
+        for (let j = 0; j < additionalItemsBeforeWin; j++) {
+          const randomItem = getRandomItem();
+          if (randomItem) {
+            infiniteItems.push({ ...randomItem, id: `${randomItem.id}-${fieldKey}-before-${j}` });
+          }
+        }
         
-        // Добавляем выигрышный предмет
+        // Добавляем выигрышный предмет и запоминаем его позицию
+        const targetIndex = infiniteItems.length; // Позиция выигрышного предмета
         infiniteItems.push({ ...targetCaseItem, id: `${targetCaseItem.id}-${fieldKey}-target` });
         
         // Добавляем дополнительные карточки после выигрышной (чтобы было видно что есть ещё карточки)
@@ -288,13 +295,14 @@ export default function CasePage() {
         if (selectedNumber === 1) {
           // Горизонтальная прокрутка для одного кейса
           const itemWidth = cardWidth + gap;
+          const containerWidth = 663; // Ширина контейнера (679px - 16px padding)
           
           // Начальная позиция - показываем начало циклов
           const initialOffset = 0;
           
-          // Финальная позиция - останавливаемся на выигрышном предмете с отступом для центрирования
-          // Учитываем что выигрышный предмет находится в позиции targetIndex
-          const finalOffset = -(targetIndex * itemWidth) + (cardWidth / 2);
+          // Финальная позиция - центрируем выигрышный предмет в контейнере
+          // Рассчитываем так, чтобы центр выигрышного предмета совпал с центром контейнера
+          const finalOffset = -(targetIndex * itemWidth) + (containerWidth / 2) - (cardWidth / 2);
           
           // Устанавливаем начальную позицию
           fieldControl.set({ x: initialOffset });
@@ -341,13 +349,14 @@ export default function CasePage() {
         } else {
           // Вертикальная прокрутка для нескольких кейсов (сверху вниз)
           const itemHeight = cardHeight + gap;
+          const containerHeight = 272; // Высота контейнера (288px - 16px padding)
           
           // Начальная позиция - показываем начало циклов
           const initialOffset = 0;
           
-          // Финальная позиция - останавливаемся на выигрышном предмете с отступом для центрирования
-          // Учитываем что выигрышный предмет находится в позиции targetIndex
-          const finalOffset = -(targetIndex * itemHeight) + (cardHeight / 2);
+          // Финальная позиция - центрируем выигрышный предмет в контейнере
+          // Рассчитываем так, чтобы центр выигрышного предмета совпал с центром контейнера
+          const finalOffset = -(targetIndex * itemHeight) + (containerHeight / 2) - (cardHeight / 2);
           
           // Устанавливаем начальную позицию
           fieldControl.set({ y: initialOffset });
