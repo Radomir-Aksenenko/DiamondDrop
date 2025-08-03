@@ -191,7 +191,7 @@ export default function CasePage() {
   // Функция для запуска анимации рулетки
   const startSpinAnimation = async (results: CaseOpenResult[]) => {
     console.log('Запуск анимации для результатов:', results);
-    const duration = isFastMode ? 4 : 6; // Увеличиваем длительность для более плавной анимации
+    const duration = 5; // Рулетка крутится ровно 5 секунд и останавливается на призе
     
     // Очищаем старые расположения для текущей конфигурации
     setSavedLayouts(prev => {
