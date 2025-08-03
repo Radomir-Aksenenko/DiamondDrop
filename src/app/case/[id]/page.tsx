@@ -96,8 +96,8 @@ export default function CasePage() {
       return savedLayouts[layoutKey];
     }
     
-    // Для бесконечной рулетки генерируем больше предметов
-    const baseItemCount = selectedNumber === 1 ? 200 : 150;
+    // Для бесконечной рулетки генерируем больше предметов (увеличено в 2 раза)
+    const baseItemCount = selectedNumber === 1 ? 400 : 300;
     const items: CaseItem[] = [];
     
     // Генерируем основные предметы
@@ -108,8 +108,8 @@ export default function CasePage() {
       }
     }
     
-    // Дублируем предметы в начале для создания эффекта бесконечности
-    const duplicateCount = 50;
+    // Дублируем предметы в начале для создания эффекта бесконечности (увеличено в 2 раза)
+    const duplicateCount = 100;
     const duplicatedItems = [];
     for (let j = 0; j < duplicateCount; j++) {
       const sourceIndex = j % items.length;
@@ -204,8 +204,8 @@ export default function CasePage() {
       const fieldControl = controls[i];
       
       if (targetItem && fieldControl) {
-        // Генерируем много предметов для эффекта бесконечной рулетки
-        const baseItemCount = selectedNumber === 1 ? 200 : 150;
+        // Генерируем много предметов для эффекта бесконечной рулетки (увеличено в 2 раза)
+        const baseItemCount = selectedNumber === 1 ? 400 : 300;
         const currentItems: CaseItem[] = [];
         
         // Генерируем случайные предметы
@@ -232,8 +232,8 @@ export default function CasePage() {
         const targetIndex = Math.floor(baseItemCount * 0.85);
         currentItems[targetIndex] = { ...targetCaseItem, id: `${targetCaseItem.id}-${fieldKey}-${targetIndex}` };
         
-        // Дублируем предметы в начале для создания эффекта бесконечности
-        const duplicateCount = 50;
+        // Дублируем предметы в начале для создания эффекта бесконечности (увеличено в 2 раза)
+        const duplicateCount = 100;
         const duplicatedItems = [];
         for (let j = 0; j < duplicateCount; j++) {
           const sourceIndex = j % currentItems.length;
@@ -261,12 +261,12 @@ export default function CasePage() {
         
         if (selectedNumber === 1) {
           // Горизонтальная прокрутка
-          initialOffset = duplicateCount * (cardWidth + gap); // Начинаем с конца дублированных предметов
-          finalOffset = -(adjustedTargetIndex * (cardWidth + gap)) + (cardWidth / 2) + initialOffset;
+          initialOffset = 0; // Начинаем с начала дублированных предметов
+          finalOffset = -(adjustedTargetIndex * (cardWidth + gap)) + (cardWidth / 2);
         } else {
           // Вертикальная прокрутка
-          initialOffset = duplicateCount * (cardHeight + gap); // Начинаем с конца дублированных предметов
-          finalOffset = -(adjustedTargetIndex * (cardHeight + gap)) + (cardHeight / 2) + initialOffset;
+          initialOffset = 0; // Начинаем с начала дублированных предметов
+          finalOffset = -(adjustedTargetIndex * (cardHeight + gap)) + (cardHeight / 2);
         }
         
         // Устанавливаем начальную позицию
