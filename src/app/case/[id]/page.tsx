@@ -191,7 +191,7 @@ export default function CasePage() {
   // Функция для запуска анимации рулетки
   const startSpinAnimation = async (results: CaseOpenResult[]) => {
     console.log('Запуск анимации для результатов:', results);
-    const duration = 5; // Рулетка крутится ровно 5 секунд и останавливается на призе
+    const duration = 4; // Рулетка крутится ровно 4 секунды и останавливается на призе
     
     // Очищаем старые расположения для текущей конфигурации
     setSavedLayouts(prev => {
@@ -217,7 +217,7 @@ export default function CasePage() {
       
       if (targetItem && fieldControl) {
         // Создаем достаточно предметов для бесконечной анимации
-        const baseItemCount = selectedNumber === 1 ? 200 : 150; // Уменьшаем количество для оптимизации
+        const baseItemCount = selectedNumber === 1 ? 1000 : 150; // Для 1 кейса - 1000 карточек, для остальных - 150
         const currentItems: CaseItem[] = [];
         
         // Генерируем случайные предметы
@@ -245,11 +245,12 @@ export default function CasePage() {
         currentItems[targetIndex] = { ...targetCaseItem, id: `${targetCaseItem.id}-${fieldKey}-target` };
         
         // Создаем циклический массив для бесконечной анимации
-        const cycleLength = Math.min(50, baseItemCount); // Длина цикла для повторения
+        const cycleLength = selectedNumber === 1 ? Math.min(100, baseItemCount) : Math.min(50, baseItemCount); // Больше карточек в цикле для 1 кейса
         const infiniteItems: CaseItem[] = [];
         
-        // Добавляем несколько циклов в начало для плавного старта
-        for (let cycle = 0; cycle < 8; cycle++) {
+        // Добавляем больше циклов в начало для плавного старта без обрывов
+        const cycleCount = selectedNumber === 1 ? 15 : 8; // Больше циклов для 1 кейса
+        for (let cycle = 0; cycle < cycleCount; cycle++) {
           for (let j = 0; j < cycleLength; j++) {
             const sourceIndex = j % currentItems.length;
             const cyclicItem = { ...currentItems[sourceIndex], id: `${currentItems[sourceIndex].id}-cycle-${cycle}-${j}` };
@@ -276,7 +277,7 @@ export default function CasePage() {
         if (selectedNumber === 1) {
           // Горизонтальная прокрутка для одного кейса
           const itemWidth = cardWidth + gap;
-          const totalCycles = 8;
+          const totalCycles = cycleCount;
           
           // Начальная позиция - показываем начало циклов
           const initialOffset = 0;
@@ -300,7 +301,7 @@ export default function CasePage() {
         } else {
           // Вертикальная прокрутка для нескольких кейсов (сверху вниз)
           const itemHeight = cardHeight + gap;
-          const totalCycles = 8;
+          const totalCycles = cycleCount;
           
           // Начальная позиция - показываем начало циклов
           const initialOffset = 0;
