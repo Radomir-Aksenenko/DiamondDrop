@@ -3,12 +3,18 @@
 import { useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
-import { motion, useAnimation } from 'framer-motion';
+import { motion } from 'framer-motion';
+import dynamic from 'next/dynamic';
 import useCaseAPI from '@/hooks/useCaseAPI';
 import CaseItemCard from '@/components/ui/CaseItemCard';
 import CaseSlotItemCard from '@/components/ui/CaseSlotItemCard';
 import { API_BASE_URL } from '@/lib/config';
 import { CaseItem } from '@/hooks/useCasesAPI';
+
+// Динамический импорт RoulettePro для SSR совместимости
+const RoulettePro = dynamic(() => import('react-roulette-pro'), {
+  ssr: false,
+});
 
 // Константа для токена авторизации
 const AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI2ODhjYWQ2YWJlNjU0MWU5ZTgzMWFiZTciLCJwZXJtaXNzaW9uIjoiVXNlciIsIm5iZiI6MTc1NDA0OTg5OCwiZXhwIjoxNzU0MDUzNDk4LCJpYXQiOjE3NTQwNDk4OTgsImlzcyI6Im1yLnJhZmFlbGxvIn0.wlwEt3aTPnizjaW0z0iG5cFImxh_MHsDV10D97UrPSU'
@@ -38,24 +44,24 @@ export default function CasePage() {
   const [isFastMode, setIsFastMode] = useState(false);
   const [selectedNumber, setSelectedNumber] = useState(1);
   
-  // Состояние для сохранения расположения предметов
-  const [savedLayouts, setSavedLayouts] = useState<{[key: string]: CaseItem[]}>({});
-  
-  // Состояния для анимации рулетки
+  // Состояния для анимации рулетки с react-roulette-pro
   const [isSpinning, setIsSpinning] = useState(false);
+  const [rouletteStates, setRouletteStates] = useState<{
+    [key: string]: {
+      start: boolean;
+      prizeList: Array<{id: string; image: string; text?: string; component?: React.ReactNode}>;
+      prizeIndex: number;
+    }
+  }>({});
   
-  // Motion controls для каждого поля рулетки
-  const field1Controls = useAnimation();
-  const field2Controls = useAnimation();
-  const field3Controls = useAnimation();
-  const field4Controls = useAnimation();
+  // Результаты открытия кейсов
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [openResults, setOpenResults] = useState<CaseOpenResult[]>([]);
 
-  // Функция для сброса позиций анимации
-  const resetAnimationPositions = () => {
-    field1Controls.set(selectedNumber === 1 ? { x: 0 } : { y: 0 });
-    field2Controls.set({ y: 0 });
-    field3Controls.set({ y: 0 });
-    field4Controls.set({ y: 0 });
+  // Функция для сброса состояний рулетки
+  const resetRouletteStates = () => {
+    setRouletteStates({});
+    setOpenResults([]);
   };
 
   // Функция для сортировки предметов по цене (всегда от дорогих к дешевым)
@@ -92,53 +98,76 @@ export default function CasePage() {
     return caseData.items[randomIndex];
   };
 
-  // Функция для генерации массива случайных предметов для слота с сохранением состояния
-  const generateRandomItems = (fieldKey: string) => {
+  // Функция для генерации случайных предметов для превью
+  const generateRandomItems = (fieldId: string) => {
     if (!caseData?.items || caseData.items.length === 0) return [];
     
-    // Создаем уникальный ключ для сохранения расположения
-    const layoutKey = `${selectedNumber}-${fieldKey}`;
-    
-    // Если расположение уже сохранено, возвращаем его
-    if (savedLayouts[layoutKey]) {
-      return savedLayouts[layoutKey];
-    }
-    
-    // Создаем достаточно предметов для отображения
-    const baseItemCount = selectedNumber === 1 ? 50 : 40; // Меньше предметов для начального отображения
-    const items: CaseItem[] = [];
-    
-    // Генерируем случайные предметы
-    for (let i = 0; i < baseItemCount; i++) {
+    const items = [];
+    for (let i = 0; i < 20; i++) {
       const randomItem = getRandomItem();
       if (randomItem) {
-        items.push({ ...randomItem, id: `${randomItem.id}-${fieldKey}-${i}` });
+        items.push({
+          ...randomItem,
+          id: `${fieldId}-preview-${i}-${randomItem.id}`
+        });
       }
     }
+    return items;
+  };
+
+  // Функция для создания списка призов для react-roulette-pro
+  const createPrizeList = (targetItem: CaseOpenResult) => {
+    if (!caseData?.items || caseData.items.length === 0) return [];
     
-    // Создаем циклический массив для плавного отображения
-    const cycleLength = Math.min(20, baseItemCount);
-    const displayItems: CaseItem[] = [];
-    
-    // Добавляем несколько циклов для начального отображения
-    for (let cycle = 0; cycle < 3; cycle++) {
-      for (let j = 0; j < cycleLength; j++) {
-        const sourceIndex = j % items.length;
-        const cyclicItem = { ...items[sourceIndex], id: `${items[sourceIndex].id}-display-${cycle}-${j}` };
-        displayItems.push(cyclicItem);
-      }
-    }
-    
-    // Добавляем основные предметы
-    displayItems.push(...items);
-    
-    // Сохраняем расположение
-    setSavedLayouts(prev => ({
-      ...prev,
-      [layoutKey]: displayItems
+    // Создаем базовый массив случайных предметов
+    const baseItems = caseData.items.map(item => ({
+      id: item.id,
+      image: item.imageUrl && item.imageUrl.startsWith('http') ? item.imageUrl : `${API_BASE_URL}${item.imageUrl || ''}`,
+      text: item.name,
+      component: <CaseSlotItemCard item={item} />
     }));
     
-    return displayItems;
+    // Функция для генерации случайного предмета
+    const getRandomPrize = () => {
+      const randomIndex = Math.floor(Math.random() * baseItems.length);
+      return { ...baseItems[randomIndex], id: `${baseItems[randomIndex].id}-${Date.now()}-${Math.random()}` };
+    };
+    
+    // Создаем массив призов для рулетки
+    const prizeList = [];
+    
+    // Добавляем случайные предметы в начало (для создания эффекта прокрутки)
+    for (let i = 0; i < 20; i++) {
+      prizeList.push(getRandomPrize());
+    }
+    
+    // Преобразуем результат API в формат CaseItem для выигрышного предмета
+    const targetCaseItem: CaseItem = {
+      id: targetItem.id,
+      name: targetItem.name,
+      description: targetItem.description,
+      imageUrl: targetItem.imageUrl,
+      amount: targetItem.amount,
+      price: targetItem.price,
+      percentChance: targetItem.percentChance,
+      rarity: targetItem.rarity
+    };
+    
+    // Добавляем выигрышный предмет
+    const winningPrize = {
+      id: `${targetItem.id}-winning`,
+      image: targetItem.imageUrl && targetItem.imageUrl.startsWith('http') ? targetItem.imageUrl : `${API_BASE_URL}${targetItem.imageUrl || ''}`,
+      text: targetItem.name,
+      component: <CaseSlotItemCard item={targetCaseItem} />
+    };
+    prizeList.push(winningPrize);
+    
+    // Добавляем случайные предметы в конец
+    for (let i = 0; i < 10; i++) {
+      prizeList.push(getRandomPrize());
+    }
+    
+    return prizeList;
   };
 
   // Функция для открытия кейсов через API
@@ -153,11 +182,8 @@ export default function CasePage() {
       console.log('Начинаем открытие кейса...');
       setIsSpinning(true);
       
-      // Сбрасываем предыдущие анимации
-      field1Controls.stop();
-      field2Controls.stop();
-      field3Controls.stop();
-      field4Controls.stop();
+      // Сбрасываем предыдущие состояния рулетки
+      resetRouletteStates();
       
       // Используем константу токена авторизации
       const token = AUTH_TOKEN;
@@ -179,8 +205,11 @@ export default function CasePage() {
       const results: CaseOpenResult[] = await response.json();
       console.log('Получены результаты:', results);
       
+      // Сохраняем результаты
+      setOpenResults(results);
+      
       // Запускаем анимацию рулетки
-      startSpinAnimation(results);
+      startRouletteAnimation(results);
       
     } catch (error) {
       console.error('Ошибка при открытии кейса:', error);
@@ -188,230 +217,50 @@ export default function CasePage() {
     }
   };
 
-  // Функция для запуска анимации рулетки
-  const startSpinAnimation = async (results: CaseOpenResult[]) => {
-    console.log('Запуск анимации для результатов:', results);
-    const duration = isFastMode ? 2 : 4; // Учитываем быстрый режим
+  // Функция для запуска анимации рулетки с react-roulette-pro
+  const startRouletteAnimation = async (results: CaseOpenResult[]) => {
+    console.log('Запуск анимации рулетки для результатов:', results);
     
-    // Очищаем старые расположения для текущей конфигурации
-    setSavedLayouts(prev => {
-      const newLayouts = { ...prev };
-      for (let i = 0; i < selectedNumber; i++) {
-        const fieldKey = `field${i + 1}`;
-        const layoutKey = `${selectedNumber}-${fieldKey}`;
-        delete newLayouts[layoutKey];
+    // Создаем состояния рулетки для каждого поля
+    const newRouletteStates: {
+      [key: string]: {
+        start: boolean;
+        prizeList: Array<{id: string; image: string; text?: string; component?: React.ReactNode}>;
+        prizeIndex: number;
       }
-      return newLayouts;
-    });
-    
-    // Получаем массив controls для активных полей
-    const controls = [field1Controls, field2Controls, field3Controls, field4Controls];
-    
-    // Для каждого поля создаем анимацию
-    const animationPromises = [];
+    } = {};
     
     for (let i = 0; i < selectedNumber; i++) {
-      const fieldKey = `field${i + 1}`;
       const targetItem = results[i];
-      const fieldControl = controls[i];
       
-      if (targetItem && fieldControl) {
-        // Создаем оптимальное количество предметов для плавной анимации
-        const baseItemCount = selectedNumber === 1 ? 300 : 200; // Оптимизируем для производительности
-        const currentItems: CaseItem[] = [];
+      if (targetItem) {
+        // Создаем список призов для рулетки
+        const prizeList = createPrizeList(targetItem);
         
-        // Генерируем случайные предметы
-        for (let j = 0; j < baseItemCount; j++) {
-          const randomItem = getRandomItem();
-          if (randomItem) {
-            currentItems.push({ ...randomItem, id: `${randomItem.id}-${fieldKey}-${j}` });
-          }
-        }
+        // Находим индекс выигрышного приза (он всегда в центре списка)
+        const prizeIndex = Math.floor(prizeList.length / 2);
         
-        // Преобразуем результат API в формат CaseItem для совместимости
-        const targetCaseItem: CaseItem = {
-          id: targetItem.id,
-          name: targetItem.name,
-          description: targetItem.description,
-          imageUrl: targetItem.imageUrl,
-          amount: targetItem.amount,
-          price: targetItem.price,
-          percentChance: targetItem.percentChance,
-          rarity: targetItem.rarity
+        newRouletteStates[i] = {
+          start: true,
+          prizeList,
+          prizeIndex
         };
-        
-        // Создаем циклический массив для бесконечной анимации
-        const cycleLength = selectedNumber === 1 ? Math.min(50, baseItemCount) : Math.min(40, baseItemCount); // Оптимизированное количество карточек в цикле
-        const infiniteItems: CaseItem[] = [];
-        
-        // Добавляем оптимальное количество циклов для плавной прокрутки
-        const cycleCount = selectedNumber === 1 ? 6 : 5; // Оптимизированное количество циклов
-        for (let cycle = 0; cycle < cycleCount; cycle++) {
-          for (let j = 0; j < cycleLength; j++) {
-            const sourceIndex = j % currentItems.length;
-            const cyclicItem = { ...currentItems[sourceIndex], id: `${currentItems[sourceIndex].id}-cycle-${cycle}-${j}` };
-            infiniteItems.push(cyclicItem);
-          }
-        }
-        
-        // Добавляем основные предметы
-        infiniteItems.push(...currentItems);
-        
-        // Добавляем дополнительные предметы перед выигрышным (для создания эффекта прокрутки)
-        const additionalItemsBeforeWin = selectedNumber === 1 ? Math.floor(baseItemCount * 0.3) : Math.floor(baseItemCount * 0.2);
-        for (let j = 0; j < additionalItemsBeforeWin; j++) {
-          const randomItem = getRandomItem();
-          if (randomItem) {
-            infiniteItems.push({ ...randomItem, id: `${randomItem.id}-${fieldKey}-before-${j}` });
-          }
-        }
-        
-        // Добавляем выигрышный предмет и запоминаем его позицию
-        const targetIndex = infiniteItems.length; // Позиция выигрышного предмета
-        infiniteItems.push({ ...targetCaseItem, id: `${targetCaseItem.id}-${fieldKey}-target` });
-        
-        // Добавляем дополнительные карточки после выигрышной (чтобы было видно что есть ещё карточки)
-        const additionalCardsAfterWin = selectedNumber === 1 ? 15 : 10; // Количество карточек после выигрышной
-        for (let j = 0; j < additionalCardsAfterWin; j++) {
-          const randomItem = getRandomItem();
-          if (randomItem) {
-            infiniteItems.push({ ...randomItem, id: `${randomItem.id}-${fieldKey}-after-${j}` });
-          }
-        }
-        
-        // Обновляем сохраненные расположения
-        setSavedLayouts(prev => ({
-          ...prev,
-          [`${selectedNumber}-${fieldKey}`]: infiniteItems
-        }));
-        
-        // Вычисляем размеры карточек
-        const cardWidth = 76;
-        const cardHeight = 100;
-        const gap = 8;
-        
-        let animationPromise;
-        
-        if (selectedNumber === 1) {
-          // Горизонтальная прокрутка для одного кейса
-          const itemWidth = cardWidth + gap;
-          const containerWidth = 663; // Ширина контейнера (679px - 16px padding)
-          
-          // Начальная позиция - показываем начало циклов
-          const initialOffset = 0;
-          
-          // Финальная позиция - центрируем выигрышный предмет в контейнере
-          // Рассчитываем так, чтобы центр выигрышного предмета совпал с центром контейнера
-          const finalOffset = -(targetIndex * itemWidth) + (containerWidth / 2) - (cardWidth / 2);
-          
-          // Устанавливаем начальную позицию
-          fieldControl.set({ x: initialOffset });
-          
-          // Создаем плавную анимацию без возвращения назад
-          animationPromise = (async () => {
-            // Этап 1: Быстрый разгон (10% времени)
-            await fieldControl.start({
-              x: finalOffset * 0.25, // 25% от финальной позиции
-              transition: {
-                duration: duration * 0.1,
-                ease: [0.55, 0.085, 0.68, 0.53], // Плавный разгон без отскока назад
-              }
-            });
-            
-            // Этап 2: Медленная прокрутка для создания напряжения (60% времени)
-            await fieldControl.start({
-              x: finalOffset * 0.75, // 75% от финальной позиции
-              transition: {
-                duration: duration * 0.6,
-                ease: [0.25, 0.46, 0.45, 0.94], // Медленная равномерная прокрутка
-              }
-            });
-            
-            // Этап 3: Предфинальное замедление (20% времени)
-            await fieldControl.start({
-              x: finalOffset * 0.95, // 95% от финальной позиции
-              transition: {
-                duration: duration * 0.2,
-                ease: [0.175, 0.885, 0.32, 1.0], // Замедление без перелета
-              }
-            });
-            
-            // Этап 4: Финальная точная остановка (10% времени)
-            await fieldControl.start({
-              x: finalOffset,
-              transition: {
-                duration: duration * 0.1,
-                ease: [0.23, 1, 0.32, 1], // Точная остановка
-              }
-            });
-          })();
-          
-        } else {
-          // Вертикальная прокрутка для нескольких кейсов (сверху вниз)
-          const itemHeight = cardHeight + gap;
-          const containerHeight = 272; // Высота контейнера (288px - 16px padding)
-          
-          // Начальная позиция - показываем начало циклов
-          const initialOffset = 0;
-          
-          // Финальная позиция - центрируем выигрышный предмет в контейнере
-          // Рассчитываем так, чтобы центр выигрышного предмета совпал с центром контейнера
-          const finalOffset = -(targetIndex * itemHeight) + (containerHeight / 2) - (cardHeight / 2);
-          
-          // Устанавливаем начальную позицию
-          fieldControl.set({ y: initialOffset });
-          
-          // Создаем плавную анимацию без возвращения назад
-          animationPromise = (async () => {
-            // Этап 1: Быстрый разгон (10% времени)
-            await fieldControl.start({
-              y: finalOffset * 0.25, // 25% от финальной позиции
-              transition: {
-                duration: duration * 0.1,
-                ease: [0.55, 0.085, 0.68, 0.53], // Плавный разгон без отскока назад
-              }
-            });
-            
-            // Этап 2: Медленная прокрутка для создания напряжения (60% времени)
-            await fieldControl.start({
-              y: finalOffset * 0.75, // 75% от финальной позиции
-              transition: {
-                duration: duration * 0.6,
-                ease: [0.25, 0.46, 0.45, 0.94], // Медленная равномерная прокрутка
-              }
-            });
-            
-            // Этап 3: Предфинальное замедление (20% времени)
-            await fieldControl.start({
-              y: finalOffset * 0.95, // 95% от финальной позиции
-              transition: {
-                duration: duration * 0.2,
-                ease: [0.175, 0.885, 0.32, 1.0], // Замедление без перелета
-              }
-            });
-            
-            // Этап 4: Финальная точная остановка (10% времени)
-            await fieldControl.start({
-              y: finalOffset,
-              transition: {
-                duration: duration * 0.1,
-                ease: [0.23, 1, 0.32, 1], // Точная остановка
-              }
-            });
-          })();
-        }
-        
-        animationPromises.push(animationPromise);
       }
     }
     
-    // Ждем завершения всех анимаций
-    try {
-      await Promise.all(animationPromises);
-      console.log('Анимация завершена');
-      setIsSpinning(false);
-    } catch (error) {
-      console.error('Ошибка анимации:', error);
+    // Обновляем состояния рулетки
+    setRouletteStates(newRouletteStates);
+  };
+
+  // Обработчик завершения анимации рулетки
+  const handlePrizeDefined = (prizeIndex: number, fieldIndex: number) => {
+    console.log(`Рулетка ${fieldIndex + 1} завершена, приз с индексом:`, prizeIndex);
+    
+    // Проверяем, завершились ли все рулетки
+    const completedCount = Object.keys(rouletteStates).length;
+    
+    if (completedCount === selectedNumber) {
+      console.log('Все рулетки завершены');
       setIsSpinning(false);
     }
   };
@@ -422,8 +271,8 @@ export default function CasePage() {
       onClick={() => {
         if (selectedNumber !== number) {
           setSelectedNumber(number);
-          // Сбрасываем позиции анимации при смене количества кейсов
-          setTimeout(() => resetAnimationPositions(), 50);
+          // Сбрасываем состояния рулетки при смене количества кейсов
+          setTimeout(() => resetRouletteStates(), 50);
         }
       }}
       className={`flex cursor-pointer w-[36px] h-[36px] justify-center items-center rounded-[8px] font-unbounded text-sm font-medium transition-all duration-200 ${
@@ -614,207 +463,49 @@ export default function CasePage() {
           <div className="flex p-[10px] items-start rounded-xl bg-[#F9F8FC]/[0.05] w-[679px] h-[288px]">
             {/* Контейнер для полей кейсов */}
             <div className="flex w-full h-full gap-[8px]">
-              {selectedNumber === 1 && (
-                // Одно поле на всю ширину с предметами расположенными горизонтально
-                <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden flex justify-center items-center">
-                  {/* Контейнер для рулетки с анимацией */}
-                  <motion.div 
-                    className="flex items-center gap-2 p-2"
-                    animate={field1Controls}
+              {/* Рендерим рулетки для каждого выбранного поля */}
+              {Array.from({ length: selectedNumber }, (_, index) => {
+                const rouletteState = rouletteStates[index];
+                const isHorizontal = selectedNumber === 1;
+                
+                return (
+                  <div 
+                    key={`roulette-${index}`}
+                    className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden"
                   >
-                    {(savedLayouts[`${selectedNumber}-field1`] || generateRandomItems('field1')).map((item, index) => (
-                      <CaseSlotItemCard 
-                        key={`field1-${item.id}-${index}`} 
-                        item={item} 
+                    {rouletteState ? (
+                      <RoulettePro
+                        prizes={rouletteState.prizeList}
+                        prizeIndex={rouletteState.prizeIndex}
+                        start={rouletteState.start}
+                        onPrizeDefined={() => handlePrizeDefined(rouletteState.prizeIndex, index)}
+                        type={isHorizontal ? 'horizontal' : 'vertical'}
+                        options={{
+                          stopInCenter: true,
+                          withoutAnimation: false,
+                        }}
                       />
-                    ))}
-                  </motion.div>
-                  
-                  {/* Белая палочка по центру */}
-                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1 h-full bg-gradient-to-b from-white/90 via-white to-white/90 z-10 pointer-events-none shadow-lg shadow-white/20">
-                  </div>
-                </div>
-              )}
-              
-              {selectedNumber === 2 && (
-                // Два поля горизонтально, предметы вертикально
-                <>
-                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
-                    {/* Контейнер для рулетки с анимацией */}
-                  <motion.div 
-                    className="flex flex-col items-center gap-2 p-2"
-                    animate={field1Controls}
-                  >
-                      {(savedLayouts[`${selectedNumber}-field1`] || generateRandomItems('field1')).map((item, index) => (
-                        <CaseSlotItemCard 
-                          key={`field1-${item.id}-${index}`} 
-                          item={item} 
-                        />
-                      ))}
-                    </motion.div>
+                    ) : (
+                      // Показываем случайные предметы до начала анимации
+                      <div className={`flex ${isHorizontal ? 'items-center gap-2 p-2' : 'flex-col items-center gap-2 p-2'} w-full h-full justify-center`}>
+                        {generateRandomItems(`field${index + 1}`).slice(0, isHorizontal ? 8 : 6).map((item, itemIndex) => (
+                          <CaseSlotItemCard 
+                            key={`preview-${item.id}-${itemIndex}`} 
+                            item={item} 
+                          />
+                        ))}
+                      </div>
+                    )}
                     
                     {/* Белая палочка по центру */}
-                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-gradient-to-r from-white/90 via-white to-white/90 z-10 pointer-events-none shadow-lg shadow-white/20">
+                    <div className={`absolute ${isHorizontal 
+                      ? 'top-0 left-1/2 transform -translate-x-1/2 w-1 h-full bg-gradient-to-b' 
+                      : 'top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-gradient-to-r'
+                    } from-white/90 via-white to-white/90 z-10 pointer-events-none shadow-lg shadow-white/20`}>
                     </div>
                   </div>
-                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
-                    {/* Контейнер для рулетки с анимацией */}
-                    <motion.div 
-                      className="flex flex-col items-center gap-2 p-2"
-                      animate={field2Controls}
-                    >
-                      {(savedLayouts[`${selectedNumber}-field2`] || generateRandomItems('field2')).map((item, index) => (
-                        <CaseSlotItemCard 
-                          key={`field2-${item.id}-${index}`} 
-                          item={item} 
-                        />
-                      ))}
-                    </motion.div>
-                    
-                    {/* Белая палочка по центру */}
-                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-gradient-to-r from-white/90 via-white to-white/90 z-10 pointer-events-none shadow-lg shadow-white/20">
-                    </div>
-                  </div>
-                </>
-              )}
-              
-              {selectedNumber === 3 && (
-                // Три поля горизонтально, предметы вертикально
-                <>
-                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
-                    {/* Контейнер для рулетки с анимацией */}
-                    <motion.div 
-                      className="flex flex-col items-center gap-2 p-2"
-                      animate={field1Controls}
-                    >
-                      {(savedLayouts[`${selectedNumber}-field1`] || generateRandomItems('field1')).map((item, index) => (
-                        <CaseSlotItemCard 
-                          key={`field1-${item.id}-${index}`} 
-                          item={item} 
-                        />
-                      ))}
-                    </motion.div>
-                    
-                    {/* Белая палочка по центру */}
-                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-gradient-to-r from-white/90 via-white to-white/90 z-10 pointer-events-none shadow-lg shadow-white/20">
-                    </div>
-                  </div>
-                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
-                    {/* Контейнер для рулетки с анимацией */}
-                    <motion.div 
-                      className="flex flex-col items-center gap-2 p-2"
-                      animate={field2Controls}
-                    >
-                      {(savedLayouts[`${selectedNumber}-field2`] || generateRandomItems('field2')).map((item, index) => (
-                        <CaseSlotItemCard 
-                          key={`field2-${item.id}-${index}`} 
-                          item={item} 
-                        />
-                      ))}
-                    </motion.div>
-                    
-                    {/* Белая палочка по центру */}
-                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-gradient-to-r from-white/90 via-white to-white/90 z-10 pointer-events-none shadow-lg shadow-white/20">
-                    </div>
-                  </div>
-                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
-                    {/* Контейнер для рулетки с анимацией */}
-                    <motion.div 
-                      className="flex flex-col items-center gap-2 p-2"
-                      animate={field3Controls}
-                    >
-                      {(savedLayouts[`${selectedNumber}-field3`] || generateRandomItems('field3')).map((item, index) => (
-                        <CaseSlotItemCard 
-                          key={`field3-${item.id}-${index}`} 
-                          item={item} 
-                        />
-                      ))}
-                    </motion.div>
-                    
-                    {/* Белая палочка по центру */}
-                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-gradient-to-r from-white/90 via-white to-white/90 z-10 pointer-events-none shadow-lg shadow-white/20">
-                    </div>
-                  </div>
-                </>
-              )}
-              
-              {selectedNumber === 4 && (
-                // Четыре поля горизонтально, предметы вертикально
-                <>
-                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
-                    {/* Контейнер для рулетки с анимацией */}
-                    <motion.div 
-                      className="flex flex-col items-center gap-2 p-2"
-                      animate={field1Controls}
-                    >
-                      {(savedLayouts[`${selectedNumber}-field1`] || generateRandomItems('field1')).map((item, index) => (
-                        <CaseSlotItemCard 
-                          key={`field1-${item.id}-${index}`} 
-                          item={item} 
-                        />
-                      ))}
-                    </motion.div>
-                    
-                    {/* Белая палочка по центру */}
-                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-gradient-to-r from-white/90 via-white to-white/90 z-10 pointer-events-none shadow-lg shadow-white/20">
-                    </div>
-                  </div>
-                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
-                    {/* Контейнер для рулетки с анимацией */}
-                    <motion.div 
-                      className="flex flex-col items-center gap-2 p-2"
-                      animate={field2Controls}
-                    >
-                      {(savedLayouts[`${selectedNumber}-field2`] || generateRandomItems('field2')).map((item, index) => (
-                        <CaseSlotItemCard 
-                          key={`field2-${item.id}-${index}`} 
-                          item={item} 
-                        />
-                      ))}
-                    </motion.div>
-                    
-                    {/* Белая палочка по центру */}
-                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-gradient-to-r from-white/90 via-white to-white/90 z-10 pointer-events-none shadow-lg shadow-white/20">
-                    </div>
-                  </div>
-                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
-                    {/* Контейнер для рулетки с анимацией */}
-                    <motion.div 
-                      className="flex flex-col items-center gap-2 p-2"
-                      animate={field3Controls}
-                    >
-                      {(savedLayouts[`${selectedNumber}-field3`] || generateRandomItems('field3')).map((item, index) => (
-                        <CaseSlotItemCard 
-                          key={`field3-${item.id}-${index}`} 
-                          item={item} 
-                        />
-                      ))}
-                    </motion.div>
-                    
-                    {/* Белая палочка по центру */}
-                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-gradient-to-r from-white/90 via-white to-white/90 z-10 pointer-events-none shadow-lg shadow-white/20">
-                    </div>
-                  </div>
-                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
-                    {/* Контейнер для рулетки с анимацией */}
-                    <motion.div 
-                      className="flex flex-col items-center gap-2 p-2"
-                      animate={field4Controls}
-                    >
-                      {(savedLayouts[`${selectedNumber}-field4`] || generateRandomItems('field4')).map((item, index) => (
-                        <CaseSlotItemCard 
-                          key={`field4-${item.id}-${index}`} 
-                          item={item} 
-                        />
-                      ))}
-                    </motion.div>
-                    
-                    {/* Белая палочка по центру */}
-                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-gradient-to-r from-white/90 via-white to-white/90 z-10 pointer-events-none shadow-lg shadow-white/20">
-                    </div>
-                  </div>
-                </>
-              )}
+                );
+              })}
             </div>
           </div>
         </div>

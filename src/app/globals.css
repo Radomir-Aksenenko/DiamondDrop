@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "react-roulette-pro/dist/index.css";
 
 /* Подключение шрифта Actay Wide */
 @font-face {
