@@ -217,7 +217,7 @@ export default function CasePage() {
       
       if (targetItem && fieldControl) {
         // Создаем достаточно предметов для бесконечной анимации
-        const baseItemCount = selectedNumber === 1 ? 1000 : 150; // Для 1 кейса - 1000 карточек, для остальных - 150
+        const baseItemCount = selectedNumber === 1 ? 2000 : 500; // Значительно увеличиваем количество карточек
         const currentItems: CaseItem[] = [];
         
         // Генерируем случайные предметы
@@ -240,16 +240,16 @@ export default function CasePage() {
           rarity: targetItem.rarity
         };
         
-        // Размещаем выигрышный предмет в позиции для остановки
-        const targetIndex = Math.floor(baseItemCount * 0.8); // Позиция выигрышного предмета
+        // Размещаем выигрышный предмет в позиции для остановки (в середине массива для безопасности)
+        const targetIndex = Math.floor(baseItemCount * 0.5); // Позиция выигрышного предмета в середине
         currentItems[targetIndex] = { ...targetCaseItem, id: `${targetCaseItem.id}-${fieldKey}-target` };
         
         // Создаем циклический массив для бесконечной анимации
-        const cycleLength = selectedNumber === 1 ? Math.min(100, baseItemCount) : Math.min(50, baseItemCount); // Больше карточек в цикле для 1 кейса
+        const cycleLength = selectedNumber === 1 ? Math.min(200, baseItemCount) : Math.min(100, baseItemCount); // Еще больше карточек в цикле
         const infiniteItems: CaseItem[] = [];
         
-        // Добавляем больше циклов в начало для плавного старта без обрывов
-        const cycleCount = selectedNumber === 1 ? 15 : 8; // Больше циклов для 1 кейса
+        // Добавляем огромное количество циклов для гарантированно бесконечной прокрутки
+        const cycleCount = selectedNumber === 1 ? 30 : 20; // Значительно больше циклов
         for (let cycle = 0; cycle < cycleCount; cycle++) {
           for (let j = 0; j < cycleLength; j++) {
             const sourceIndex = j % currentItems.length;
@@ -260,6 +260,15 @@ export default function CasePage() {
         
         // Добавляем основные предметы с выигрышным
         infiniteItems.push(...currentItems);
+        
+        // Добавляем дополнительные циклы в конец для полной гарантии
+        for (let cycle = 0; cycle < cycleCount; cycle++) {
+          for (let j = 0; j < cycleLength; j++) {
+            const sourceIndex = j % currentItems.length;
+            const cyclicItem = { ...currentItems[sourceIndex], id: `${currentItems[sourceIndex].id}-end-cycle-${cycle}-${j}` };
+            infiniteItems.push(cyclicItem);
+          }
+        }
         
         // Обновляем сохраненные расположения
         setSavedLayouts(prev => ({
