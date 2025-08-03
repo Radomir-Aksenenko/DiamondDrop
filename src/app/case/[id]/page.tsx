@@ -240,10 +240,6 @@ export default function CasePage() {
           rarity: targetItem.rarity
         };
         
-        // Размещаем выигрышный предмет в позиции для остановки (в середине массива для безопасности)
-        const targetIndex = Math.floor(baseItemCount * 0.5); // Позиция выигрышного предмета в середине
-        currentItems[targetIndex] = { ...targetCaseItem, id: `${targetCaseItem.id}-${fieldKey}-target` };
-        
         // Создаем циклический массив для бесконечной анимации
         const cycleLength = selectedNumber === 1 ? Math.min(50, baseItemCount) : Math.min(40, baseItemCount); // Оптимизированное количество карточек в цикле
         const infiniteItems: CaseItem[] = [];
@@ -258,15 +254,21 @@ export default function CasePage() {
           }
         }
         
-        // Добавляем основные предметы с выигрышным
+        // Добавляем основные предметы
         infiniteItems.push(...currentItems);
         
-        // Добавляем дополнительные циклы в конец для полной гарантии
-        for (let cycle = 0; cycle < cycleCount; cycle++) {
-          for (let j = 0; j < cycleLength; j++) {
-            const sourceIndex = j % currentItems.length;
-            const cyclicItem = { ...currentItems[sourceIndex], id: `${currentItems[sourceIndex].id}-end-cycle-${cycle}-${j}` };
-            infiniteItems.push(cyclicItem);
+        // Размещаем выигрышный предмет в позиции для остановки (ближе к началу финального массива)
+        const targetIndex = infiniteItems.length + Math.floor(baseItemCount * 0.3); // Позиция выигрышного предмета в начале финального массива
+        
+        // Добавляем выигрышный предмет
+        infiniteItems.push({ ...targetCaseItem, id: `${targetCaseItem.id}-${fieldKey}-target` });
+        
+        // Добавляем дополнительные карточки после выигрышной (чтобы было видно что есть ещё карточки)
+        const additionalCardsAfterWin = selectedNumber === 1 ? 15 : 10; // Количество карточек после выигрышной
+        for (let j = 0; j < additionalCardsAfterWin; j++) {
+          const randomItem = getRandomItem();
+          if (randomItem) {
+            infiniteItems.push({ ...randomItem, id: `${randomItem.id}-${fieldKey}-after-${j}` });
           }
         }
         
@@ -286,52 +288,51 @@ export default function CasePage() {
         if (selectedNumber === 1) {
           // Горизонтальная прокрутка для одного кейса
           const itemWidth = cardWidth + gap;
-          const totalCycles = cycleCount;
           
           // Начальная позиция - показываем начало циклов
           const initialOffset = 0;
           
-          // Финальная позиция - останавливаемся на выигрышном предмете
-          const finalTargetIndex = (totalCycles * cycleLength) + targetIndex;
-          const finalOffset = -(finalTargetIndex * itemWidth) + (cardWidth / 2);
+          // Финальная позиция - останавливаемся на выигрышном предмете с отступом для центрирования
+          // Учитываем что выигрышный предмет находится в позиции targetIndex
+          const finalOffset = -(targetIndex * itemWidth) + (cardWidth / 2);
           
           // Устанавливаем начальную позицию
           fieldControl.set({ x: initialOffset });
           
-          // Создаем интригующую многоэтапную анимацию
+          // Создаем плавную анимацию без возвращения назад
           animationPromise = (async () => {
-            // Этап 1: Быстрый разгон (0.4 секунды)
+            // Этап 1: Быстрый разгон (10% времени)
             await fieldControl.start({
               x: finalOffset * 0.25, // 25% от финальной позиции
               transition: {
-                duration: duration * 0.1, // 10% от общего времени
-                ease: [0.68, -0.55, 0.265, 1.55], // Резкий разгон с небольшим отскоком
+                duration: duration * 0.1,
+                ease: [0.55, 0.085, 0.68, 0.53], // Плавный разгон без отскока назад
               }
             });
             
-            // Этап 2: Медленная прокрутка для создания напряжения (2.4 секунды)
+            // Этап 2: Медленная прокрутка для создания напряжения (60% времени)
             await fieldControl.start({
               x: finalOffset * 0.75, // 75% от финальной позиции
               transition: {
-                duration: duration * 0.6, // 60% от общего времени
+                duration: duration * 0.6,
                 ease: [0.25, 0.46, 0.45, 0.94], // Медленная равномерная прокрутка
               }
             });
             
-            // Этап 3: Предфинальное замедление с "колебанием" (0.8 секунды)
+            // Этап 3: Предфинальное замедление (20% времени)
             await fieldControl.start({
               x: finalOffset * 0.95, // 95% от финальной позиции
               transition: {
-                duration: duration * 0.2, // 20% от общего времени
-                ease: [0.175, 0.885, 0.32, 1.275], // Замедление с небольшим перелетом
+                duration: duration * 0.2,
+                ease: [0.175, 0.885, 0.32, 1.0], // Замедление без перелета
               }
             });
             
-            // Этап 4: Финальная точная остановка (0.4 секунды)
+            // Этап 4: Финальная точная остановка (10% времени)
             await fieldControl.start({
               x: finalOffset,
               transition: {
-                duration: duration * 0.1, // 10% от общего времени
+                duration: duration * 0.1,
                 ease: [0.23, 1, 0.32, 1], // Точная остановка
               }
             });
@@ -340,52 +341,51 @@ export default function CasePage() {
         } else {
           // Вертикальная прокрутка для нескольких кейсов (сверху вниз)
           const itemHeight = cardHeight + gap;
-          const totalCycles = cycleCount;
           
           // Начальная позиция - показываем начало циклов
           const initialOffset = 0;
           
-          // Финальная позиция - останавливаемся на выигрышном предмете
-          const finalTargetIndex = (totalCycles * cycleLength) + targetIndex;
-          const finalOffset = -(finalTargetIndex * itemHeight) + (cardHeight / 2);
+          // Финальная позиция - останавливаемся на выигрышном предмете с отступом для центрирования
+          // Учитываем что выигрышный предмет находится в позиции targetIndex
+          const finalOffset = -(targetIndex * itemHeight) + (cardHeight / 2);
           
           // Устанавливаем начальную позицию
           fieldControl.set({ y: initialOffset });
           
-          // Создаем интригующую многоэтапную анимацию
+          // Создаем плавную анимацию без возвращения назад
           animationPromise = (async () => {
-            // Этап 1: Быстрый разгон (0.4 секунды)
+            // Этап 1: Быстрый разгон (10% времени)
             await fieldControl.start({
               y: finalOffset * 0.25, // 25% от финальной позиции
               transition: {
-                duration: duration * 0.1, // 10% от общего времени
-                ease: [0.68, -0.55, 0.265, 1.55], // Резкий разгон с небольшим отскоком
+                duration: duration * 0.1,
+                ease: [0.55, 0.085, 0.68, 0.53], // Плавный разгон без отскока назад
               }
             });
             
-            // Этап 2: Медленная прокрутка для создания напряжения (2.4 секунды)
+            // Этап 2: Медленная прокрутка для создания напряжения (60% времени)
             await fieldControl.start({
               y: finalOffset * 0.75, // 75% от финальной позиции
               transition: {
-                duration: duration * 0.6, // 60% от общего времени
+                duration: duration * 0.6,
                 ease: [0.25, 0.46, 0.45, 0.94], // Медленная равномерная прокрутка
               }
             });
             
-            // Этап 3: Предфинальное замедление с "колебанием" (0.8 секунды)
+            // Этап 3: Предфинальное замедление (20% времени)
             await fieldControl.start({
               y: finalOffset * 0.95, // 95% от финальной позиции
               transition: {
-                duration: duration * 0.2, // 20% от общего времени
-                ease: [0.175, 0.885, 0.32, 1.275], // Замедление с небольшим перелетом
+                duration: duration * 0.2,
+                ease: [0.175, 0.885, 0.32, 1.0], // Замедление без перелета
               }
             });
             
-            // Этап 4: Финальная точная остановка (0.4 секунды)
+            // Этап 4: Финальная точная остановка (10% времени)
             await fieldControl.start({
               y: finalOffset,
               transition: {
-                duration: duration * 0.1, // 10% от общего времени
+                duration: duration * 0.1,
                 ease: [0.23, 1, 0.32, 1], // Точная остановка
               }
             });
