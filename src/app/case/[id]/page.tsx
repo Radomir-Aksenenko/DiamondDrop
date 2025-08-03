@@ -259,28 +259,57 @@ export default function CasePage() {
         let initialOffset, finalOffset;
         const adjustedTargetIndex = targetIndex + duplicateCount; // Учитываем дублированные предметы
         
+        let animationPromise;
+        
         if (selectedNumber === 1) {
-          // Горизонтальная прокрутка
-          initialOffset = 0; // Начинаем с начала дублированных предметов
-          finalOffset = -(adjustedTargetIndex * (cardWidth + gap)) + (cardWidth / 2);
+          // Горизонтальная прокрутка - новая логика для бесконечной анимации
+          const itemWidth = cardWidth + gap;
+          
+          // Начинаем с позиции, которая показывает дублированные предметы
+          initialOffset = -(duplicateCount * itemWidth);
+          
+          // Финальная позиция - несколько полных циклов + позиция выигрышного предмета
+          const fullCycles = 3; // Количество полных циклов прокрутки
+          const cycleWidth = baseItemCount * itemWidth; // Ширина одного цикла (без дубликатов)
+          finalOffset = initialOffset - (fullCycles * cycleWidth) - (targetIndex * itemWidth) + (cardWidth / 2);
+          
+          // Устанавливаем начальную позицию
+          fieldControl.set({ x: initialOffset });
+          
+          // Создаем многоэтапную анимацию
+          animationPromise = fieldControl.start({
+            x: [
+              initialOffset, // Начальная позиция
+              initialOffset - (cycleWidth * 0.5), // Быстрое ускорение
+              initialOffset - (cycleWidth * 1.5), // Продолжаем быстро
+              initialOffset - (cycleWidth * 2.5), // Еще быстро
+              finalOffset // Замедляемся к финальной позиции
+            ],
+            transition: {
+              duration: duration,
+              times: [0, 0.2, 0.4, 0.7, 1], // Распределение времени по этапам
+              ease: [0.25, 0.1, 0.25, 1], // Плавное ускорение и замедление
+            }
+          });
+          
         } else {
-          // Вертикальная прокрутка
+          // Вертикальная прокрутка (оставляем как есть)
           initialOffset = 0; // Начинаем с начала дублированных предметов
           finalOffset = -(adjustedTargetIndex * (cardHeight + gap)) + (cardHeight / 2);
+          
+          // Устанавливаем начальную позицию
+          fieldControl.set({ y: initialOffset });
+          
+          // Создаем анимацию с эффектом ускорения и замедления
+          animationPromise = fieldControl.start({
+            y: finalOffset,
+            transition: {
+              duration: duration,
+              ease: [0.11, 0, 0.5, 0], // Более плавное ускорение и резкое замедление
+              times: [0, 0.8, 1], // Быстрое ускорение, затем замедление
+            }
+          });
         }
-        
-        // Устанавливаем начальную позицию
-        fieldControl.set(selectedNumber === 1 ? { x: initialOffset } : { y: initialOffset });
-        
-        // Создаем анимацию с эффектом ускорения и замедления
-        const animationPromise = fieldControl.start({
-          ...(selectedNumber === 1 ? { x: finalOffset } : { y: finalOffset }),
-          transition: {
-            duration: duration,
-            ease: [0.11, 0, 0.5, 0], // Более плавное ускорение и резкое замедление
-            times: [0, 0.8, 1], // Быстрое ускорение, затем замедление
-          }
-        });
         
         animationPromises.push(animationPromise);
       }
