@@ -50,6 +50,14 @@ export default function CasePage() {
   const field3Controls = useAnimation();
   const field4Controls = useAnimation();
 
+  // Функция для сброса позиций анимации
+  const resetAnimationPositions = () => {
+    field1Controls.set(selectedNumber === 1 ? { x: 0 } : { y: 0 });
+    field2Controls.set({ y: 0 });
+    field3Controls.set({ y: 0 });
+    field4Controls.set({ y: 0 });
+  };
+
   // Функция для сортировки предметов по цене (всегда от дорогих к дешевым)
   const getSortedItems = () => {
     if (!caseData?.items) return [];
@@ -96,11 +104,11 @@ export default function CasePage() {
       return savedLayouts[layoutKey];
     }
     
-    // Для бесконечной рулетки генерируем больше предметов (увеличено в 2 раза)
-    const baseItemCount = selectedNumber === 1 ? 400 : 300;
+    // Создаем достаточно предметов для отображения
+    const baseItemCount = selectedNumber === 1 ? 50 : 40; // Меньше предметов для начального отображения
     const items: CaseItem[] = [];
     
-    // Генерируем основные предметы
+    // Генерируем случайные предметы
     for (let i = 0; i < baseItemCount; i++) {
       const randomItem = getRandomItem();
       if (randomItem) {
@@ -108,25 +116,29 @@ export default function CasePage() {
       }
     }
     
-    // Дублируем предметы в начале для создания эффекта бесконечности (увеличено в 2 раза)
-    const duplicateCount = 100;
-    const duplicatedItems = [];
-    for (let j = 0; j < duplicateCount; j++) {
-      const sourceIndex = j % items.length;
-      const duplicatedItem = { ...items[sourceIndex], id: `${items[sourceIndex].id}-dup-${j}` };
-      duplicatedItems.push(duplicatedItem);
+    // Создаем циклический массив для плавного отображения
+    const cycleLength = Math.min(20, baseItemCount);
+    const displayItems: CaseItem[] = [];
+    
+    // Добавляем несколько циклов для начального отображения
+    for (let cycle = 0; cycle < 3; cycle++) {
+      for (let j = 0; j < cycleLength; j++) {
+        const sourceIndex = j % items.length;
+        const cyclicItem = { ...items[sourceIndex], id: `${items[sourceIndex].id}-display-${cycle}-${j}` };
+        displayItems.push(cyclicItem);
+      }
     }
     
-    // Объединяем дублированные предметы с основными
-    const finalItems = [...duplicatedItems, ...items];
+    // Добавляем основные предметы
+    displayItems.push(...items);
     
     // Сохраняем расположение
     setSavedLayouts(prev => ({
       ...prev,
-      [layoutKey]: finalItems
+      [layoutKey]: displayItems
     }));
     
-    return finalItems;
+    return displayItems;
   };
 
   // Функция для открытия кейсов через API
@@ -179,7 +191,7 @@ export default function CasePage() {
   // Функция для запуска анимации рулетки
   const startSpinAnimation = async (results: CaseOpenResult[]) => {
     console.log('Запуск анимации для результатов:', results);
-    const duration = isFastMode ? 3 : 5; // 3 или 5 секунд
+    const duration = isFastMode ? 4 : 6; // Увеличиваем длительность для более плавной анимации
     
     // Очищаем старые расположения для текущей конфигурации
     setSavedLayouts(prev => {
@@ -204,8 +216,8 @@ export default function CasePage() {
       const fieldControl = controls[i];
       
       if (targetItem && fieldControl) {
-        // Генерируем много предметов для эффекта бесконечной рулетки (увеличено в 2 раза)
-        const baseItemCount = selectedNumber === 1 ? 400 : 300;
+        // Создаем достаточно предметов для бесконечной анимации
+        const baseItemCount = selectedNumber === 1 ? 200 : 150; // Уменьшаем количество для оптимизации
         const currentItems: CaseItem[] = [];
         
         // Генерируем случайные предметы
@@ -228,26 +240,30 @@ export default function CasePage() {
           rarity: targetItem.rarity
         };
         
-        // Размещаем выигрышный предмет в позиции для остановки (ближе к концу)
-        const targetIndex = Math.floor(baseItemCount * 0.85);
-        currentItems[targetIndex] = { ...targetCaseItem, id: `${targetCaseItem.id}-${fieldKey}-${targetIndex}` };
+        // Размещаем выигрышный предмет в позиции для остановки
+        const targetIndex = Math.floor(baseItemCount * 0.8); // Позиция выигрышного предмета
+        currentItems[targetIndex] = { ...targetCaseItem, id: `${targetCaseItem.id}-${fieldKey}-target` };
         
-        // Дублируем предметы в начале для создания эффекта бесконечности (увеличено в 2 раза)
-        const duplicateCount = 100;
-        const duplicatedItems = [];
-        for (let j = 0; j < duplicateCount; j++) {
-          const sourceIndex = j % currentItems.length;
-          const duplicatedItem = { ...currentItems[sourceIndex], id: `${currentItems[sourceIndex].id}-dup-${j}` };
-          duplicatedItems.push(duplicatedItem);
+        // Создаем циклический массив для бесконечной анимации
+        const cycleLength = Math.min(50, baseItemCount); // Длина цикла для повторения
+        const infiniteItems: CaseItem[] = [];
+        
+        // Добавляем несколько циклов в начало для плавного старта
+        for (let cycle = 0; cycle < 8; cycle++) {
+          for (let j = 0; j < cycleLength; j++) {
+            const sourceIndex = j % currentItems.length;
+            const cyclicItem = { ...currentItems[sourceIndex], id: `${currentItems[sourceIndex].id}-cycle-${cycle}-${j}` };
+            infiniteItems.push(cyclicItem);
+          }
         }
         
-        // Объединяем дублированные предметы с основными
-        const finalItems = [...duplicatedItems, ...currentItems];
+        // Добавляем основные предметы с выигрышным
+        infiniteItems.push(...currentItems);
         
         // Обновляем сохраненные расположения
         setSavedLayouts(prev => ({
           ...prev,
-          [`${selectedNumber}-${fieldKey}`]: finalItems
+          [`${selectedNumber}-${fieldKey}`]: infiniteItems
         }));
         
         // Вычисляем размеры карточек
@@ -255,58 +271,53 @@ export default function CasePage() {
         const cardHeight = 100;
         const gap = 8;
         
-        // Начальное и финальное смещение
-        let initialOffset, finalOffset;
-        const adjustedTargetIndex = targetIndex + duplicateCount; // Учитываем дублированные предметы
-        
         let animationPromise;
         
         if (selectedNumber === 1) {
-          // Горизонтальная прокрутка - новая логика для бесконечной анимации
+          // Горизонтальная прокрутка для одного кейса
           const itemWidth = cardWidth + gap;
+          const totalCycles = 8;
           
-          // Начинаем с позиции, которая показывает дублированные предметы
-          initialOffset = -(duplicateCount * itemWidth);
+          // Начальная позиция - показываем начало циклов
+          const initialOffset = 0;
           
-          // Финальная позиция - несколько полных циклов + позиция выигрышного предмета
-          const fullCycles = 3; // Количество полных циклов прокрутки
-          const cycleWidth = baseItemCount * itemWidth; // Ширина одного цикла (без дубликатов)
-          finalOffset = initialOffset - (fullCycles * cycleWidth) - (targetIndex * itemWidth) + (cardWidth / 2);
+          // Финальная позиция - останавливаемся на выигрышном предмете
+          const finalTargetIndex = (totalCycles * cycleLength) + targetIndex;
+          const finalOffset = -(finalTargetIndex * itemWidth) + (cardWidth / 2);
           
           // Устанавливаем начальную позицию
           fieldControl.set({ x: initialOffset });
           
-          // Создаем многоэтапную анимацию
+          // Создаем плавную анимацию с замедлением
           animationPromise = fieldControl.start({
-            x: [
-              initialOffset, // Начальная позиция
-              initialOffset - (cycleWidth * 0.5), // Быстрое ускорение
-              initialOffset - (cycleWidth * 1.5), // Продолжаем быстро
-              initialOffset - (cycleWidth * 2.5), // Еще быстро
-              finalOffset // Замедляемся к финальной позиции
-            ],
+            x: finalOffset,
             transition: {
               duration: duration,
-              times: [0, 0.2, 0.4, 0.7, 1], // Распределение времени по этапам
-              ease: [0.25, 0.1, 0.25, 1], // Плавное ускорение и замедление
+              ease: [0.25, 0.46, 0.45, 0.94], // Плавное ускорение и замедление
             }
           });
           
         } else {
-          // Вертикальная прокрутка (оставляем как есть)
-          initialOffset = 0; // Начинаем с начала дублированных предметов
-          finalOffset = -(adjustedTargetIndex * (cardHeight + gap)) + (cardHeight / 2);
+          // Вертикальная прокрутка для нескольких кейсов (сверху вниз)
+          const itemHeight = cardHeight + gap;
+          const totalCycles = 8;
+          
+          // Начальная позиция - показываем начало циклов
+          const initialOffset = 0;
+          
+          // Финальная позиция - останавливаемся на выигрышном предмете
+          const finalTargetIndex = (totalCycles * cycleLength) + targetIndex;
+          const finalOffset = -(finalTargetIndex * itemHeight) + (cardHeight / 2);
           
           // Устанавливаем начальную позицию
           fieldControl.set({ y: initialOffset });
           
-          // Создаем анимацию с эффектом ускорения и замедления
+          // Создаем плавную анимацию с замедлением
           animationPromise = fieldControl.start({
             y: finalOffset,
             transition: {
               duration: duration,
-              ease: [0.11, 0, 0.5, 0], // Более плавное ускорение и резкое замедление
-              times: [0, 0.8, 1], // Быстрое ускорение, затем замедление
+              ease: [0.25, 0.46, 0.45, 0.94], // Плавное ускорение и замедление
             }
           });
         }
@@ -329,7 +340,13 @@ export default function CasePage() {
   // Компонент для кнопок с цифрами
   const NumberButton = ({ number }: { number: number }) => (
     <motion.button 
-      onClick={() => setSelectedNumber(number)}
+      onClick={() => {
+        if (selectedNumber !== number) {
+          setSelectedNumber(number);
+          // Сбрасываем позиции анимации при смене количества кейсов
+          setTimeout(() => resetAnimationPositions(), 50);
+        }
+      }}
       className={`flex cursor-pointer w-[36px] h-[36px] justify-center items-center rounded-[8px] font-unbounded text-sm font-medium transition-all duration-200 ${
         selectedNumber === number 
           ? 'border border-[#5C5ADC] bg-[#6563EE]/[0.10] text-[#F9F8FC]' 
