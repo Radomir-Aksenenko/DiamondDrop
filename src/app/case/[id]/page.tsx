@@ -191,7 +191,7 @@ export default function CasePage() {
   // Функция для запуска анимации рулетки (адаптированная из оригинальной рулетки)
   const startSpinAnimation = async (results: CaseOpenResult[]) => {
     console.log('Запуск анимации для результатов:', results);
-    const duration = isFastMode ? 2 : 6; // Учитываем быстрый режим (как в оригинале - 6 секунд)
+    const duration = isFastMode ? 3.5 : 8.5; // Увеличиваем продолжительность для более плавной анимации
     
     // Очищаем старые расположения для текущей конфигурации
     setSavedLayouts(prev => {
@@ -296,12 +296,12 @@ export default function CasePage() {
           // Устанавливаем начальную позицию
           fieldControl.set({ x: initialOffset });
           
-          // Создаем анимацию с cubic-bezier кривой из оригинальной рулетки
+          // Создаем анимацию с более плавной cubic-bezier кривой
           animationPromise = fieldControl.start({
             x: finalOffset,
             transition: {
               duration: duration,
-              ease: [0.34, 0.87, 0.52, 1], // Точная cubic-bezier кривая из оригинала
+              ease: [0.25, 0.46, 0.45, 0.94], // Более плавное замедление в конце и уменьшенная скорость в середине
             }
           });
           
@@ -319,12 +319,12 @@ export default function CasePage() {
           // Устанавливаем начальную позицию
           fieldControl.set({ y: initialOffset });
           
-          // Создаем анимацию с cubic-bezier кривой из оригинальной рулетки
+          // Создаем анимацию с более плавной cubic-bezier кривой
           animationPromise = fieldControl.start({
             y: finalOffset,
             transition: {
               duration: duration,
-              ease: [0.34, 0.87, 0.52, 1], // Точная cubic-bezier кривая из оригинала
+              ease: [0.25, 0.46, 0.45, 0.94], // Более плавное замедление в конце и уменьшенная скорость в середине
             }
           });
         }
