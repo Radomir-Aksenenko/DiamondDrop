@@ -47,9 +47,11 @@ export default function CasePage() {
   
   // Состояние для модального окна описания предмета
   const [isItemDescriptionModalOpen, setIsItemDescriptionModalOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<CaseItem | null>(null);
   
   // Функции для управления модальным окном описания предмета
-  const handleOpenItemDescriptionModal = () => {
+  const handleOpenItemDescriptionModal = (item: CaseItem) => {
+    setSelectedItem(item);
     setIsItemDescriptionModalOpen(true);
   };
   
@@ -848,7 +850,7 @@ export default function CasePage() {
                       <CaseItemCard 
                         item={item}
                         className='flex-shrink-0'
-                        onClick={handleOpenItemDescriptionModal}
+                        onClick={() => handleOpenItemDescriptionModal(item)}
                       />
                     </motion.div>
                   ))
@@ -872,6 +874,7 @@ export default function CasePage() {
       <ItemDescriptionModal
         isOpen={isItemDescriptionModalOpen}
         onClose={handleCloseItemDescriptionModal}
+        item={selectedItem}
       />
     </div>
   );
