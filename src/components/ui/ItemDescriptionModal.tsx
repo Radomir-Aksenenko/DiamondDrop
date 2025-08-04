@@ -18,9 +18,7 @@ export default function ItemDescriptionModal({ isOpen, onClose }: ItemDescriptio
         {/* Основной контент модалки */}
         <div className="space-y-4">
           <div className="bg-[#151519] p-4 rounded-lg">
-            <p className="text-[#F9F8FC] text-base">
-              Содержимое будет добавлено позже
-            </p>
+            
           </div>
         </div>
         

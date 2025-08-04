@@ -84,7 +84,7 @@ export default function CaseItemCard({
 
   return (
     <div 
-      className={`${className} ${onClick ? 'cursor-pointer hover:scale-105 transition-transform duration-200' : ''}`}
+      className={`${className} ${onClick ? 'cursor-pointer hover:brightness-75 transition-all duration-200' : ''}`}
       style={{
         background: config.background,
         border: config.border,
