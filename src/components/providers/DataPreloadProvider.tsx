@@ -160,13 +160,16 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
     }
   }, [providerId]);
 
+  // Кешированный мок пользователя для dev режима
+  const [cachedMockUser] = useState(() => ({ ...mockUser }));
+
   // Функция загрузки данных пользователя
   const loadUser = useCallback(async (): Promise<APIUser | null> => {
     try {
-      // В dev режиме используем мок данные
+      // В dev режиме используем кешированные мок данные
       if (isDevelopment && DEV_CONFIG.skipAuth) {
-        console.log(`🔧 [${providerId}] Dev режим: используем мок пользователя`);
-        return { ...mockUser };
+        console.log(`🔧 [${providerId}] Dev режим: используем кешированного мок пользователя`);
+        return cachedMockUser;
       }
 
       const token = getAuthToken();
@@ -191,7 +194,7 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
       console.error('Ошибка при загрузке данных пользователя:', err);
       return null;
     }
-  }, [providerId]);
+  }, [providerId, cachedMockUser]);
 
   // Функция загрузки кейсов
   const loadCases = useCallback(async (): Promise<CaseData[]> => {
@@ -331,6 +334,7 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
   const refreshUser = async () => {
     try {
       console.log('🔄 refreshUser: Начинаем обновление данных пользователя...');
+      console.trace('🔍 refreshUser: Stack trace для понимания откуда вызывается');
       const oldBalance = user?.balance;
       console.log('💰 refreshUser: Текущий баланс:', oldBalance);
       
@@ -365,11 +369,18 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
 
   // Функция для локального увеличения баланса (при депозите)
   const updateBalanceLocally = useCallback((amount: number) => {
+    console.log(`💰 updateBalanceLocally: Вызвана функция увеличения баланса на ${amount}`);
+    console.trace('🔍 updateBalanceLocally: Stack trace для понимания откуда вызывается');
+    
     setUser(prevUser => {
-      if (!prevUser) return prevUser;
+      if (!prevUser) {
+        console.log('⚠️ updateBalanceLocally: Пользователь не найден, пропускаем обновление');
+        return prevUser;
+      }
       
-      const newBalance = prevUser.balance + amount;
-      console.log(`💰 updateBalanceLocally: Увеличиваем баланс на ${amount}, новый баланс: ${newBalance}`);
+      const oldBalance = prevUser.balance;
+      const newBalance = oldBalance + amount;
+      console.log(`💰 updateBalanceLocally: Увеличиваем баланс с ${oldBalance} на ${amount}, новый баланс: ${newBalance}`);
       
       return {
         ...prevUser,
@@ -380,11 +391,18 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
 
   // Функция для локального уменьшения баланса (при покупке кейса)
   const decreaseBalanceLocally = useCallback((amount: number) => {
+    console.log(`💰 decreaseBalanceLocally: Вызвана функция уменьшения баланса на ${amount}`);
+    console.trace('🔍 decreaseBalanceLocally: Stack trace для понимания откуда вызывается');
+    
     setUser(prevUser => {
-      if (!prevUser) return prevUser;
+      if (!prevUser) {
+        console.log('⚠️ decreaseBalanceLocally: Пользователь не найден, пропускаем обновление');
+        return prevUser;
+      }
       
-      const newBalance = Math.max(0, prevUser.balance - amount);
-      console.log(`💰 decreaseBalanceLocally: Уменьшаем баланс на ${amount}, новый баланс: ${newBalance}`);
+      const oldBalance = prevUser.balance;
+      const newBalance = Math.max(0, oldBalance - amount);
+      console.log(`💰 decreaseBalanceLocally: Уменьшаем баланс с ${oldBalance} на ${amount}, новый баланс: ${newBalance}`);
       
       return {
         ...prevUser,
@@ -437,18 +455,18 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
         if (token && !hasInitialLoad) {
           console.log(`🚀 [${providerId}] useEffect #2: Первая загрузка после получения токена`);
           preloadAllData(true);
-        } else if (token && hasInitialLoad) {
-          console.log(`⚠️ [${providerId}] useEffect #2: Токен изменился, но данные уже загружены - пропускаем повторную загрузку`);
-          // НЕ перезагружаем данные если они уже загружены
-          // preloadAllData(false); // Закомментировано для предотвращения дублирования
         } else if (!token && hasInitialLoad) {
           // Токен исчез - сбрасываем состояние
           console.log(`🚪 [${providerId}] useEffect #2: Токен исчез, сбрасываем данные пользователя`);
           setUser(null);
           setIsAuthenticated(false);
+        } else {
+          // Токен есть и данные уже загружены - просто обновляем статус аутентификации
+          console.log(`✅ [${providerId}] useEffect #2: Токен есть, данные загружены - обновляем только статус аутентификации`);
+          setIsAuthenticated(hasAuthToken());
         }
       }
-    }, 2000); // Увеличиваем интервал до 2 секунд для снижения нагрузки
+    }, 5000); // Увеличиваем интервал до 5 секунд для снижения нагрузки
 
     return () => {
       console.log(`🔧 [${providerId}] useEffect #2: Очистка интервала проверки токена`);
