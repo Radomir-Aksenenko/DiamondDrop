@@ -231,11 +231,11 @@ export default function CasePage() {
         // Создаем массив предметов для анимации (адаптированный алгоритм оригинальной рулетки)
         const infiniteItems: CaseItem[] = [];
         
-        // Генерируем случайные предметы для создания эффекта бесконечной прокрутки
-        const baseItemCount = selectedNumber === 1 ? 80 : 60; // Оптимизированное количество
+        // Для горизонтальной рулетки нужно значительно больше карточек
+        const baseItemCount = selectedNumber === 1 ? 150 : 60; // Увеличиваем для горизонтальной прокрутки
         
         // Добавляем циклы случайных предметов (как в оригинале - 2-4 цикла)
-        const cycles = Math.floor(Math.random() * 3) + 2; // 2-4 цикла
+        const cycles = selectedNumber === 1 ? Math.floor(Math.random() * 3) + 4 : Math.floor(Math.random() * 3) + 2; // 4-6 циклов для горизонтальной, 2-4 для вертикальной
         for (let cycle = 0; cycle < cycles; cycle++) {
           for (let j = 0; j < baseItemCount; j++) {
             const randomItem = getRandomItem();
@@ -246,7 +246,9 @@ export default function CasePage() {
         }
         
         // Добавляем дополнительные случайные предметы перед выигрышным
-        const additionalItemsBeforeWin = Math.floor(Math.random() * 15) + 10; // 10-24 предмета (как scrollForNumber в оригинале)
+        const additionalItemsBeforeWin = selectedNumber === 1 ? 
+          Math.floor(Math.random() * 30) + 20 : // 20-49 предметов для горизонтальной
+          Math.floor(Math.random() * 15) + 10;  // 10-24 предмета для вертикальной
         for (let j = 0; j < additionalItemsBeforeWin; j++) {
           const randomItem = getRandomItem();
           if (randomItem) {
@@ -258,8 +260,8 @@ export default function CasePage() {
         const targetIndex = infiniteItems.length; // Позиция выигрышного предмета
         infiniteItems.push({ ...targetCaseItem, id: `${targetCaseItem.id}-${fieldKey}-target` });
         
-        // Добавляем дополнительные карточки после выигрышной
-        const additionalCardsAfterWin = selectedNumber === 1 ? 15 : 10;
+        // Добавляем дополнительные карточки после выигрышной (больше для горизонтальной прокрутки)
+        const additionalCardsAfterWin = selectedNumber === 1 ? 30 : 10; // Больше карточек после выигрышной для горизонтальной
         for (let j = 0; j < additionalCardsAfterWin; j++) {
           const randomItem = getRandomItem();
           if (randomItem) {
@@ -547,11 +549,16 @@ export default function CasePage() {
                   <motion.div 
                     className="flex items-center gap-2 p-2"
                     animate={field1Controls}
+                    style={{
+                      width: 'max-content',
+                      minWidth: '100%'
+                    }}
                   >
                     {(savedLayouts[`${selectedNumber}-field1`] || generateRandomItems('field1')).map((item, index) => (
                       <CaseSlotItemCard 
                         key={`field1-${item.id}-${index}`} 
                         item={item} 
+                        className="flex-shrink-0"
                       />
                     ))}
                   </motion.div>
