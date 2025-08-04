@@ -11,6 +11,22 @@ const MAX_SAVED_CARDS = 4;
 export default function useSavedCards() {
   const [savedCards, setSavedCards] = useState<string[]>([]);
 
+  /**
+   * Получает значение куки по ключу
+   */
+  const getCookieValue = useCallback((key: string): string | null => {
+    if (typeof document === 'undefined') return null;
+    
+    const cookies = document.cookie.split(';');
+    for (const cookie of cookies) {
+      const [cookieKey, cookieValue] = cookie.trim().split('=');
+      if (cookieKey === key) {
+        return decodeURIComponent(cookieValue);
+      }
+    }
+    return null;
+  }, []);
+
   // Загружаем сохраненные карты из куки при инициализации
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -26,23 +42,7 @@ export default function useSavedCards() {
         }
       }
     }
-  }, []);
-
-  /**
-   * Получает значение куки по ключу
-   */
-  const getCookieValue = useCallback((key: string): string | null => {
-    if (typeof document === 'undefined') return null;
-    
-    const cookies = document.cookie.split(';');
-    for (let cookie of cookies) {
-      const [cookieKey, cookieValue] = cookie.trim().split('=');
-      if (cookieKey === key) {
-        return decodeURIComponent(cookieValue);
-      }
-    }
-    return null;
-  }, []);
+  }, [getCookieValue]);
 
   /**
    * Устанавливает значение куки

@@ -59,7 +59,7 @@ export default function useWithdrawAPI() {
           const errorData: WithdrawErrorResponse = await response.json();
           console.error('Ошибка вывода средств:', errorData);
           throw new Error(errorData.message || `Ошибка сервера: ${response.status}`);
-        } catch (parseError) {
+        } catch {
           // Если не удалось распарсить JSON ошибки
           throw new Error(`Ошибка сервера: ${response.status}`);
         }

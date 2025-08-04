@@ -40,12 +40,11 @@ export default function Header() {
     <header className="fixed top-0 left-0 right-0 z-50 bg-[#0D0D11]">
       <div className="h-[82px] px-6 py-4 flex items-center justify-between">
           <div className='flex gap-2 items-center'>
-              <Image 
+              <img 
                 src={userAvatarUrl}
                 alt="User Avatar"
                 width={50}
                 height={50}
-                className=''
               />
               <div>
                 <p className='text-[#F9F8FC] text-2xl font-bold mr-2 font-unbounded'>{userName}</p>

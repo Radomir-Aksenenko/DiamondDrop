@@ -118,7 +118,7 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
   const [hasInitialLoad, setHasInitialLoad] = useState(false);
 
   // Функция загрузки баннеров
-  const loadBanners = async (): Promise<APIBanner[]> => {
+  const loadBanners = useCallback(async (): Promise<APIBanner[]> => {
     try {
       // В dev режиме используем мок данные
       if (isDevelopment && DEV_CONFIG.skipAuth) {
@@ -158,10 +158,10 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
         url: '/news/1'
       }];
     }
-  };
+  }, [providerId]);
 
   // Функция загрузки данных пользователя
-  const loadUser = async (): Promise<APIUser | null> => {
+  const loadUser = useCallback(async (): Promise<APIUser | null> => {
     try {
       // В dev режиме используем мок данные
       if (isDevelopment && DEV_CONFIG.skipAuth) {
@@ -191,10 +191,10 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
       console.error('Ошибка при загрузке данных пользователя:', err);
       return null;
     }
-  };
+  }, [providerId]);
 
   // Функция загрузки кейсов
-  const loadCases = async (): Promise<CaseData[]> => {
+  const loadCases = useCallback(async (): Promise<CaseData[]> => {
     try {
       // В dev режиме используем мок данные
       if (isDevelopment && DEV_CONFIG.skipAuth) {
@@ -229,10 +229,10 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
       console.error('Ошибка при загрузке кейсов:', err);
       return [];
     }
-  };
+  }, [providerId]);
 
   // Функция загрузки живых выигрышей (начальные данные)
-  const loadInitialLiveWins = async (): Promise<LiveWinData[]> => {
+  const loadInitialLiveWins = useCallback(async (): Promise<LiveWinData[]> => {
     try {
       // В dev режиме используем мок данные
       if (isDevelopment && DEV_CONFIG.skipAuth) {
@@ -259,7 +259,7 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
       console.log(`🔄 [${providerId}] Используем мок данные как fallback`);
       return [...mockLiveWins];
     }
-  };
+  }, [providerId, fetchGameResults]);
 
   // Функция предзагрузки всех данных
   const preloadAllData = useCallback(async (isInitialLoad = false) => {
@@ -316,7 +316,7 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
         setIsLoading(false);
       }
     }
-  }, [hasInitialLoad]);
+  }, [hasInitialLoad, currentToken, loadBanners, loadCases, loadInitialLiveWins, loadUser, providerId]);
 
   // Функции для обновления отдельных данных
   const refreshBanners = async () => {
@@ -411,7 +411,7 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
       console.log(`⏳ [${providerId}] useEffect #1: Ожидаем получение токена авторизации...`);
       setIsLoading(true);
     }
-  }, [preloadAllData]);
+  }, [preloadAllData, hasInitialLoad, providerId]);
 
   // Отслеживаем изменения токена и перезагружаем данные (оптимизированная версия)
   useEffect(() => {
@@ -455,7 +455,7 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
       isActive = false;
       clearInterval(checkTokenInterval);
     };
-  }, [currentToken, hasInitialLoad, preloadAllData]);
+  }, [currentToken, hasInitialLoad, preloadAllData, providerId]);
 
   // Значение контекста
   const contextValue: DataPreloadContextType = {
