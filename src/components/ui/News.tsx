@@ -4,36 +4,16 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePreloadedData } from '@/components/providers/DataPreloadProvider';
-import useSPW from '@/hooks/useSPW';
-import { API_ENDPOINTS } from '@/lib/config';
 import { useLinkHandler, isExternalLink } from '@/lib/linkUtils';
 
 export default function News() {
-  const { banners, isAuthenticated } = usePreloadedData();
-  const { makeAuthenticatedRequest } = useSPW();
+  const { banners } = usePreloadedData();
   const { handleLinkClick } = useLinkHandler();
   const [activeIndex, setActiveIndex] = useState(0);
   const sliderRef = useRef<HTMLDivElement>(null);
   
   // Обработчик клика по баннеру
-  const handleBannerClick = async (bannerId: string, url: string, event: React.MouseEvent) => {
-    // Отправляем статистику клика если пользователь авторизован
-    if (isAuthenticated) {
-      try {
-        await makeAuthenticatedRequest(API_ENDPOINTS.stats.bannerClick, {
-          method: 'POST',
-          body: JSON.stringify({
-            bannerId,
-            timestamp: Date.now(),
-            userAgent: navigator.userAgent
-          })
-        });
-        console.log('Статистика клика отправлена');
-      } catch (error) {
-        console.error('Ошибка отправки статистики:', error);
-      }
-    }
-    
+  const handleBannerClick = (bannerId: string, url: string, event: React.MouseEvent) => {
     // Обрабатываем ссылку через SPM если это внешняя ссылка
     handleLinkClick(url, event);
   };

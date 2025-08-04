@@ -16,9 +16,7 @@ export const API_ENDPOINTS = {
   users: {
     me: `${API_BASE_URL}/users/me`,
   },
-  stats: {
-    bannerClick: `${API_BASE_URL}/stats/banner-click`,
-  },
+
 } as const;
 
 // Настройки для dev режима
