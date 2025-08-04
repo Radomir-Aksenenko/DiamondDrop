@@ -255,6 +255,15 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
       }
 
       console.log(`🚀 [${providerId}] Начинаем предзагрузку всех данных...`);
+      console.log(`📊 [${providerId}] Параметры загрузки:`, {
+        isInitialLoad,
+        hasInitialLoad,
+        currentToken: !!currentToken,
+        authToken: !!getAuthToken()
+      });
+      
+      // Добавляем stack trace чтобы понять откуда вызывается
+      console.trace(`🔍 [${providerId}] Stack trace для preloadAllData`);
 
       // Проверяем аутентификацию
       const authenticated = hasAuthToken();
@@ -343,19 +352,22 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
     const token = getAuthToken();
     const shouldLoad = token || (isDevelopment && DEV_CONFIG.skipAuth);
     
-    console.log(`🔧 [${providerId}] DataPreloadProvider: Инициализация, токен:`, !!token, 'dev режим:', isDevelopment && DEV_CONFIG.skipAuth);
+    console.log(`🔧 [${providerId}] useEffect #1 (монтирование): Инициализация, токен:`, !!token, 'dev режим:', isDevelopment && DEV_CONFIG.skipAuth);
+    console.log(`🔧 [${providerId}] useEffect #1: shouldLoad =`, shouldLoad, 'hasInitialLoad =', hasInitialLoad);
     
     if (shouldLoad) {
+      console.log(`🚀 [${providerId}] useEffect #1: Вызываем preloadAllData(true)`);
       preloadAllData(true);
     } else {
       // Если токена нет, показываем состояние ожидания токена
-      console.log(`⏳ [${providerId}] Ожидаем получение токена авторизации...`);
+      console.log(`⏳ [${providerId}] useEffect #1: Ожидаем получение токена авторизации...`);
       setIsLoading(true);
     }
   }, [preloadAllData]);
 
   // Отслеживаем изменения токена и перезагружаем данные (оптимизированная версия)
   useEffect(() => {
+    console.log(`🔧 [${providerId}] useEffect #2 (токен): Инициализация интервала проверки токена`);
     let isActive = true; // Флаг для предотвращения race conditions
     
     const checkTokenInterval = setInterval(() => {
@@ -365,7 +377,7 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
       
       // Проверяем, действительно ли токен изменился
       if (token !== currentToken) {
-        console.log(`🔄 [${providerId}] Токен изменился:`, {
+        console.log(`🔄 [${providerId}] useEffect #2: Токен изменился:`, {
           old: currentToken ? 'есть' : 'нет',
           new: token ? 'есть' : 'нет',
           hasInitialLoad
@@ -375,15 +387,15 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
         
         // Загружаем данные только если токен появился и мы еще не делали начальную загрузку
         if (token && !hasInitialLoad) {
-          console.log(`🚀 [${providerId}] Первая загрузка после получения токена`);
+          console.log(`🚀 [${providerId}] useEffect #2: Первая загрузка после получения токена`);
           preloadAllData(true);
         } else if (token && hasInitialLoad) {
-          console.log(`⚠️ [${providerId}] Токен изменился, но данные уже загружены - пропускаем повторную загрузку`);
+          console.log(`⚠️ [${providerId}] useEffect #2: Токен изменился, но данные уже загружены - пропускаем повторную загрузку`);
           // НЕ перезагружаем данные если они уже загружены
           // preloadAllData(false); // Закомментировано для предотвращения дублирования
         } else if (!token && hasInitialLoad) {
           // Токен исчез - сбрасываем состояние
-          console.log(`🚪 [${providerId}] Токен исчез, сбрасываем данные пользователя`);
+          console.log(`🚪 [${providerId}] useEffect #2: Токен исчез, сбрасываем данные пользователя`);
           setUser(null);
           setIsAuthenticated(false);
         }
@@ -391,6 +403,7 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
     }, 2000); // Увеличиваем интервал до 2 секунд для снижения нагрузки
 
     return () => {
+      console.log(`🔧 [${providerId}] useEffect #2: Очистка интервала проверки токена`);
       isActive = false;
       clearInterval(checkTokenInterval);
     };
