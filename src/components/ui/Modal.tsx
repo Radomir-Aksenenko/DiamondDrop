@@ -94,7 +94,7 @@ const Modal = memo(function Modal({ isOpen, onClose, children, title, className 
           
           {/* Оптимизированное модальное окно */}
           <motion.div
-            className={`relative z-10 w-full bg-[#151519] rounded-[16px] shadow-xl overflow-hidden ${className || 'max-w-md'}`}
+            className={`relative z-10 bg-[#151519] rounded-[16px] shadow-xl overflow-hidden ${className ? className : 'w-full max-w-md'}`}
             variants={modalVariants}
             initial="hidden"
             animate="visible"
