@@ -339,6 +339,8 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
     const token = getAuthToken();
     const shouldLoad = token || (isDevelopment && DEV_CONFIG.skipAuth);
     
+    console.log('🔧 DataPreloadProvider: Инициализация, токен:', !!token, 'dev режим:', isDevelopment && DEV_CONFIG.skipAuth);
+    
     if (shouldLoad) {
       preloadAllData(true);
     } else {
@@ -348,25 +350,45 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
     }
   }, [preloadAllData]);
 
-  // Отслеживаем изменения токена и перезагружаем данные
+  // Отслеживаем изменения токена и перезагружаем данные (оптимизированная версия)
   useEffect(() => {
+    let isActive = true; // Флаг для предотвращения race conditions
+    
     const checkTokenInterval = setInterval(() => {
+      if (!isActive) return;
+      
       const token = getAuthToken();
+      
+      // Проверяем, действительно ли токен изменился
       if (token !== currentToken) {
-        console.log('🔄 Токен изменился, перезагружаем данные...');
+        console.log('🔄 Токен изменился:', {
+          old: currentToken ? 'есть' : 'нет',
+          new: token ? 'есть' : 'нет',
+          hasInitialLoad
+        });
+        
         setCurrentToken(token);
         
+        // Загружаем данные только если токен появился и мы еще не делали начальную загрузку
         if (token && !hasInitialLoad) {
-          // Первая загрузка после получения токена
+          console.log('🚀 Первая загрузка после получения токена');
           preloadAllData(true);
         } else if (token && hasInitialLoad) {
-          // Обновление данных при изменении токена
+          console.log('🔄 Обновление данных при изменении токена');
           preloadAllData(false);
+        } else if (!token && hasInitialLoad) {
+          // Токен исчез - сбрасываем состояние
+          console.log('🚪 Токен исчез, сбрасываем данные пользователя');
+          setUser(null);
+          setIsAuthenticated(false);
         }
       }
-    }, 1000);
+    }, 2000); // Увеличиваем интервал до 2 секунд для снижения нагрузки
 
-    return () => clearInterval(checkTokenInterval);
+    return () => {
+      isActive = false;
+      clearInterval(checkTokenInterval);
+    };
   }, [currentToken, hasInitialLoad, preloadAllData]);
 
   // Значение контекста
