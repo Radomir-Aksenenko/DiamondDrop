@@ -9,6 +9,7 @@ import CaseItemCard from '@/components/ui/CaseItemCard';
 import CaseSlotItemCard from '@/components/ui/CaseSlotItemCard';
 import { API_BASE_URL } from '@/lib/config';
 import { CaseItem } from '@/hooks/useCasesAPI';
+import { usePreloadedData } from '@/components/providers/DataPreloadProvider';
 
 // Константа для токена авторизации
 const AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI2ODhjYWQ2YWJlNjU0MWU5ZTgzMWFiZTciLCJwZXJtaXNzaW9uIjoiVXNlciIsIm5iZiI6MTc1NDA0OTg5OCwiZXhwIjoxNzU0MDUzNDk4LCJpYXQiOjE3NTQwNDk4OTgsImlzcyI6Im1yLnJhZmFlbGxvIn0.wlwEt3aTPnizjaW0z0iG5cFImxh_MHsDV10D97UrPSU'
@@ -34,6 +35,7 @@ export default function CasePage() {
   const caseId = params.id as string;
   
   const { caseData, loading, error } = useCaseAPI(caseId);
+  const { refreshUser } = usePreloadedData();
   
   const [isFastMode, setIsFastMode] = useState(false);
   const [selectedNumber, setSelectedNumber] = useState(1);
@@ -178,6 +180,14 @@ export default function CasePage() {
       
       const results: CaseOpenResult[] = await response.json();
       console.log('Получены результаты:', results);
+      
+      // Обновляем баланс через 1 секунду после нажатия кнопки (только для не демо режима)
+      if (!isDemo) {
+        setTimeout(() => {
+          console.log('🔄 Обновляем баланс пользователя через 1 секунду после открытия кейса');
+          refreshUser();
+        }, 1000);
+      }
       
       // Запускаем анимацию рулетки
       startSpinAnimation(results);
