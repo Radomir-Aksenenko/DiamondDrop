@@ -214,9 +214,6 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalPr
     if (validateWithdrawForm()) {
       clearWithdrawError(); // Очищаем предыдущие ошибки
       
-      // Сохраняем карту в куки при успешной валидации
-      addCard(cardNumber);
-      
       const success = await createWithdraw(parseInt(withdrawAmount), cardNumber);
       
       if (success) {
@@ -226,6 +223,10 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalPr
         const withdrawAmountNum = parseInt(withdrawAmount);
         decreaseBalance(withdrawAmountNum);
         console.log(`✅ Баланс локально уменьшен на ${withdrawAmountNum}`);
+        
+        // Сохраняем карту в куки только после успешного вывода
+        addCard(cardNumber);
+        console.log(`💳 Карта ${cardNumber} добавлена в сохраненные после успешного вывода`);
         
         // Очищаем форму и закрываем модалку
         setWithdrawAmount('');
