@@ -54,6 +54,7 @@ export default function ItemDescriptionModal({ isOpen, onClose, item }: ItemDesc
              <CaseItemCard 
                item={item}
                className="w-[76px] h-[100px]"
+               hideChance={true}
              />
            </motion.div>
            

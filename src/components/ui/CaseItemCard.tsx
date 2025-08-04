@@ -9,6 +9,7 @@ interface CaseItemCardProps {
   item: CaseItem;
   className?: string;
   onClick?: () => void;
+  hideChance?: boolean; // Скрыть отображение шанса выпадения
 }
 
 // Конфигурация цветов и стилей для каждого типа редкости
@@ -46,7 +47,8 @@ const rarityConfig = {
 export default function CaseItemCard({ 
   item, 
   className = '',
-  onClick
+  onClick,
+  hideChance = false
 }: CaseItemCardProps) {
   const config = rarityConfig[item.rarity as keyof typeof rarityConfig] || rarityConfig.Common;
   
@@ -57,13 +59,13 @@ export default function CaseItemCard({
   const cardStyles = {
     display: 'flex',
     width: '80px',
-    height: '122px',
+    height: hideChance ? '100px' : '122px', // Уменьшаем высоту если скрыт шанс
     padding: '8px',
     alignItems: 'center',
     gap: '6px',
     borderRadius: '8px',
     flexDirection: 'column' as const,
-    justifyContent: 'space-between' as const
+    justifyContent: hideChance ? 'center' : 'space-between' as const // Центрируем если скрыт шанс
   };
 
   // Форматируем процент шанса
@@ -92,102 +94,190 @@ export default function CaseItemCard({
       }}
       onClick={onClick}
     >
-      {/* Верхняя часть - только процент шанса */}
-      <div className="flex items-center justify-center text-center">
-        <span 
-          style={{
-            color: '#F9F8FC',
-            fontFamily: 'Actay Wide',
-            fontSize: '14px',
-            fontStyle: 'normal',
-            fontWeight: 700,
-            lineHeight: 'normal',
-            opacity: 0.5
-          }}
-        >
-          {formatChance(item.percentChance)}
-        </span>
-      </div>
-
-      {/* Средняя часть - иконка предмета */}
-      <div className="relative w-12 h-12 flex items-center justify-center group">
-        <Image
-          src={item.imageUrl || '/09b1b0e86eb0cd8a7909f6f74b56ddc17804658d.png'}
-          alt={item.name}
-          fill
-          style={{ objectFit: 'contain' }}
-          className="drop-shadow-lg"
-        />
-        
-        {/* Иконка лупы при наведении */}
-        {onClick && (
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded">
-            <svg 
-              width="32" 
-              height="32" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              xmlns="http://www.w3.org/2000/svg"
-              className="text-white drop-shadow-lg"
-            >
-              <path 
-                d="M21 21L16.514 16.506M19 10.5C19 15.194 15.194 19 10.5 19C5.806 19 2 15.194 2 10.5C2 5.806 5.806 2 10.5 2C15.194 2 19 5.806 19 10.5Z" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-              />
-            </svg>
+      {hideChance ? (
+        // Версия без шанса - только иконка и цена
+        <>
+          {/* Иконка предмета */}
+          <div className="relative w-12 h-12 flex items-center justify-center group mb-2">
+            <Image
+              src={item.imageUrl || '/09b1b0e86eb0cd8a7909f6f74b56ddc17804658d.png'}
+              alt={item.name}
+              fill
+              style={{ objectFit: 'contain' }}
+              className="drop-shadow-lg"
+            />
+            
+            {/* Иконка лупы при наведении */}
+            {onClick && (
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded">
+                <svg 
+                  width="32" 
+                  height="32" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="text-white drop-shadow-lg"
+                >
+                  <path 
+                    d="M21 21L16.514 16.506M19 10.5C19 15.194 15.194 19 10.5 19C5.806 19 2 15.194 2 10.5C2 5.806 5.806 2 10.5 2C15.194 2 19 5.806 19 10.5Z" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
+            )}
+            
+            {/* Количество поверх изображения */}
+            <div className="absolute -bottom-1 -right-1">
+              <span 
+                style={{
+                  color: '#F9F8FC',
+                  fontFamily: 'Actay Wide',
+                  fontSize: '16px',
+                  fontStyle: 'normal',
+                  fontWeight: 700,
+                  lineHeight: 'normal',
+                  opacity: 0.5
+                }}
+              >
+                x{item.amount}
+              </span>
+            </div>
           </div>
-        )}
-        
-        {/* Количество поверх изображения */}
-        <div className="absolute -bottom-1 -right-1">
-          <span 
-            style={{
-              color: '#F9F8FC',
-              fontFamily: 'Actay Wide',
-              fontSize: '16px',
-              fontStyle: 'normal',
-              fontWeight: 700,
-              lineHeight: 'normal',
-              opacity: 0.5
-            }}
-          >
-            x{item.amount}
-          </span>
-        </div>
-      </div>
 
-      {/* Нижняя часть - цена после иконки */}
-      <div className="flex items-baseline justify-center">
-        <span 
-          style={{
-            color: '#F9F8FC',
-            textAlign: 'center',
-            fontFamily: 'Actay Wide',
-            fontSize: '16px',
-            fontStyle: 'normal',
-            fontWeight: 700,
-            lineHeight: 'normal'
-          }}
-        >
-          {formatPrice(itemValue)}
-        </span>
-        <span 
-          style={{
-            color: 'rgba(249, 248, 252, 0.50)',
-            fontFamily: 'Actay Wide',
-            fontSize: '12px',
-            fontStyle: 'normal',
-            fontWeight: 700,
-            lineHeight: 'normal',
-            marginLeft: '2px'
-          }}
-        >
-          AP
-        </span>
-      </div>
+          {/* Цена */}
+          <div className="flex items-baseline justify-center">
+            <span 
+              style={{
+                color: '#F9F8FC',
+                textAlign: 'center',
+                fontFamily: 'Actay Wide',
+                fontSize: '16px',
+                fontStyle: 'normal',
+                fontWeight: 700,
+                lineHeight: 'normal'
+              }}
+            >
+              {formatPrice(itemValue)}
+            </span>
+            <span 
+              style={{
+                color: 'rgba(249, 248, 252, 0.50)',
+                fontFamily: 'Actay Wide',
+                fontSize: '12px',
+                fontStyle: 'normal',
+                fontWeight: 700,
+                lineHeight: 'normal',
+                marginLeft: '2px'
+              }}
+            >
+              AP
+            </span>
+          </div>
+        </>
+      ) : (
+        // Обычная версия с шансом
+        <>
+          {/* Верхняя часть - процент шанса */}
+          <div className="flex items-center justify-center text-center">
+            <span 
+              style={{
+                color: '#F9F8FC',
+                fontFamily: 'Actay Wide',
+                fontSize: '14px',
+                fontStyle: 'normal',
+                fontWeight: 700,
+                lineHeight: 'normal',
+                opacity: 0.5
+              }}
+            >
+              {formatChance(item.percentChance)}
+            </span>
+          </div>
+
+          {/* Средняя часть - иконка предмета */}
+          <div className="relative w-12 h-12 flex items-center justify-center group">
+            <Image
+              src={item.imageUrl || '/09b1b0e86eb0cd8a7909f6f74b56ddc17804658d.png'}
+              alt={item.name}
+              fill
+              style={{ objectFit: 'contain' }}
+              className="drop-shadow-lg"
+            />
+            
+            {/* Иконка лупы при наведении */}
+            {onClick && (
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded">
+                <svg 
+                  width="32" 
+                  height="32" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="text-white drop-shadow-lg"
+                >
+                  <path 
+                    d="M21 21L16.514 16.506M19 10.5C19 15.194 15.194 19 10.5 19C5.806 19 2 15.194 2 10.5C2 5.806 5.806 2 10.5 2C15.194 2 19 5.806 19 10.5Z" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
+            )}
+            
+            {/* Количество поверх изображения */}
+            <div className="absolute -bottom-1 -right-1">
+              <span 
+                style={{
+                  color: '#F9F8FC',
+                  fontFamily: 'Actay Wide',
+                  fontSize: '16px',
+                  fontStyle: 'normal',
+                  fontWeight: 700,
+                  lineHeight: 'normal',
+                  opacity: 0.5
+                }}
+              >
+                x{item.amount}
+              </span>
+            </div>
+          </div>
+
+          {/* Нижняя часть - цена */}
+          <div className="flex items-baseline justify-center">
+            <span 
+              style={{
+                color: '#F9F8FC',
+                textAlign: 'center',
+                fontFamily: 'Actay Wide',
+                fontSize: '16px',
+                fontStyle: 'normal',
+                fontWeight: 700,
+                lineHeight: 'normal'
+              }}
+            >
+              {formatPrice(itemValue)}
+            </span>
+            <span 
+              style={{
+                color: 'rgba(249, 248, 252, 0.50)',
+                fontFamily: 'Actay Wide',
+                fontSize: '12px',
+                fontStyle: 'normal',
+                fontWeight: 700,
+                lineHeight: 'normal',
+                marginLeft: '2px'
+              }}
+            >
+              AP
+            </span>
+          </div>
+        </>
+      )}
     </div>
   );
 }
