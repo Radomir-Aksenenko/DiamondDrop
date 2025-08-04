@@ -68,7 +68,7 @@ export default function AboutPage() {
       </div>
       
       {/* Сетка участников команды */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-0 gap-y-6 justify-items-center">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-0 gap-y-4 justify-items-center -space-x-4">
         {teamMembers.map((member, index) => (
           <div 
             key={member.name}
