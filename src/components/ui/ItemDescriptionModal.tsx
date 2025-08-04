@@ -60,14 +60,14 @@ export default function ItemDescriptionModal({ isOpen, onClose, item }: ItemDesc
            
            {/* Информация о предмете */}
            <motion.div 
-             className='flex flex-col py-2 justify-center items-start gap-1 flex-1 self-stretch'
+             className='flex flex-col py-2 justify-start items-start gap-1 flex-1 self-stretch'
              initial={{ opacity: 0, x: 10 }}
              animate={{ opacity: 1, x: 0 }}
              transition={{ duration: 0.3, delay: 0.25 }}
            >
              {/* Редкость */}
              <motion.p 
-               className='text-16 font-bold'
+               className='text-16 font-bold text-left'
                style={{ color: rarityColor }}
                initial={{ opacity: 0, y: 5 }}
                animate={{ opacity: 1, y: 0 }}
@@ -80,9 +80,9 @@ export default function ItemDescriptionModal({ isOpen, onClose, item }: ItemDesc
                {item.rarity === 'Legendary' && 'Легендарный'}
              </motion.p>
              
-             {/* Название предмета */}
+             {/* Название предмета - увеличенный размер */}
              <motion.p 
-               className='self-stretch text-[#F9F8FC] text-20 font-bold'
+               className='text-[#F9F8FC] text-24 font-bold text-left'
                initial={{ opacity: 0, y: 5 }}
                animate={{ opacity: 1, y: 0 }}
                transition={{ duration: 0.2, delay: 0.35 }}
@@ -92,7 +92,7 @@ export default function ItemDescriptionModal({ isOpen, onClose, item }: ItemDesc
              
              {/* Описание предмета */}
              <motion.p 
-               className='self-stretch text-[#F9F8FC] text-16 font-bold opacity-50'
+               className='self-stretch text-[#F9F8FC] text-16 font-bold opacity-50 text-left'
                initial={{ opacity: 0, y: 5 }}
                animate={{ opacity: 0.5, y: 0 }}
                transition={{ duration: 0.2, delay: 0.4 }}
