@@ -70,11 +70,7 @@ export default function AboutPage() {
       {/* Сетка участников команды */}
       <div className="grid grid-cols-3 gap-x-2 gap-y-4 justify-items-center">
         {teamMembers.map((member, index) => (
-          <div 
-            key={member.name}
-            className="animate-slide-up"
-            style={{ animationDelay: `${index * 0.2}s` }}
-          >
+          <div key={member.name}>
             <TeamMemberCard member={member} />
           </div>
         ))}
