@@ -2,12 +2,14 @@
 
 import React from 'react';
 import Image from 'next/image';
+import { motion } from 'framer-motion';
 import { CaseItem } from '@/hooks/useCasesAPI';
 
 // Интерфейс пропсов компонента
 interface CaseSlotItemCardProps {
   item: CaseItem;
   className?: string;
+  isWinning?: boolean; // Новый пропс для определения выигрышного предмета
 }
 
 // Конфигурация цветов и стилей для каждого типа редкости
@@ -44,7 +46,8 @@ const rarityConfig = {
  */
 export default function CaseSlotItemCard({ 
   item, 
-  className = '' 
+  className = '',
+  isWinning = false
 }: CaseSlotItemCardProps) {
   const config = rarityConfig[item.rarity as keyof typeof rarityConfig] || rarityConfig.Common;
   
@@ -70,12 +73,25 @@ export default function CaseSlotItemCard({
   };
 
   return (
-    <div 
+    <motion.div 
       className={className}
       style={{
         background: config.background,
         border: config.border,
         ...cardStyles
+      }}
+      animate={isWinning ? {
+        scale: [1, 1.3, 1.2],
+        boxShadow: [
+          '0 0 0 rgba(92, 90, 220, 0)',
+          '0 0 30px rgba(92, 90, 220, 0.8)',
+          '0 0 20px rgba(92, 90, 220, 0.6)'
+        ]
+      } : {}}
+      transition={{
+        duration: 0.8,
+        ease: "easeOut",
+        delay: isWinning ? 0.3 : 0
       }}
     >
       {/* Верхняя часть - иконка предмета */}
@@ -134,6 +150,6 @@ export default function CaseSlotItemCard({
           AP
         </span>
       </div>
-    </div>
+    </motion.div>
   );
 }
