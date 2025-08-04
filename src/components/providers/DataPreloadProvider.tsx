@@ -97,6 +97,10 @@ interface DataPreloadProviderProps {
 }
 
 export default function DataPreloadProvider({ children }: DataPreloadProviderProps) {
+  // Уникальный идентификатор для отслеживания экземпляров
+  const [providerId] = useState(() => Math.random().toString(36).substr(2, 9));
+  
+  // Состояние для хранения данных
   const [banners, setBanners] = useState<APIBanner[]>([]);
   const [user, setUser] = useState<APIUser | null>(null);
   const [cases, setCases] = useState<CaseData[]>([]);
@@ -112,7 +116,7 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
     try {
       // В dev режиме используем мок данные
       if (isDevelopment && DEV_CONFIG.skipAuth) {
-        console.log('🔧 Dev режим: используем мок баннеры');
+        console.log(`🔧 [${providerId}] Dev режим: используем мок баннеры`);
         return [...mockBanners];
       }
 
@@ -155,7 +159,7 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
     try {
       // В dev режиме используем мок данные
       if (isDevelopment && DEV_CONFIG.skipAuth) {
-        console.log('🔧 Dev режим: используем мок пользователя');
+        console.log(`🔧 [${providerId}] Dev режим: используем мок пользователя`);
         return { ...mockUser };
       }
 
@@ -188,7 +192,7 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
     try {
       // В dev режиме используем мок данные
       if (isDevelopment && DEV_CONFIG.skipAuth) {
-        console.log('🔧 Dev режим: используем мок кейсы');
+        console.log(`🔧 [${providerId}] Dev режим: используем мок кейсы`);
         return DEV_CONFIG.mockCases.map(caseData => ({
           ...caseData,
           description: caseData.description || null,
@@ -228,7 +232,7 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
     try {
       // В dev режиме или как fallback используем мок данные
       if (isDevelopment && DEV_CONFIG.skipAuth) {
-        console.log('🔧 Dev режим: используем мок выигрыши');
+        console.log(`🔧 [${providerId}] Dev режим: используем мок выигрыши`);
         return [...mockLiveWins];
       }
 
@@ -250,7 +254,7 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
         setError(null);
       }
 
-      console.log('🚀 Начинаем предзагрузку всех данных...');
+      console.log(`🚀 [${providerId}] Начинаем предзагрузку всех данных...`);
 
       // Проверяем аутентификацию
       const authenticated = hasAuthToken();
@@ -269,7 +273,7 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
       setCases(casesData);
       setLiveWins(liveWinsData);
 
-      console.log('✅ Предзагрузка завершена');
+      console.log(`✅ [${providerId}] Предзагрузка завершена`);
 
       // Небольшая задержка для плавности только при первоначальной загрузке
       if (isInitialLoad || !hasInitialLoad) {
@@ -280,7 +284,7 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Неизвестная ошибка';
       setError(errorMessage);
-      console.error('❌ Ошибка предзагрузки:', errorMessage);
+      console.error(`❌ [${providerId}] Ошибка предзагрузки:`, errorMessage);
     } finally {
       // Убираем состояние загрузки только после первоначальной загрузки
       if (isInitialLoad || !hasInitialLoad) {
