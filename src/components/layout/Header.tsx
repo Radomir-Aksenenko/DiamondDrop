@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import NavButton from '@/components/ui/NavButton';
 import { usePreloadedData } from '@/components/providers/DataPreloadProvider';
 import WalletModal from '@/components/ui/WalletModal';
@@ -11,6 +12,7 @@ export default function Header() {
   const { user, isAuthenticated } = usePreloadedData();
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
+  const router = useRouter();
   
   // Используем предзагруженные данные пользователя
   const userBalance = user?.balance ?? 999;
@@ -36,15 +38,24 @@ export default function Header() {
   const openUpgradeModal = () => setIsUpgradeModalOpen(true);
   const closeUpgradeModal = () => setIsUpgradeModalOpen(false);
 
+  const handleOpenInventory = () => {
+    router.push('/inventory');
+  };
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-[#0D0D11]">
       <div className="h-[82px] px-6 py-4 flex items-center justify-between">
-          <div className='flex gap-2 items-center'>
+          <div 
+            className='flex gap-2 items-center cursor-pointer hover:opacity-80 transition-opacity'
+            onClick={handleOpenInventory}
+            title="Открыть инвентарь"
+          >
               <img 
                 src={userAvatarUrl}
                 alt="User Avatar"
                 width={50}
                 height={50}
+                className="rounded-lg"
               />
               <div>
                 <p className='text-[#F9F8FC] text-2xl font-bold mr-2 font-unbounded'>{userName}</p>
@@ -56,6 +67,7 @@ export default function Header() {
             </div>
         <nav className="flex items-center gap-2">
           <NavButton icon="Case" href="/" label="Кейсы" />
+          <NavButton icon="Inventory" href="/inventory" label="Инвентарь" />
           <NavButton icon="Update" onClick={openUpgradeModal} label="Апгрейд" />
           <NavButton icon="About" href="/about" label="О проекте" />
         </nav>
