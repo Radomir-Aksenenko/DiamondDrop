@@ -18,7 +18,7 @@ const rarityConfig = {
     textColor: 'text-gray-300'
   },
   Uncommon: {
-    background: 'radial-gradient(166.28% 111.64% at 50% 52.63%, rgba(203, 50, 209, 0.00) 0%, rgba(172, 33, 146, 0.60) 100%)',
+    background: 'radial-gradient(174.65% 116.67% at 50% 52.63%, rgba(119, 110, 239, 0.00) 0%, rgba(89, 78, 235, 0.20) 100%)',
     border: '1px solid rgba(249, 248, 252, 0.05)',
     textColor: 'text-purple-300'
   },
