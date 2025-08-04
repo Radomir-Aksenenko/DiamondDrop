@@ -350,14 +350,16 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
   // Запускаем предзагрузку при монтировании только если есть токен или в dev режиме
   useEffect(() => {
     const token = getAuthToken();
-    const shouldLoad = token || (isDevelopment && DEV_CONFIG.skipAuth);
+    const shouldLoad = (token || (isDevelopment && DEV_CONFIG.skipAuth)) && !hasInitialLoad;
     
     console.log(`🔧 [${providerId}] useEffect #1 (монтирование): Инициализация, токен:`, !!token, 'dev режим:', isDevelopment && DEV_CONFIG.skipAuth);
-    console.log(`🔧 [${providerId}] useEffect #1: shouldLoad =`, shouldLoad, 'hasInitialLoad =', hasInitialLoad);
+    console.log(`🔧 [${providerId}] useEffect #1: shouldLoad =`, shouldLoad, '(токен:', !!token, 'hasInitialLoad =', hasInitialLoad, ')');
     
     if (shouldLoad) {
-      console.log(`🚀 [${providerId}] useEffect #1: Вызываем preloadAllData(true)`);
+      console.log(`🚀 [${providerId}] useEffect #1: Вызываем preloadAllData(true) - первая загрузка`);
       preloadAllData(true);
+    } else if ((token || (isDevelopment && DEV_CONFIG.skipAuth)) && hasInitialLoad) {
+      console.log(`⚠️ [${providerId}] useEffect #1: Токен есть, но данные уже загружены - пропускаем загрузку`);
     } else {
       // Если токена нет, показываем состояние ожидания токена
       console.log(`⏳ [${providerId}] useEffect #1: Ожидаем получение токена авторизации...`);
