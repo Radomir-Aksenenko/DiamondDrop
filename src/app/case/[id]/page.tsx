@@ -58,6 +58,54 @@ export default function CasePage() {
     field4Controls.set({ y: 0 });
   };
 
+  // Функция для плавного центрирования карточек после остановки анимации
+  const centerCardsAfterAnimation = async () => {
+    console.log('🎯 Начинаем центрирование карточек для лучшей видимости');
+    
+    const controls = [field1Controls, field2Controls, field3Controls, field4Controls];
+    const centeringPromises = [];
+    
+    // Задержка перед началом центрирования для лучшего UX
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    for (let i = 0; i < selectedNumber; i++) {
+      const fieldControl = controls[i];
+      
+      if (fieldControl) {
+        let centeringPromise;
+        
+        if (selectedNumber === 1) {
+          // Для горизонтальной прокрутки центрируем по X
+          centeringPromise = fieldControl.start({
+            x: 0, // Возвращаем в центральную позицию
+            transition: {
+              duration: 1.2, // Плавная анимация
+              ease: [0.25, 0.46, 0.45, 0.94], // Плавная кривая easeOutQuart
+            }
+          });
+        } else {
+          // Для вертикальной прокрутки центрируем по Y
+          centeringPromise = fieldControl.start({
+            y: 0, // Возвращаем в центральную позицию
+            transition: {
+              duration: 1.2, // Плавная анимация
+              ease: [0.25, 0.46, 0.45, 0.94], // Плавная кривая easeOutQuart
+            }
+          });
+        }
+        
+        centeringPromises.push(centeringPromise);
+      }
+    }
+    
+    try {
+      await Promise.all(centeringPromises);
+      console.log('✅ Центрирование карточек завершено');
+    } catch (error) {
+      console.error('❌ Ошибка при центрировании карточек:', error);
+    }
+  };
+
   // Функция для сортировки предметов по цене (всегда от дорогих к дешевым)
   const getSortedItems = () => {
     if (!caseData?.items) return [];
@@ -367,6 +415,9 @@ export default function CasePage() {
       await Promise.all(animationPromises);
       console.log('Анимация завершена');
       setIsSpinning(false);
+      
+      // Запускаем плавное центрирование карточек для лучшей видимости
+      centerCardsAfterAnimation();
     } catch (error) {
       console.error('Ошибка анимации:', error);
       setIsSpinning(false);
