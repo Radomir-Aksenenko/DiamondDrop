@@ -10,9 +10,7 @@ import CaseSlotItemCard from '@/components/ui/CaseSlotItemCard';
 import { API_BASE_URL } from '@/lib/config';
 import { CaseItem } from '@/hooks/useCasesAPI';
 import { usePreloadedData } from '@/components/providers/DataPreloadProvider';
-
-// Константа для токена авторизации
-const AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI2ODhjYWQ2YWJlNjU0MWU5ZTgzMWFiZTciLCJwZXJtaXNzaW9uIjoiVXNlciIsIm5iZiI6MTc1NDA0OTg5OCwiZXhwIjoxNzU0MDUzNDk4LCJpYXQiOjE3NTQwNDk4OTgsImlzcyI6Im1yLnJhZmFlbGxvIn0.wlwEt3aTPnizjaW0z0iG5cFImxh_MHsDV10D97UrPSU'
+import { getAuthToken } from '@/lib/auth';
 
 // Интерфейс для результата открытия кейса
 interface CaseOpenResult {
@@ -161,16 +159,25 @@ export default function CasePage() {
       field3Controls.stop();
       field4Controls.stop();
       
-      // Используем константу токена авторизации
-      const token = AUTH_TOKEN;
+      // Получаем токен авторизации из системы аутентификации
+      const token = getAuthToken();
+      if (!token && !isDemo) {
+        throw new Error('Токен авторизации не найден');
+      }
+      
+      const headers: Record<string, string> = {
+        'accept': '*/*',
+        'Content-Type': 'application/json'
+      };
+      
+      // Добавляем токен авторизации только если он есть (для не-демо режима)
+      if (token) {
+        headers['Authorization'] = token;
+      }
       
       const response = await fetch(`${API_BASE_URL}/cases/${caseId}/opens?amount=${selectedNumber}&demo=${isDemo}`, {
         method: 'POST',
-        headers: {
-          'accept': '*/*',
-          'Authorization': token,
-          'Content-Type': 'application/json'
-        },
+        headers,
         body: ''
       });
       
