@@ -14,25 +14,42 @@ interface ModalProps {
 // Оптимизированные варианты анимации для лучшей производительности
 const overlayVariants = {
   hidden: { opacity: 0 },
-  visible: { opacity: 1 },
-  exit: { opacity: 0 }
+  visible: { 
+    opacity: 1,
+    transition: {
+      duration: 0.2
+    }
+  },
+  exit: { 
+    opacity: 0,
+    transition: {
+      duration: 0.15
+    }
+  }
 };
 
 const modalVariants = {
   hidden: { 
-    scale: 0.95, 
+    scale: 0.9, 
     opacity: 0,
-    y: 10
+    y: 20
   },
   visible: { 
     scale: 1, 
     opacity: 1,
-    y: 0
+    y: 0,
+    transition: {
+      duration: 0.25,
+      delay: 0.05
+    }
   },
   exit: { 
-    scale: 0.95, 
+    scale: 0.9, 
     opacity: 0,
-    y: 10
+    y: 20,
+    transition: {
+      duration: 0.2
+    }
   }
 };
 
@@ -77,7 +94,7 @@ const Modal = memo(function Modal({ isOpen, onClose, children, title, className 
   // Теперь скролл бар не будет скрываться при открытии модального окна
 
   return (
-    <AnimatePresence mode="sync" initial={false}>
+    <AnimatePresence mode="sync">
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           {/* Оптимизированный оверлей */}
