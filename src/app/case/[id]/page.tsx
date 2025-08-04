@@ -414,7 +414,6 @@ export default function CasePage() {
 
 
 
-
   // Обработка состояний загрузки и ошибки
   if (loading) {
     return (
@@ -608,7 +607,7 @@ export default function CasePage() {
                   </motion.div>
                   
                   {/* Белая палочка по центру */}
-                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1 h-full bg-gradient-to-b from-white/90 via-white to-white/90 z-10 pointer-events-none shadow-lg shadow-white/20">
+                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-0.5 h-full bg-gradient-to-b from-white/60 via-white/70 to-white/60 z-10 pointer-events-none shadow-md shadow-white/10">
                   </div>
                 </div>
               )}
@@ -631,7 +630,7 @@ export default function CasePage() {
                     </motion.div>
                     
                     {/* Белая палочка по центру */}
-                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-gradient-to-r from-white/90 via-white to-white/90 z-10 pointer-events-none shadow-lg shadow-white/20">
+                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-0.5 bg-gradient-to-r from-white/60 via-white/70 to-white/60 z-10 pointer-events-none shadow-md shadow-white/10">
                     </div>
                   </div>
                   <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
@@ -649,8 +648,8 @@ export default function CasePage() {
                     </motion.div>
                     
                     {/* Белая палочка по центру */}
-                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-gradient-to-r from-white/90 via-white to-white/90 z-10 pointer-events-none shadow-lg shadow-white/20">
-                    </div>
+                     <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-0.5 bg-gradient-to-r from-white/60 via-white/70 to-white/60 z-10 pointer-events-none shadow-md shadow-white/10">
+                     </div>
                   </div>
                 </>
               )}
@@ -673,7 +672,7 @@ export default function CasePage() {
                     </motion.div>
                     
                     {/* Белая палочка по центру */}
-                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-gradient-to-r from-white/90 via-white to-white/90 z-10 pointer-events-none shadow-lg shadow-white/20">
+                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-0.5 bg-gradient-to-r from-white/60 via-white/70 to-white/60 z-10 pointer-events-none shadow-md shadow-white/10">
                     </div>
                   </div>
                   <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
@@ -691,7 +690,7 @@ export default function CasePage() {
                     </motion.div>
                     
                     {/* Белая палочка по центру */}
-                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-gradient-to-r from-white/90 via-white to-white/90 z-10 pointer-events-none shadow-lg shadow-white/20">
+                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-0.5 bg-gradient-to-r from-white/60 via-white/70 to-white/60 z-10 pointer-events-none shadow-md shadow-white/10">
                     </div>
                   </div>
                   <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
@@ -709,7 +708,7 @@ export default function CasePage() {
                     </motion.div>
                     
                     {/* Белая палочка по центру */}
-                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-gradient-to-r from-white/90 via-white to-white/90 z-10 pointer-events-none shadow-lg shadow-white/20">
+                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-0.5 bg-gradient-to-r from-white/60 via-white/70 to-white/60 z-10 pointer-events-none shadow-md shadow-white/10">
                     </div>
                   </div>
                 </>
@@ -733,7 +732,7 @@ export default function CasePage() {
                     </motion.div>
                     
                     {/* Белая палочка по центру */}
-                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-gradient-to-r from-white/90 via-white to-white/90 z-10 pointer-events-none shadow-lg shadow-white/20">
+                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-0.5 bg-gradient-to-r from-white/60 via-white/70 to-white/60 z-10 pointer-events-none shadow-md shadow-white/10">
                     </div>
                   </div>
                   <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
@@ -751,7 +750,7 @@ export default function CasePage() {
                     </motion.div>
                     
                     {/* Белая палочка по центру */}
-                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-gradient-to-r from-white/90 via-white to-white/90 z-10 pointer-events-none shadow-lg shadow-white/20">
+                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-0.5 bg-gradient-to-r from-white/60 via-white/70 to-white/60 z-10 pointer-events-none shadow-md shadow-white/10">
                     </div>
                   </div>
                   <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
@@ -769,7 +768,7 @@ export default function CasePage() {
                     </motion.div>
                     
                     {/* Белая палочка по центру */}
-                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-gradient-to-r from-white/90 via-white to-white/90 z-10 pointer-events-none shadow-lg shadow-white/20">
+                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-0.5 bg-gradient-to-r from-white/60 via-white/70 to-white/60 z-10 pointer-events-none shadow-md shadow-white/10">
                     </div>
                   </div>
                   <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
@@ -787,7 +786,7 @@ export default function CasePage() {
                     </motion.div>
                     
                     {/* Белая палочка по центру */}
-                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-1 bg-gradient-to-r from-white/90 via-white to-white/90 z-10 pointer-events-none shadow-lg shadow-white/20">
+                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-0.5 bg-gradient-to-r from-white/60 via-white/70 to-white/60 z-10 pointer-events-none shadow-md shadow-white/10">
                     </div>
                   </div>
                 </>
