@@ -87,7 +87,7 @@ const mapRarityToType = (rarity: string): RarityType => {
 };
 
 // Функция для преобразования данных WebSocket в формат компонента
-const transformWSData = (wsData: WSWinData): LiveWinData => {
+const transformWSData = (wsData: WSWinData, messageCounter: number): LiveWinData => {
   // Декодируем Unicode символы в именах
   const decodeUnicode = (str: string): string => {
     try {
@@ -97,8 +97,11 @@ const transformWSData = (wsData: WSWinData): LiveWinData => {
     }
   };
 
+  // Создаем более уникальный ID с использованием счетчика сообщений
+  const uniqueId = `ws-${wsData.user.Id}-${wsData.item.Id}-${wsData.case.Id}-${Date.now()}-${messageCounter}-${Math.random().toString(36).substr(2, 9)}`;
+
   return {
-    id: `${wsData.user.Id}-${wsData.item.Id}-${wsData.case.Id}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    id: uniqueId,
     playerName: wsData.user.Username,
     rarity: mapRarityToType(wsData.item.Rarity),
     percentage: `${wsData.item.PercentChance.toFixed(2)}%`,
@@ -123,6 +126,58 @@ export default function useLiveWins(options: UseLiveWinsOptions = {}) {
   const initTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const maxReconnectAttempts = 5;
   const reconnectAttempts = useRef(0);
+  
+  // Добавляем счетчик для уникальных ID и очередь для обработки сообщений
+  const messageCounterRef = useRef(0);
+  const processingQueueRef = useRef<LiveWinData[]>([]);
+  const isProcessingRef = useRef(false);
+  const processMessageQueueRef = useRef<(() => void) | undefined>(undefined);
+
+  // Функция для обработки очереди сообщений
+  const processMessageQueue = useCallback(() => {
+    if (isProcessingRef.current || processingQueueRef.current.length === 0) {
+      return;
+    }
+
+    isProcessingRef.current = true;
+    
+    // Берем все сообщения из очереди
+    const newWins = [...processingQueueRef.current];
+    processingQueueRef.current = [];
+
+    console.log(`📦 Обрабатываем пакет из ${newWins.length} выигрышей`);
+
+    setWins(prevWins => {
+      // Создаем Set существующих ID для быстрой проверки
+      const existingIds = new Set(prevWins.map(win => win.id));
+      
+      // Фильтруем только действительно новые выигрыши
+      const uniqueNewWins = newWins.filter(newWin => !existingIds.has(newWin.id));
+      
+      if (uniqueNewWins.length === 0) {
+        console.log('🔄 Все выигрыши в пакете уже существуют, пропускаем');
+        return prevWins;
+      }
+
+      // Добавляем новые выигрыши в начало списка и ограничиваем до 10 элементов
+      const updatedWins = [...uniqueNewWins, ...prevWins].slice(0, 10);
+      console.log(`✅ Добавлено ${uniqueNewWins.length} новых выигрышей, всего: ${updatedWins.length}`);
+      
+      return updatedWins;
+    });
+
+    // Сбрасываем флаг обработки через небольшую задержку
+    setTimeout(() => {
+      isProcessingRef.current = false;
+      // Проверяем, не появились ли новые сообщения в очереди
+      if (processingQueueRef.current.length > 0) {
+        processMessageQueueRef.current?.();
+      }
+    }, 50);
+  }, []);
+
+  // Сохраняем функцию в ref для использования в connectWebSocket
+  processMessageQueueRef.current = processMessageQueue;
 
   const connectWebSocket = useCallback(() => {
     try {
@@ -165,27 +220,20 @@ export default function useLiveWins(options: UseLiveWinsOptions = {}) {
           // Обрабатываем только сообщения канала LiveWins с данными выигрышей
           if (message.type === 'message' && message.channel === 'LiveWins' && message.data) {
             console.log('Получен новый выигрыш:', message.data);
-            const newWin = transformWSData(message.data);
             
-            setWins(prevWins => {
-              // Проверяем, нет ли уже такого выигрыша (по ID пользователя, предмета и времени)
-              const isDuplicate = prevWins.some(win => 
-                win.id === newWin.id || 
-                (win.playerName === newWin.playerName && 
-                 win.itemName === newWin.itemName && 
-                 Math.abs(win.timestamp.getTime() - newWin.timestamp.getTime()) < 1000) // в пределах 1 секунды
-              );
-              
-              if (isDuplicate) {
-                console.log('Дублирующий выигрыш проигнорирован:', newWin.playerName, newWin.itemName);
-                return prevWins;
-              }
-              
-              // Добавляем новый выигрыш в начало списка и ограничиваем до 10 элементов
-              const updatedWins = [newWin, ...prevWins].slice(0, 10);
-              console.log('Обновлен список выигрышей:', updatedWins.length, 'элементов');
-              return updatedWins;
-            });
+            // Увеличиваем счетчик сообщений
+            messageCounterRef.current += 1;
+            
+            const newWin = transformWSData(message.data, messageCounterRef.current);
+            console.log('🔄 Преобразованный выигрыш:', newWin);
+            
+            // Добавляем выигрыш в очередь для обработки
+            processingQueueRef.current.push(newWin);
+            
+            // Запускаем обработку очереди с небольшой задержкой для накопления сообщений
+            setTimeout(() => {
+              processMessageQueueRef.current?.();
+            }, 10);
           }
         } catch (err) {
           console.error('Ошибка при обработке сообщения WebSocket:', err);
