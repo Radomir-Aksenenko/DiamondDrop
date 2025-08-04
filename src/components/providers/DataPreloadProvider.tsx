@@ -28,6 +28,8 @@ interface DataPreloadContextType extends PreloadedData {
   refreshUser: () => Promise<void>;
   refreshCases: () => Promise<void>;
   refreshAllData: () => Promise<void>;
+  updateBalanceLocally: (amount: number) => void;
+  decreaseBalanceLocally: (amount: number) => void;
 }
 
 // Создаем контекст
@@ -361,6 +363,36 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
     await preloadAllData(true); // Принудительная перезагрузка с показом состояния загрузки
   };
 
+  // Функция для локального увеличения баланса (при депозите)
+  const updateBalanceLocally = useCallback((amount: number) => {
+    setUser(prevUser => {
+      if (!prevUser) return prevUser;
+      
+      const newBalance = prevUser.balance + amount;
+      console.log(`💰 updateBalanceLocally: Увеличиваем баланс на ${amount}, новый баланс: ${newBalance}`);
+      
+      return {
+        ...prevUser,
+        balance: newBalance
+      };
+    });
+  }, []);
+
+  // Функция для локального уменьшения баланса (при покупке кейса)
+  const decreaseBalanceLocally = useCallback((amount: number) => {
+    setUser(prevUser => {
+      if (!prevUser) return prevUser;
+      
+      const newBalance = Math.max(0, prevUser.balance - amount);
+      console.log(`💰 decreaseBalanceLocally: Уменьшаем баланс на ${amount}, новый баланс: ${newBalance}`);
+      
+      return {
+        ...prevUser,
+        balance: newBalance
+      };
+    });
+  }, []);
+
   // Запускаем предзагрузку при монтировании только если есть токен или в dev режиме
   useEffect(() => {
     const token = getAuthToken();
@@ -439,6 +471,8 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
     refreshUser,
     refreshCases,
     refreshAllData,
+    updateBalanceLocally,
+    decreaseBalanceLocally,
   };
 
   return (

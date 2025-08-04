@@ -9,7 +9,7 @@ import CaseItemCard from '@/components/ui/CaseItemCard';
 import CaseSlotItemCard from '@/components/ui/CaseSlotItemCard';
 import { API_BASE_URL } from '@/lib/config';
 import { CaseItem } from '@/hooks/useCasesAPI';
-import { usePreloadedData } from '@/components/providers/DataPreloadProvider';
+import { useBalanceUpdater } from '@/hooks/useBalanceUpdater';
 import { getAuthToken } from '@/lib/auth';
 
 // Интерфейс для результата открытия кейса
@@ -33,7 +33,7 @@ export default function CasePage() {
   const caseId = params.id as string;
   
   const { caseData, loading, error } = useCaseAPI(caseId);
-  const { refreshUser } = usePreloadedData();
+  const { decreaseBalance } = useBalanceUpdater();
   
   const [isFastMode, setIsFastMode] = useState(false);
   const [selectedNumber, setSelectedNumber] = useState(1);
@@ -188,10 +188,11 @@ export default function CasePage() {
       const results: CaseOpenResult[] = await response.json();
       console.log('Получены результаты:', results);
       
-      // Обновляем баланс сразу после получения результатов (только для не демо режима)
-      if (!isDemo) {
-        console.log('🔄 Обновляем баланс пользователя сразу после открытия кейса');
-        refreshUser();
+      // Локально уменьшаем баланс сразу после получения результатов (только для не демо режима)
+      if (!isDemo && caseData) {
+        const totalCost = caseData.price * selectedNumber;
+        console.log(`🔄 Локально уменьшаем баланс на ${totalCost} (${caseData.price} × ${selectedNumber})`);
+        decreaseBalance(totalCost);
       }
       
       // Запускаем анимацию рулетки

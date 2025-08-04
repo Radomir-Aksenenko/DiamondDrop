@@ -4,7 +4,7 @@ import React, { useState, useCallback, useMemo, memo, useEffect } from 'react';
 import Modal from './Modal';
 import useDepositAPI from '@/hooks/useDepositAPI';
 import { SmartLink } from '@/lib/linkUtils';
-import { usePreloadedData } from '@/components/providers/DataPreloadProvider';
+import { useBalanceUpdater } from '@/hooks/useBalanceUpdater';
 
 interface WalletModalProps {
   isOpen: boolean;
@@ -70,7 +70,7 @@ const CardButton = memo(function CardButton({
  */
 const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalProps) {
   const { createDeposit, setupPaymentHandlers, isLoading: isDepositLoading, error: depositError, clearError } = useDepositAPI();
-  const { refreshUser } = usePreloadedData();
+  const { increaseBalance } = useBalanceUpdater();
   const [activeTab, setActiveTab] = useState('deposit');
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [depositAmount, setDepositAmount] = useState('');
@@ -90,15 +90,12 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalPr
       // onSuccess - при успешной оплате
       async () => {
         console.log('🎉 Депозит успешно выполнен');
-        console.log('🔄 Начинаем обновление баланса пользователя...');
+        console.log('🔄 Локально обновляем баланс пользователя...');
         
-        try {
-          // Обновляем баланс пользователя
-          await refreshUser();
-          console.log('✅ Баланс пользователя успешно обновлен');
-        } catch (error) {
-          console.error('❌ Ошибка при обновлении баланса:', error);
-        }
+        // Локально увеличиваем баланс на сумму депозита
+        const depositAmountNum = parseInt(depositAmount);
+        increaseBalance(depositAmountNum);
+        console.log(`✅ Баланс локально увеличен на ${depositAmountNum}`);
         
         // Очищаем форму и закрываем модалку
         setDepositAmount('');
@@ -115,7 +112,7 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalPr
     );
 
     return cleanup;
-  }, [isOpen, setupPaymentHandlers, onClose, clearError, refreshUser]);
+  }, [isOpen, setupPaymentHandlers, onClose, clearError, increaseBalance, depositAmount]);
 
   // Мемоизированные обработчики для предотвращения лишних рендеров
   const handleDepositAmountSelect = useCallback((amount: string) => {
