@@ -7,6 +7,7 @@ import useWithdrawAPI from '@/hooks/useWithdrawAPI';
 import useSavedCards from '@/hooks/useSavedCards';
 import { SmartLink } from '@/lib/linkUtils';
 import { useBalanceUpdater } from '@/hooks/useBalanceUpdater';
+import { usePreloadedData } from '@/components/providers/DataPreloadProvider';
 
 interface WalletModalProps {
   isOpen: boolean;
@@ -74,6 +75,7 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalPr
   const { createWithdraw, isLoading: isWithdrawLoading, error: withdrawError, clearError: clearWithdrawError } = useWithdrawAPI();
   const { savedCards, addCard } = useSavedCards();
   const { increaseBalance, decreaseBalance } = useBalanceUpdater();
+  const { user } = usePreloadedData();
   const [activeTab, setActiveTab] = useState('deposit');
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [depositAmount, setDepositAmount] = useState('');
@@ -126,10 +128,18 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalPr
   }, [clearError]);
 
   const handleAmountSelect = useCallback((amount: string) => {
-    setWithdrawAmount(amount);
-    setSelectedAmountButton(amount);
-    setAmountError(null);
-  }, []);
+    // Если выбрана кнопка "Макс", устанавливаем весь доступный баланс
+    if (amount === '10000') {
+      const userBalance = user?.balance ?? 0;
+      setWithdrawAmount(userBalance.toString());
+      setSelectedAmountButton(amount);
+      setAmountError(null);
+    } else {
+      setWithdrawAmount(amount);
+      setSelectedAmountButton(amount);
+      setAmountError(null);
+    }
+  }, [user?.balance]);
 
   const handleCardSelect = useCallback((card: string) => {
     setCardNumber(card);

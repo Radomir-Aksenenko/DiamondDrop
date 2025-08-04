@@ -44,6 +44,12 @@ export default function useDepositAPI() {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         
+        // Специальная обработка ошибки превышения лимита (429)
+        if (response.status === 429) {
+          console.log('⏰ Обнаружена ошибка превышения лимита:', errorData);
+          throw new Error("Вы превысили лимит, попробуйте позже");
+        }
+        
         // Специальная обработка ошибки недостатка средств
         if (response.status === 400 && errorData.error === "error._server.transactions.pay.senderNotEnoughBalance") {
           console.log('💳 Обнаружена ошибка недостатка средств:', errorData);
