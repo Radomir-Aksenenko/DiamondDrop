@@ -46,9 +46,6 @@ export default function CasePage() {
   // Состояния для анимации рулетки
   const [isSpinning, setIsSpinning] = useState(false);
   
-  // Состояние для отслеживания выигрышных предметов
-  const [winningItems, setWinningItems] = useState<Set<string>>(new Set());
-  
   // Motion controls для каждого поля рулетки
   const field1Controls = useAnimation();
   const field2Controls = useAnimation();
@@ -157,9 +154,6 @@ export default function CasePage() {
     try {
       console.log('Начинаем открытие кейса...');
       setIsSpinning(true);
-      
-      // Очищаем выигрышные предметы перед новой анимацией
-      setWinningItems(new Set());
       
       // Сбрасываем предыдущие анимации
       field1Controls.stop();
@@ -354,17 +348,6 @@ export default function CasePage() {
     try {
       await Promise.all(animationPromises);
       console.log('Анимация завершена');
-      
-      // Отмечаем выигрышные предметы для анимации увеличения
-      const winningItemIds = new Set<string>();
-      for (let i = 0; i < selectedNumber; i++) {
-        const targetItem = results[i];
-        if (targetItem) {
-          winningItemIds.add(`${targetItem.id}-field${i + 1}-target`);
-        }
-      }
-      setWinningItems(winningItemIds);
-      
       setIsSpinning(false);
     } catch (error) {
       console.error('Ошибка анимации:', error);
@@ -587,7 +570,6 @@ export default function CasePage() {
                         key={`field1-${item.id}-${index}`} 
                         item={item} 
                         className="flex-shrink-0"
-                        isWinning={winningItems.has(item.id)}
                       />
                     ))}
                   </motion.div>
@@ -611,7 +593,6 @@ export default function CasePage() {
                         <CaseSlotItemCard 
                           key={`field1-${item.id}-${index}`} 
                           item={item} 
-                          isWinning={winningItems.has(item.id)}
                         />
                       ))}
                     </motion.div>
@@ -630,7 +611,6 @@ export default function CasePage() {
                         <CaseSlotItemCard 
                           key={`field2-${item.id}-${index}`} 
                           item={item} 
-                          isWinning={winningItems.has(item.id)}
                         />
                       ))}
                     </motion.div>
@@ -655,7 +635,6 @@ export default function CasePage() {
                         <CaseSlotItemCard 
                           key={`field1-${item.id}-${index}`} 
                           item={item} 
-                          isWinning={winningItems.has(item.id)}
                         />
                       ))}
                     </motion.div>
@@ -674,7 +653,6 @@ export default function CasePage() {
                         <CaseSlotItemCard 
                           key={`field2-${item.id}-${index}`} 
                           item={item} 
-                          isWinning={winningItems.has(item.id)}
                         />
                       ))}
                     </motion.div>
@@ -693,7 +671,6 @@ export default function CasePage() {
                         <CaseSlotItemCard 
                           key={`field3-${item.id}-${index}`} 
                           item={item} 
-                          isWinning={winningItems.has(item.id)}
                         />
                       ))}
                     </motion.div>
@@ -718,7 +695,6 @@ export default function CasePage() {
                         <CaseSlotItemCard 
                           key={`field1-${item.id}-${index}`} 
                           item={item} 
-                          isWinning={winningItems.has(item.id)}
                         />
                       ))}
                     </motion.div>
@@ -737,7 +713,6 @@ export default function CasePage() {
                         <CaseSlotItemCard 
                           key={`field2-${item.id}-${index}`} 
                           item={item} 
-                          isWinning={winningItems.has(item.id)}
                         />
                       ))}
                     </motion.div>
@@ -756,7 +731,6 @@ export default function CasePage() {
                         <CaseSlotItemCard 
                           key={`field3-${item.id}-${index}`} 
                           item={item} 
-                          isWinning={winningItems.has(item.id)}
                         />
                       ))}
                     </motion.div>
@@ -775,7 +749,6 @@ export default function CasePage() {
                         <CaseSlotItemCard 
                           key={`field4-${item.id}-${index}`} 
                           item={item} 
-                          isWinning={winningItems.has(item.id)}
                         />
                       ))}
                     </motion.div>
