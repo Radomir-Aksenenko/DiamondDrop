@@ -191,7 +191,10 @@ export default function CasePage() {
   // Функция для запуска анимации рулетки (адаптированная из оригинальной рулетки)
   const startSpinAnimation = async (results: CaseOpenResult[]) => {
     console.log('Запуск анимации для результатов:', results);
-    const duration = isFastMode ? 3.5 : 8.5; // Увеличиваем продолжительность для более плавной анимации
+    // Разные duration для горизонтальной и вертикальной прокрутки
+    const baseDuration = isFastMode ? 3 : 6;
+    const horizontalDuration = baseDuration; // Одинаковая продолжительность
+    const verticalDuration = baseDuration;
     
     // Очищаем старые расположения для текущей конфигурации
     setSavedLayouts(prev => {
@@ -296,12 +299,12 @@ export default function CasePage() {
           // Устанавливаем начальную позицию
           fieldControl.set({ x: initialOffset });
           
-          // Создаем анимацию с более плавной cubic-bezier кривой
+          // Создаем анимацию с плавной остановкой для горизонтальной прокрутки
           animationPromise = fieldControl.start({
             x: finalOffset,
             transition: {
-              duration: duration,
-              ease: [0.25, 0.46, 0.45, 0.94], // Более плавное замедление в конце и уменьшенная скорость в середине
+              duration: horizontalDuration,
+              ease: [0.23, 1, 0.32, 1], // Плавная остановка без "приклеивания"
             }
           });
           
@@ -319,12 +322,12 @@ export default function CasePage() {
           // Устанавливаем начальную позицию
           fieldControl.set({ y: initialOffset });
           
-          // Создаем анимацию с более плавной cubic-bezier кривой
+          // Создаем анимацию с плавной остановкой для вертикальной прокрутки
           animationPromise = fieldControl.start({
             y: finalOffset,
             transition: {
-              duration: duration,
-              ease: [0.25, 0.46, 0.45, 0.94], // Более плавное замедление в конце и уменьшенная скорость в середине
+              duration: verticalDuration,
+              ease: [0.23, 1, 0.32, 1], // Плавная остановка без "приклеивания"
             }
           });
         }
