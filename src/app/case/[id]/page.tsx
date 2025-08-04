@@ -192,7 +192,7 @@ export default function CasePage() {
   const startSpinAnimation = async (results: CaseOpenResult[]) => {
     console.log('Запуск анимации для результатов:', results);
     // Разные duration для горизонтальной и вертикальной прокрутки
-    const baseDuration = isFastMode ? 3 : 6;
+    const baseDuration = isFastMode ? 1.5 : 6; // Ускоренный быстрый режим
     const horizontalDuration = baseDuration; // Одинаковая продолжительность
     const verticalDuration = baseDuration;
     
