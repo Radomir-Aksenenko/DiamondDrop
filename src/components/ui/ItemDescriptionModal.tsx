@@ -109,27 +109,23 @@ export default function ItemDescriptionModal({ isOpen, onClose, item }: ItemDesc
            transition={{ duration: 0.25, delay: 0.45 }}
         >
           <motion.button 
-            className="px-4 py-2 bg-[#2A2A2A] text-white rounded-lg hover:bg-[#3A3A3A] transition-colors"
-            onClick={onClose}
-            initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.2, delay: 0.5 }}
-          >
-            Закрыть
-          </motion.button>
-          <motion.button 
-            className="px-4 py-2 bg-[#4F46E5] text-white rounded-lg hover:bg-[#4338CA] transition-colors"
-            onClick={() => {
-              // Логика для продажи предмета
-              console.log('Продать предмет:', item.name);
-              onClose();
-            }}
-            initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.2, delay: 0.55 }}
-          >
-            Продать
-          </motion.button>
+             onClick={onClose}
+             className="bg-[#19191D] hover:bg-[#1E1E23] transition-colors py-2.5 px-4 rounded-lg text-[#F9F8FC] font-bold cursor-pointer outline-none focus:outline-none active:outline-none focus:ring-0 active:ring-0"
+             initial={{ opacity: 0, y: 5 }}
+             animate={{ opacity: 1, y: 0 }}
+             transition={{ duration: 0.2, delay: 0.5 }}
+           >
+             Закрыть
+           </motion.button>
+           <motion.button 
+             onClick={onClose}
+             className="bg-[#5C5ADC] hover:bg-[#4A48B0] transition-colors py-2.5 px-4 rounded-lg text-[#F9F8FC] font-bold cursor-pointer outline-none focus:outline-none active:outline-none focus:ring-0 active:ring-0"
+             initial={{ opacity: 0, y: 5 }}
+             animate={{ opacity: 1, y: 0 }}
+             transition={{ duration: 0.2, delay: 0.55 }}
+           >
+             Учту
+           </motion.button>
         </motion.div>
       </motion.div>
     </Modal>
