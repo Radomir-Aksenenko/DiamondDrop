@@ -7,11 +7,27 @@ import useLiveWins, { LiveWinData } from '@/hooks/useLiveWins';
 
 export default function RecentWins() {
   const { liveWins: preloadedWins } = usePreloadedData();
-  const { wins: liveWins, isConnected, error } = useLiveWins({ initialData: preloadedWins });
+  const { wins: liveWins, isConnected, error, forceRefresh } = useLiveWins({ initialData: preloadedWins });
   const [displayWins, setDisplayWins] = useState<LiveWinData[]>(liveWins);
   const [animatingWins, setAnimatingWins] = useState<Set<string>>(new Set());
   const [isShifting, setIsShifting] = useState(false);
   const prevWinsRef = useRef<LiveWinData[]>(liveWins);
+  const mountTimeRef = useRef<number>(Date.now());
+
+  // Эффект для принудительного обновления при монтировании компонента
+  useEffect(() => {
+    const currentTime = Date.now();
+    const timeSinceMount = currentTime - mountTimeRef.current;
+    
+    // Если компонент был перемонтирован (например, при возвращении на главную страницу)
+    // и прошло менее 1 секунды с момента монтирования, принудительно обновляем данные
+    if (timeSinceMount < 1000 && forceRefresh) {
+      console.log('🔄 Компонент RecentWins перемонтирован, принудительно обновляем live wins');
+      setTimeout(() => {
+        forceRefresh();
+      }, 100);
+    }
+  }, [forceRefresh]);
 
   // Обновляем отображаемые выигрыши при получении новых данных из WebSocket
   useEffect(() => {

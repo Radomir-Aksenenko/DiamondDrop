@@ -132,6 +132,7 @@ export default function useLiveWins(options: UseLiveWinsOptions = {}) {
   const processingQueueRef = useRef<LiveWinData[]>([]);
   const isProcessingRef = useRef(false);
   const processMessageQueueRef = useRef<(() => void) | undefined>(undefined);
+  const lastPageVisitRef = useRef<number>(Date.now());
 
   // Функция для обработки очереди сообщений
   const processMessageQueue = useCallback(() => {
@@ -371,11 +372,86 @@ export default function useLiveWins(options: UseLiveWinsOptions = {}) {
     };
   }, [connectWebSocket]);
 
+  // Эффект для обновления соединения при возвращении на страницу
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        const now = Date.now();
+        const timeSinceLastVisit = now - lastPageVisitRef.current;
+        
+        // Если прошло более 5 секунд с последнего посещения, обновляем соединение
+        if (timeSinceLastVisit > 5000) {
+          console.log('🔄 Страница стала видимой после длительного отсутствия, обновляем WebSocket соединение');
+          
+          // Принудительно переподключаемся для получения свежих данных
+          if (wsRef.current) {
+            disconnect();
+            setTimeout(() => {
+              if (hasAuthToken()) {
+                connectWebSocket();
+              }
+            }, 500);
+          }
+        }
+        
+        lastPageVisitRef.current = now;
+      }
+    };
+
+    const handleFocus = () => {
+      const now = Date.now();
+      const timeSinceLastVisit = now - lastPageVisitRef.current;
+      
+      // Если прошло более 3 секунд с последнего фокуса, обновляем соединение
+      if (timeSinceLastVisit > 3000) {
+        console.log('🔄 Окно получило фокус после отсутствия, обновляем WebSocket соединение');
+        
+        // Принудительно переподключаемся для получения свежих данных
+        if (wsRef.current && hasAuthToken()) {
+          disconnect();
+          setTimeout(() => {
+            connectWebSocket();
+          }, 500);
+        }
+      }
+      
+      lastPageVisitRef.current = now;
+    };
+
+    // Добавляем слушатели событий
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [connectWebSocket]);
+
+  // Функция для принудительного обновления соединения
+  const forceRefresh = useCallback(() => {
+    console.log('🔄 Принудительное обновление WebSocket соединения');
+    
+    if (wsRef.current) {
+      disconnect();
+      setTimeout(() => {
+        if (hasAuthToken()) {
+          connectWebSocket();
+        }
+      }, 500);
+    } else if (hasAuthToken()) {
+      connectWebSocket();
+    }
+    
+    lastPageVisitRef.current = Date.now();
+  }, [connectWebSocket]);
+
   return {
     wins,
     isConnected,
     error,
     reconnect: connectWebSocket,
-    disconnect
+    disconnect,
+    forceRefresh
   };
 }
