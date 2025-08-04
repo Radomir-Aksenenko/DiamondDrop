@@ -1,18 +1,17 @@
 'use client';
 
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import CaseCard from './CaseCard';
-import useCasesAPI, { CaseData } from '@/hooks/useCasesAPI';
+import { CaseData } from '@/hooks/useCasesAPI';
+import { usePreloadedData } from '@/components/providers/DataPreloadProvider';
 import styles from './CasesGrid.module.css';
 
 /**
- * Компонент сетки кейсов с бесконечной прокруткой
+ * Компонент сетки кейсов использующий предзагруженные данные
  */
 export default function CasesGrid() {
-  const { cases, loading, loadingMore, error, hasMore, loadMore } = useCasesAPI();
-  const observerRef = useRef<IntersectionObserver | null>(null);
-  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const { cases, loading, error } = usePreloadedData();
   const router = useRouter();
 
   /**
@@ -23,36 +22,6 @@ export default function CasesGrid() {
     // Переходим на страницу кейса используя ID
     router.push(`/case/${caseData.id}`);
   }, [router]);
-
-  /**
-   * Настройка Intersection Observer для бесконечной прокрутки
-   */
-  useEffect(() => {
-    if (loading || !hasMore) return;
-
-    observerRef.current = new IntersectionObserver(
-      (entries) => {
-        const target = entries[0];
-        if (target.isIntersecting && !loadingMore) {
-          loadMore();
-        }
-      },
-      {
-        threshold: 0.1,
-        rootMargin: '100px',
-      }
-    );
-
-    if (loadMoreRef.current) {
-      observerRef.current.observe(loadMoreRef.current);
-    }
-
-    return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
-    };
-  }, [loading, loadingMore, hasMore, loadMore]);
 
   // Показываем скелетон загрузки для первой загрузки
   if (loading && cases.length === 0) {
@@ -129,13 +98,7 @@ export default function CasesGrid() {
             </div>
           ))}
         </div>
-      
-      {/* Показываем индикатор загрузки при подгрузке */}
-      {loading && cases.length > 0 && (
-        <div className="flex justify-center mt-4">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-        </div>
-      )}
+
     </div>
   );
 }

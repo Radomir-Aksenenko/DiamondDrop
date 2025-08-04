@@ -3,14 +3,17 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
 import { APIBanner } from '@/hooks/useBannersAPI';
 import { APIUser } from '@/hooks/useUserAPI';
+import { CaseData } from '@/hooks/useCasesAPI';
 import { LiveWinData } from '@/hooks/useLiveWins';
 import { getAuthToken, hasAuthToken } from '@/lib/auth';
-import { API_ENDPOINTS, DEV_CONFIG, isDevelopment } from '@/lib/config';
+import { API_ENDPOINTS, DEV_CONFIG, isDevelopment, API_BASE_URL } from '@/lib/config';
+import { generateRandomItems } from '@/lib/caseUtils';
 
 // Интерфейс для контекста предзагруженных данных
 interface PreloadedData {
   banners: APIBanner[];
   user: APIUser | null;
+  cases: CaseData[];
   liveWins: LiveWinData[];
   isLoaded: boolean;
   loading: boolean;
@@ -22,6 +25,7 @@ interface PreloadedData {
 interface DataPreloadContextType extends PreloadedData {
   refreshBanners: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  refreshCases: () => Promise<void>;
   refreshAllData: () => Promise<void>;
 }
 
@@ -95,6 +99,7 @@ interface DataPreloadProviderProps {
 export default function DataPreloadProvider({ children }: DataPreloadProviderProps) {
   const [banners, setBanners] = useState<APIBanner[]>([]);
   const [user, setUser] = useState<APIUser | null>(null);
+  const [cases, setCases] = useState<CaseData[]>([]);
   const [liveWins, setLiveWins] = useState<LiveWinData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -178,6 +183,44 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
     }
   };
 
+  // Функция загрузки кейсов
+  const loadCases = async (): Promise<CaseData[]> => {
+    try {
+      // В dev режиме используем мок данные
+      if (isDevelopment && DEV_CONFIG.skipAuth) {
+        console.log('🔧 Dev режим: используем мок кейсы');
+        return DEV_CONFIG.mockCases.map(caseData => ({
+          ...caseData,
+          description: caseData.description || null,
+          items: caseData.items || generateRandomItems(caseData.price)
+        }));
+      }
+
+      const token = getAuthToken();
+      if (!token) {
+        return [];
+      }
+
+      const response = await fetch(`${API_BASE_URL}/cases?page=1&pageSize=50`, {
+        method: 'GET',
+        headers: {
+          'accept': '*/*',
+          'Authorization': token,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Ошибка API кейсов: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.cases || [];
+    } catch (err) {
+      console.error('Ошибка при загрузке кейсов:', err);
+      return [];
+    }
+  };
+
   // Функция загрузки живых выигрышей (начальные данные)
   const loadInitialLiveWins = async (): Promise<LiveWinData[]> => {
     // Для живых выигрышей мы используем WebSocket, 
@@ -214,14 +257,16 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
       setIsAuthenticated(authenticated);
 
       // Загружаем все данные параллельно для лучшей производительности
-      const [bannersData, userData, liveWinsData] = await Promise.all([
+      const [bannersData, userData, casesData, liveWinsData] = await Promise.all([
         loadBanners(),
         loadUser(),
+        loadCases(),
         loadInitialLiveWins()
       ]);
 
       setBanners(bannersData);
       setUser(userData);
+      setCases(casesData);
       setLiveWins(liveWinsData);
 
       console.log('✅ Предзагрузка завершена');
@@ -276,6 +321,15 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
     }
   };
 
+  const refreshCases = async () => {
+    try {
+      const casesData = await loadCases();
+      setCases(casesData);
+    } catch (err) {
+      console.error('Ошибка обновления кейсов:', err);
+    }
+  };
+
   const refreshAllData = async () => {
     await preloadAllData(true); // Принудительная перезагрузка с показом состояния загрузки
   };
@@ -319,6 +373,7 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
   const contextValue: DataPreloadContextType = {
     banners,
     user,
+    cases,
     liveWins,
     isLoaded: !isLoading && !error,
     loading: isLoading,
@@ -326,6 +381,7 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
     isAuthenticated,
     refreshBanners,
     refreshUser,
+    refreshCases,
     refreshAllData,
   };
 
