@@ -124,8 +124,12 @@ export default function useLiveWins(options: UseLiveWinsOptions = {}) {
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const initTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const authCheckIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const authTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const maxReconnectAttempts = 5;
   const reconnectAttempts = useRef(0);
+  const isConnectingRef = useRef(false);
+  const isMountedRef = useRef(true);
   
   // Добавляем счетчик для уникальных ID и очередь для обработки сообщений
   const messageCounterRef = useRef(0);
@@ -182,12 +186,38 @@ export default function useLiveWins(options: UseLiveWinsOptions = {}) {
 
   const connectWebSocket = useCallback(() => {
     try {
+      // Проверяем, что компонент еще смонтирован
+      if (!isMountedRef.current) {
+        console.log('Компонент размонтирован, отменяем подключение WebSocket');
+        return;
+      }
+
+      // Проверяем, что пользователь авторизован
+      if (!hasAuthToken()) {
+        console.log('Пользователь не авторизован, отменяем подключение WebSocket');
+        return;
+      }
+
+      // Предотвращаем множественные соединения
+      if (isConnectingRef.current) {
+        console.log('WebSocket уже подключается, пропускаем новое подключение');
+        return;
+      }
+
+      if (wsRef.current?.readyState === WebSocket.CONNECTING || wsRef.current?.readyState === WebSocket.OPEN) {
+        console.log('WebSocket уже подключен или подключается, пропускаем создание нового соединения');
+        return;
+      }
+
       // Проверяем поддержку WebSocket в браузере
       if (typeof WebSocket === 'undefined') {
         console.error('WebSocket не поддерживается в этом браузере');
         setError('WebSocket не поддерживается в этом браузере');
         return;
       }
+
+      // Устанавливаем флаг подключения
+      isConnectingRef.current = true;
 
       // URL WebSocket из примера
       const wsUrl = 'wss://battle-api.chasman.engineer/ws';
@@ -196,6 +226,7 @@ export default function useLiveWins(options: UseLiveWinsOptions = {}) {
 
       wsRef.current.onopen = () => {
         console.log('WebSocket подключен');
+        isConnectingRef.current = false;
         setIsConnected(true);
         setError(null);
         reconnectAttempts.current = 0;
@@ -248,7 +279,14 @@ export default function useLiveWins(options: UseLiveWinsOptions = {}) {
           wasClean: event.wasClean,
           timestamp: new Date().toISOString()
         });
+        isConnectingRef.current = false;
         setIsConnected(false);
+        
+        // Проверяем, что компонент еще смонтирован
+        if (!isMountedRef.current) {
+          console.log('Компонент размонтирован, отменяем переподключение');
+          return;
+        }
         
         // Определяем причину отключения для более понятного сообщения
         let errorMessage = 'Соединение с сервером потеряно';
@@ -261,14 +299,21 @@ export default function useLiveWins(options: UseLiveWinsOptions = {}) {
         }
         
         // Попытка переподключения, если это не было намеренное закрытие
-        if (event.code !== 1000 && reconnectAttempts.current < maxReconnectAttempts) {
+        if (event.code !== 1000 && reconnectAttempts.current < maxReconnectAttempts && hasAuthToken()) {
           reconnectAttempts.current++;
           const delay = Math.min(1000 * Math.pow(2, reconnectAttempts.current), 30000);
           
           console.log(`Попытка переподключения ${reconnectAttempts.current}/${maxReconnectAttempts} через ${delay}ms`);
           
+          // Очищаем предыдущий таймаут переподключения
+          if (reconnectTimeoutRef.current) {
+            clearTimeout(reconnectTimeoutRef.current);
+          }
+          
           reconnectTimeoutRef.current = setTimeout(() => {
-            connectWebSocket();
+            if (isMountedRef.current && hasAuthToken()) {
+              connectWebSocket();
+            }
           }, delay);
         } else if (reconnectAttempts.current >= maxReconnectAttempts) {
           setError(`${errorMessage}. Превышено количество попыток переподключения`);
@@ -293,6 +338,8 @@ export default function useLiveWins(options: UseLiveWinsOptions = {}) {
           url: wsUrl,
           timestamp: new Date().toISOString()
         });
+        
+        isConnectingRef.current = false;
         setError('Ошибка подключения к серверу');
       };
 
@@ -307,8 +354,10 @@ export default function useLiveWins(options: UseLiveWinsOptions = {}) {
     }
   }, []);
 
-  const disconnect = () => {
-    // Очищаем все таймауты
+  const disconnect = useCallback(() => {
+    console.log('Отключение WebSocket соединения');
+    
+    // Очищаем все таймауты и интервалы
     if (reconnectTimeoutRef.current) {
       clearTimeout(reconnectTimeoutRef.current);
       reconnectTimeoutRef.current = null;
@@ -319,18 +368,41 @@ export default function useLiveWins(options: UseLiveWinsOptions = {}) {
       initTimeoutRef.current = null;
     }
     
+    if (authCheckIntervalRef.current) {
+      clearInterval(authCheckIntervalRef.current);
+      authCheckIntervalRef.current = null;
+    }
+    
+    if (authTimeoutRef.current) {
+      clearTimeout(authTimeoutRef.current);
+      authTimeoutRef.current = null;
+    }
+    
+    // Сбрасываем флаги состояния
+    isConnectingRef.current = false;
+    reconnectAttempts.current = 0;
+    
+    // Закрываем WebSocket соединение
     if (wsRef.current) {
       wsRef.current.close(1000, 'Намеренное отключение');
       wsRef.current = null;
     }
     
     setIsConnected(false);
-    reconnectAttempts.current = 0;
-  };
+    setError(null);
+  }, []);
 
   useEffect(() => {
+    // Устанавливаем флаг монтирования
+    isMountedRef.current = true;
+    
     // Функция для проверки авторизации и инициализации подключения
     const initializeConnection = () => {
+      if (!isMountedRef.current) {
+        console.log('Компонент размонтирован, отменяем инициализацию');
+        return;
+      }
+
       // Проверяем, авторизован ли пользователь
       if (!hasAuthToken()) {
         console.log('Пользователь не авторизован, WebSocket подключение отложено');
@@ -345,52 +417,68 @@ export default function useLiveWins(options: UseLiveWinsOptions = {}) {
 
       console.log('Пользователь авторизован, инициализируем WebSocket подключение через 1 секунду');
       
+      // Очищаем предыдущий таймаут инициализации
+      if (initTimeoutRef.current) {
+        clearTimeout(initTimeoutRef.current);
+      }
+      
       // Ждем 1 секунду после запуска приложения перед подключением к WebSocket
       initTimeoutRef.current = setTimeout(() => {
-        connectWebSocket();
+        if (isMountedRef.current && hasAuthToken()) {
+          connectWebSocket();
+        }
       }, 1000);
     };
 
-    // Проверяем авторизацию каждые 100ms до тех пор, пока пользователь не авторизуется
-    const authCheckInterval = setInterval(() => {
+    // Проверяем авторизацию каждые 500ms до тех пор, пока пользователь не авторизуется
+    authCheckIntervalRef.current = setInterval(() => {
+      if (!isMountedRef.current) {
+        return;
+      }
+      
       if (hasAuthToken()) {
-        clearInterval(authCheckInterval);
+        if (authCheckIntervalRef.current) {
+          clearInterval(authCheckIntervalRef.current);
+          authCheckIntervalRef.current = null;
+        }
         initializeConnection();
       }
-    }, 100);
+    }, 500);
 
     // Очищаем интервал через 10 секунд, если авторизация так и не произошла
-    const authTimeout = setTimeout(() => {
-      clearInterval(authCheckInterval);
+    authTimeoutRef.current = setTimeout(() => {
+      if (authCheckIntervalRef.current) {
+        clearInterval(authCheckIntervalRef.current);
+        authCheckIntervalRef.current = null;
+      }
       console.log('Таймаут ожидания авторизации, WebSocket подключение не будет установлено');
     }, 10000);
 
     return () => {
-      clearInterval(authCheckInterval);
-      clearTimeout(authTimeout);
+      // Устанавливаем флаг размонтирования
+      isMountedRef.current = false;
       disconnect();
     };
-  }, [connectWebSocket]);
+  }, [connectWebSocket, disconnect]);
 
   // Эффект для обновления соединения при возвращении на страницу
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (!document.hidden) {
+      if (!document.hidden && isMountedRef.current) {
         const now = Date.now();
         const timeSinceLastVisit = now - lastPageVisitRef.current;
         
-        // Если прошло более 5 секунд с последнего посещения, обновляем соединение
-        if (timeSinceLastVisit > 5000) {
-          console.log('🔄 Страница стала видимой после длительного отсутствия, обновляем WebSocket соединение');
+        // Если прошло более 30 секунд с последнего посещения и соединение не активно, пытаемся переподключиться
+        if (timeSinceLastVisit > 30000 && !isConnected && hasAuthToken()) {
+          console.log('🔄 Страница стала видимой после длительного отсутствия, проверяем WebSocket соединение');
           
-          // Принудительно переподключаемся для получения свежих данных
-          if (wsRef.current) {
-            disconnect();
+          // Пытаемся переподключиться только если соединение не активно
+          if (!wsRef.current || wsRef.current.readyState === WebSocket.CLOSED) {
             setTimeout(() => {
-              if (hasAuthToken()) {
+              if (isMountedRef.current && hasAuthToken() && !isConnected) {
                 connectWebSocket();
               }
-            }, 500);
+            }, 1000);
           }
         }
         
@@ -398,53 +486,39 @@ export default function useLiveWins(options: UseLiveWinsOptions = {}) {
       }
     };
 
-    const handleFocus = () => {
-      const now = Date.now();
-      const timeSinceLastVisit = now - lastPageVisitRef.current;
-      
-      // Если прошло более 3 секунд с последнего фокуса, обновляем соединение
-      if (timeSinceLastVisit > 3000) {
-        console.log('🔄 Окно получило фокус после отсутствия, обновляем WebSocket соединение');
-        
-        // Принудительно переподключаемся для получения свежих данных
-        if (wsRef.current && hasAuthToken()) {
-          disconnect();
-          setTimeout(() => {
-            connectWebSocket();
-          }, 500);
-        }
-      }
-      
-      lastPageVisitRef.current = now;
-    };
-
-    // Добавляем слушатели событий
+    // Добавляем слушатель события
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('focus', handleFocus);
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('focus', handleFocus);
     };
-  }, [connectWebSocket]);
+  }, [connectWebSocket, isConnected]);
 
   // Функция для принудительного обновления соединения
   const forceRefresh = useCallback(() => {
+    if (!isMountedRef.current) {
+      console.log('Компонент размонтирован, отменяем принудительное обновление');
+      return;
+    }
+    
     console.log('🔄 Принудительное обновление WebSocket соединения');
+    
+    // Сбрасываем счетчик попыток переподключения
+    reconnectAttempts.current = 0;
     
     if (wsRef.current) {
       disconnect();
       setTimeout(() => {
-        if (hasAuthToken()) {
+        if (isMountedRef.current && hasAuthToken()) {
           connectWebSocket();
         }
-      }, 500);
+      }, 1000);
     } else if (hasAuthToken()) {
       connectWebSocket();
     }
     
     lastPageVisitRef.current = Date.now();
-  }, [connectWebSocket]);
+  }, [connectWebSocket, disconnect]);
 
   return {
     wins,
