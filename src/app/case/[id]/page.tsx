@@ -199,8 +199,8 @@ export default function CasePage() {
   // Функция для запуска анимации рулетки (адаптированная из оригинальной рулетки)
   const startSpinAnimation = async (results: CaseOpenResult[]) => {
     console.log('Запуск анимации для результатов:', results);
-    // Разные duration для горизонтальной и вертикальной прокрутки
-    const baseDuration = isFastMode ? 1.5 : 6; // Ускоренный быстрый режим
+    // Увеличиваем продолжительность для создания интриги и драматического эффекта
+    const baseDuration = isFastMode ? 3.5 : 8.5; // Увеличенная продолжительность для интриги
     const horizontalDuration = baseDuration; // Одинаковая продолжительность
     const verticalDuration = baseDuration;
     
@@ -312,13 +312,25 @@ export default function CasePage() {
           // Устанавливаем начальную позицию
           fieldControl.set({ x: initialOffset });
           
-          // Создаем анимацию с плавной остановкой для горизонтальной прокрутки
+          // Создаем многоэтапную анимацию с драматическим эффектом для горизонтальной прокрутки
+          const intermediateOffset = finalOffset * 0.85; // Промежуточная позиция (85% от финальной)
+          
+          // Первый этап - быстрая прокрутка до промежуточной позиции
           animationPromise = fieldControl.start({
-            x: finalOffset,
+            x: intermediateOffset,
             transition: {
-              duration: horizontalDuration,
-              ease: [0.23, 1, 0.32, 1], // Плавная остановка без "приклеивания"
+              duration: horizontalDuration * 0.7, // 70% времени на быструю прокрутку
+              ease: [0.25, 0.46, 0.45, 0.94], // Быстрое ускорение
             }
+          }).then(() => {
+            // Второй этап - медленное движение к финальной позиции с сильным замедлением
+            return fieldControl.start({
+              x: finalOffset,
+              transition: {
+                duration: horizontalDuration * 0.3, // 30% времени на медленное завершение
+                ease: [0.19, 1, 0.22, 1], // Очень сильное замедление в конце для интриги
+              }
+            });
           });
           
         } else {
@@ -340,13 +352,25 @@ export default function CasePage() {
           // Устанавливаем начальную позицию
           fieldControl.set({ y: initialOffset });
           
-          // Создаем анимацию с плавной остановкой для вертикальной прокрутки
+          // Создаем многоэтапную анимацию с драматическим эффектом для вертикальной прокрутки
+          const intermediateOffsetVertical = finalOffset * 0.85; // Промежуточная позиция (85% от финальной)
+          
+          // Первый этап - быстрая прокрутка до промежуточной позиции
           animationPromise = fieldControl.start({
-            y: finalOffset,
+            y: intermediateOffsetVertical,
             transition: {
-              duration: verticalDuration,
-              ease: [0.23, 1, 0.32, 1], // Плавная остановка без "приклеивания"
+              duration: verticalDuration * 0.7, // 70% времени на быструю прокрутку
+              ease: [0.25, 0.46, 0.45, 0.94], // Быстрое ускорение
             }
+          }).then(() => {
+            // Второй этап - медленное движение к финальной позиции с сильным замедлением
+            return fieldControl.start({
+              y: finalOffset,
+              transition: {
+                duration: verticalDuration * 0.3, // 30% времени на медленное завершение
+                ease: [0.19, 1, 0.22, 1], // Очень сильное замедление в конце для интриги
+              }
+            });
           });
         }
         
