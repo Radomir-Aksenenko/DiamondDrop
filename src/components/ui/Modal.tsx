@@ -8,6 +8,7 @@ interface ModalProps {
   onClose: () => void;
   children: React.ReactNode;
   title?: React.ReactNode;
+  className?: string;
 }
 
 // Оптимизированные варианты анимации для лучшей производительности
@@ -44,7 +45,7 @@ const modalVariants = {
  * @param children - Содержимое модального окна
  * @param title - Заголовок модального окна (опционально)
  */
-const Modal = memo(function Modal({ isOpen, onClose, children, title }: ModalProps) {
+const Modal = memo(function Modal({ isOpen, onClose, children, title, className }: ModalProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
 
   // Мемоизированный обработчик клика по оверлею
@@ -93,7 +94,7 @@ const Modal = memo(function Modal({ isOpen, onClose, children, title }: ModalPro
           
           {/* Оптимизированное модальное окно */}
           <motion.div
-            className="relative z-10 w-full max-w-md bg-[#151519] rounded-[16px] shadow-xl overflow-hidden"
+            className={`relative z-10 w-full bg-[#151519] rounded-[16px] shadow-xl overflow-hidden ${className || 'max-w-md'}`}
             variants={modalVariants}
             initial="hidden"
             animate="visible"

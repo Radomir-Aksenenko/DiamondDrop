@@ -8,6 +8,7 @@ import { CaseItem } from '@/hooks/useCasesAPI';
 interface CaseItemCardProps {
   item: CaseItem;
   className?: string;
+  onClick?: () => void;
 }
 
 // Конфигурация цветов и стилей для каждого типа редкости
@@ -44,7 +45,8 @@ const rarityConfig = {
  */
 export default function CaseItemCard({ 
   item, 
-  className = '' 
+  className = '',
+  onClick
 }: CaseItemCardProps) {
   const config = rarityConfig[item.rarity as keyof typeof rarityConfig] || rarityConfig.Common;
   
@@ -82,12 +84,13 @@ export default function CaseItemCard({
 
   return (
     <div 
-      className={className}
+      className={`${className} ${onClick ? 'cursor-pointer hover:scale-105 transition-transform duration-200' : ''}`}
       style={{
         background: config.background,
         border: config.border,
         ...cardStyles
       }}
+      onClick={onClick}
     >
       {/* Верхняя часть - только процент шанса */}
       <div className="flex items-center justify-center text-center">

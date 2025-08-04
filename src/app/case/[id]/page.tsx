@@ -7,6 +7,7 @@ import { motion, useAnimation } from 'framer-motion';
 import useCaseAPI from '@/hooks/useCaseAPI';
 import CaseItemCard from '@/components/ui/CaseItemCard';
 import CaseSlotItemCard from '@/components/ui/CaseSlotItemCard';
+import ItemDescriptionModal from '@/components/ui/ItemDescriptionModal';
 import { API_BASE_URL } from '@/lib/config';
 import { CaseItem } from '@/hooks/useCasesAPI';
 import { useBalanceUpdater } from '@/hooks/useBalanceUpdater';
@@ -43,6 +44,18 @@ export default function CasePage() {
   
   // Состояния для анимации рулетки
   const [isSpinning, setIsSpinning] = useState(false);
+  
+  // Состояние для модального окна описания предмета
+  const [isItemDescriptionModalOpen, setIsItemDescriptionModalOpen] = useState(false);
+  
+  // Функции для управления модальным окном описания предмета
+  const handleOpenItemDescriptionModal = () => {
+    setIsItemDescriptionModalOpen(true);
+  };
+  
+  const handleCloseItemDescriptionModal = () => {
+    setIsItemDescriptionModalOpen(false);
+  };
   
   // Motion controls для каждого поля рулетки
   const field1Controls = useAnimation();
@@ -835,6 +848,7 @@ export default function CasePage() {
                       <CaseItemCard 
                         item={item}
                         className='flex-shrink-0'
+                        onClick={handleOpenItemDescriptionModal}
                       />
                     </motion.div>
                   ))
@@ -853,6 +867,12 @@ export default function CasePage() {
           </div>
         </div>
       </div>
+      
+      {/* Модальное окно описания предмета */}
+      <ItemDescriptionModal
+        isOpen={isItemDescriptionModalOpen}
+        onClose={handleCloseItemDescriptionModal}
+      />
     </div>
   );
 }
