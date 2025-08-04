@@ -67,7 +67,6 @@ export default function Header() {
             </div>
         <nav className="flex items-center gap-2">
           <NavButton icon="Case" href="/" label="Кейсы" />
-          <NavButton icon="Inventory" href="/inventory" label="Инвентарь" />
           <NavButton icon="Update" onClick={openUpgradeModal} label="Апгрейд" />
           <NavButton icon="About" href="/about" label="О проекте" />
         </nav>

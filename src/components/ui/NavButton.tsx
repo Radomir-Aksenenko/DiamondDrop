@@ -10,7 +10,7 @@ import CaseIcon from '../icons/CaseIcon';
 import UpdateIcon from '../icons/UpdateIcon';
 
 interface NavButtonProps {
-  icon: 'About' | 'Case' | 'Update' | 'Inventory' ; // Название иконки
+  icon: 'About' | 'Case' | 'Update'; // Название иконки
   href?: string; // Путь для навигации (опциональный)
   label?: string; // Опциональная подпись (если нужна)
   onClick?: () => void; // Опциональный обработчик клика
@@ -18,7 +18,7 @@ interface NavButtonProps {
 
 /**
  * Компонент кнопки навигации для хедера
- * @param icon - Название иконки ('About', 'Case', 'Update', 'Inventory')
+ * @param icon - Название иконки ('About', 'Case', 'Update')
  * @param href - Путь для навигации (опциональный)
  * @param label - Опциональная подпись
  * @param onClick - Опциональный обработчик клика
