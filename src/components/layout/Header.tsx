@@ -22,6 +22,16 @@ export default function Header() {
   // Формируем URL аватара напрямую из никнейма
   const userAvatarUrl = `https://avatars.spworlds.ru/face/${userName}?w=100`;
 
+  // Функция для определения размера текста никнейма в зависимости от длины
+  const getNicknameTextSize = (nickname: string) => {
+    const length = nickname.length;
+    if (length <= 6) return 'text-2xl'; // 24px - стандартный размер
+    if (length <= 8) return 'text-xl';  // 20px - немного меньше
+    if (length <= 10) return 'text-lg'; // 18px - еще меньше
+    if (length <= 12) return 'text-base'; // 16px - базовый размер
+    return 'text-sm'; // 14px - минимальный размер для очень длинных никнеймов
+  };
+
   // Логирование изменений баланса для отладки
   useEffect(() => {
     console.log('🏠 Header: Баланс пользователя обновлен:', userBalance);
@@ -58,7 +68,7 @@ export default function Header() {
                 className="rounded-lg"
               />
               <div>
-                <p className='text-[#F9F8FC] text-2xl font-bold mr-2 font-unbounded'>{userName}</p>
+                <p className={`text-[#F9F8FC] ${getNicknameTextSize(userName)} font-bold mr-2 font-unbounded`}>{userName}</p>
                 <div className="flex-col justify-center items-center text-[#F9F8FC] text-base font-bold opacity-50">
                   <span className="mr-1">{userLevel}</span>
                   <span className="">lvl</span>
