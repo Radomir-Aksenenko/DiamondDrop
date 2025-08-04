@@ -7,49 +7,43 @@ import useLiveWins, { LiveWinData } from '@/hooks/useLiveWins';
 
 export default function RecentWins() {
   const { liveWins: preloadedWins } = usePreloadedData();
-  const { wins: liveWins, isConnected, error } = useLiveWins();
-  const [displayWins, setDisplayWins] = useState<LiveWinData[]>(preloadedWins);
+  const { wins: liveWins, isConnected, error } = useLiveWins({ initialData: preloadedWins });
+  const [displayWins, setDisplayWins] = useState<LiveWinData[]>(liveWins);
   const [animatingWins, setAnimatingWins] = useState<Set<string>>(new Set());
   const [isShifting, setIsShifting] = useState(false);
-  const prevWinsRef = useRef<LiveWinData[]>(preloadedWins);
+  const prevWinsRef = useRef<LiveWinData[]>(liveWins);
 
   // Обновляем отображаемые выигрыши при получении новых данных из WebSocket
   useEffect(() => {
-    if (liveWins.length > 0) {
-      // Находим новые выигрыши для анимации
-      const prevWinIds = new Set(prevWinsRef.current.map(win => win.id));
-      const newWins = liveWins.filter(win => !prevWinIds.has(win.id));
+    // Находим новые выигрыши для анимации
+    const prevWinIds = new Set(prevWinsRef.current.map(win => win.id));
+    const newWins = liveWins.filter(win => !prevWinIds.has(win.id));
+    
+    if (newWins.length > 0) {
+      // Запускаем анимацию сдвига для всех карточек
+      setIsShifting(true);
       
-      if (newWins.length > 0) {
-        // Запускаем анимацию сдвига для всех карточек
-        setIsShifting(true);
-        
-        // Добавляем новые выигрыши в состояние анимации
-        setAnimatingWins(prev => new Set([...prev, ...newWins.map(win => win.id)]));
-        
-        // Убираем анимацию появления через 500ms
-        setTimeout(() => {
-          setAnimatingWins(prev => {
-            const updated = new Set(prev);
-            newWins.forEach(win => updated.delete(win.id));
-            return updated;
-          });
-        }, 500);
-        
-        // Убираем состояние сдвига через 600ms
-        setTimeout(() => {
-          setIsShifting(false);
-        }, 600);
-      }
+      // Добавляем новые выигрыши в состояние анимации
+      setAnimatingWins(prev => new Set([...prev, ...newWins.map(win => win.id)]));
       
-      setDisplayWins(liveWins);
-      prevWinsRef.current = liveWins;
-    } else {
-      // Иначе используем предзагруженные данные
-      setDisplayWins(preloadedWins);
-      prevWinsRef.current = preloadedWins;
+      // Убираем анимацию появления через 500ms
+      setTimeout(() => {
+        setAnimatingWins(prev => {
+          const updated = new Set(prev);
+          newWins.forEach(win => updated.delete(win.id));
+          return updated;
+        });
+      }, 500);
+      
+      // Убираем состояние сдвига через 600ms
+      setTimeout(() => {
+        setIsShifting(false);
+      }, 600);
     }
-  }, [liveWins, preloadedWins]);
+    
+    setDisplayWins(liveWins);
+    prevWinsRef.current = liveWins;
+  }, [liveWins]);
 
   return (
     <div className="w-full max-w-4xl mx-auto mt-6">

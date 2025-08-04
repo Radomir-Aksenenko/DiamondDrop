@@ -110,8 +110,12 @@ const transformWSData = (wsData: WSWinData): LiveWinData => {
   };
 };
 
-export default function useLiveWins() {
-  const [wins, setWins] = useState<LiveWinData[]>([]);
+interface UseLiveWinsOptions {
+  initialData?: LiveWinData[];
+}
+
+export default function useLiveWins(options: UseLiveWinsOptions = {}) {
+  const [wins, setWins] = useState<LiveWinData[]>(options.initialData || []);
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const wsRef = useRef<WebSocket | null>(null);

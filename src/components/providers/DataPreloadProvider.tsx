@@ -5,6 +5,7 @@ import { APIBanner } from '@/hooks/useBannersAPI';
 import { APIUser } from '@/hooks/useUserAPI';
 import { CaseData } from '@/hooks/useCasesAPI';
 import { LiveWinData } from '@/hooks/useLiveWins';
+import useGameResultsAPI from '@/hooks/useGameResultsAPI';
 import { getAuthToken, hasAuthToken } from '@/lib/auth';
 import { API_ENDPOINTS, DEV_CONFIG, isDevelopment, API_BASE_URL } from '@/lib/config';
 import { generateRandomItems } from '@/lib/caseUtils';
@@ -99,6 +100,9 @@ interface DataPreloadProviderProps {
 export default function DataPreloadProvider({ children }: DataPreloadProviderProps) {
   // Уникальный идентификатор для отслеживания экземпляров
   const [providerId] = useState(() => Math.random().toString(36).substr(2, 9));
+  
+  // Хук для загрузки результатов игр
+  const { fetchGameResults } = useGameResultsAPI();
   
   // Состояние для хранения данных
   const [banners, setBanners] = useState<APIBanner[]>([]);
@@ -227,20 +231,30 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
 
   // Функция загрузки живых выигрышей (начальные данные)
   const loadInitialLiveWins = async (): Promise<LiveWinData[]> => {
-    // Для живых выигрышей мы используем WebSocket, 
-    // но можем загрузить начальные данные из API или использовать моки
     try {
-      // В dev режиме или как fallback используем мок данные
+      // В dev режиме используем мок данные
       if (isDevelopment && DEV_CONFIG.skipAuth) {
         console.log(`🔧 [${providerId}] Dev режим: используем мок выигрыши`);
         return [...mockLiveWins];
       }
 
-      // Здесь можно добавить загрузку начальных выигрышей из API
-      // Пока используем моки как fallback
-      return [...mockLiveWins];
+      // Проверяем наличие токена авторизации
+      const token = getAuthToken();
+      if (!token) {
+        console.log(`⚠️ [${providerId}] Токен не найден, используем мок данные для live wins`);
+        return [...mockLiveWins];
+      }
+
+      // Загружаем начальные данные через API
+      console.log(`🚀 [${providerId}] Загружаем начальные live wins через API...`);
+      const apiResults = await fetchGameResults();
+      console.log(`✅ [${providerId}] Загружено ${apiResults.length} начальных live wins из API`);
+      
+      return apiResults;
     } catch (err) {
-      console.error('Ошибка при загрузке начальных выигрышей:', err);
+      console.error(`❌ [${providerId}] Ошибка при загрузке начальных выигрышей:`, err);
+      // В случае ошибки возвращаем мок данные как fallback
+      console.log(`🔄 [${providerId}] Используем мок данные как fallback`);
       return [...mockLiveWins];
     }
   };
