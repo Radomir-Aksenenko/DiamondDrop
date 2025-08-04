@@ -343,13 +343,13 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
     const token = getAuthToken();
     const shouldLoad = token || (isDevelopment && DEV_CONFIG.skipAuth);
     
-    console.log('🔧 DataPreloadProvider: Инициализация, токен:', !!token, 'dev режим:', isDevelopment && DEV_CONFIG.skipAuth);
+    console.log(`🔧 [${providerId}] DataPreloadProvider: Инициализация, токен:`, !!token, 'dev режим:', isDevelopment && DEV_CONFIG.skipAuth);
     
     if (shouldLoad) {
       preloadAllData(true);
     } else {
       // Если токена нет, показываем состояние ожидания токена
-      console.log('⏳ Ожидаем получение токена авторизации...');
+      console.log(`⏳ [${providerId}] Ожидаем получение токена авторизации...`);
       setIsLoading(true);
     }
   }, [preloadAllData]);
@@ -365,7 +365,7 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
       
       // Проверяем, действительно ли токен изменился
       if (token !== currentToken) {
-        console.log('🔄 Токен изменился:', {
+        console.log(`🔄 [${providerId}] Токен изменился:`, {
           old: currentToken ? 'есть' : 'нет',
           new: token ? 'есть' : 'нет',
           hasInitialLoad
@@ -375,14 +375,15 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
         
         // Загружаем данные только если токен появился и мы еще не делали начальную загрузку
         if (token && !hasInitialLoad) {
-          console.log('🚀 Первая загрузка после получения токена');
+          console.log(`🚀 [${providerId}] Первая загрузка после получения токена`);
           preloadAllData(true);
         } else if (token && hasInitialLoad) {
-          console.log('🔄 Обновление данных при изменении токена');
-          preloadAllData(false);
+          console.log(`⚠️ [${providerId}] Токен изменился, но данные уже загружены - пропускаем повторную загрузку`);
+          // НЕ перезагружаем данные если они уже загружены
+          // preloadAllData(false); // Закомментировано для предотвращения дублирования
         } else if (!token && hasInitialLoad) {
           // Токен исчез - сбрасываем состояние
-          console.log('🚪 Токен исчез, сбрасываем данные пользователя');
+          console.log(`🚪 [${providerId}] Токен исчез, сбрасываем данные пользователя`);
           setUser(null);
           setIsAuthenticated(false);
         }
