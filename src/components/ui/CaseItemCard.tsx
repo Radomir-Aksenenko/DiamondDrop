@@ -84,7 +84,7 @@ export default function CaseItemCard({
 
   return (
     <div 
-      className={`${className} ${onClick ? 'cursor-pointer hover:brightness-75 transition-all duration-200' : ''}`}
+      className={`${className} ${onClick ? 'cursor-pointer hover:brightness-75 transition-all duration-200 group' : ''}`}
       style={{
         background: config.background,
         border: config.border,
@@ -110,7 +110,7 @@ export default function CaseItemCard({
       </div>
 
       {/* Средняя часть - иконка предмета */}
-      <div className="relative w-12 h-12 flex items-center justify-center">
+      <div className="relative w-12 h-12 flex items-center justify-center group">
         <Image
           src={item.imageUrl || '/09b1b0e86eb0cd8a7909f6f74b56ddc17804658d.png'}
           alt={item.name}
@@ -118,6 +118,29 @@ export default function CaseItemCard({
           style={{ objectFit: 'contain' }}
           className="drop-shadow-lg"
         />
+        
+        {/* Иконка лупы при наведении */}
+        {onClick && (
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded">
+            <svg 
+              width="40" 
+              height="40" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              xmlns="http://www.w3.org/2000/svg"
+              className="text-white drop-shadow-lg"
+            >
+              <path 
+                d="M21 21L16.514 16.506M19 10.5C19 15.194 15.194 19 10.5 19C5.806 19 2 15.194 2 10.5C2 5.806 5.806 2 10.5 2C15.194 2 19 5.806 19 10.5Z" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
+        )}
+        
         {/* Количество поверх изображения */}
         <div className="absolute -bottom-1 -right-1">
           <span 
