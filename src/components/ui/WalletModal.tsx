@@ -3,6 +3,8 @@
 import React, { useState, useCallback, useMemo, memo, useEffect } from 'react';
 import Modal from './Modal';
 import useDepositAPI from '@/hooks/useDepositAPI';
+import useWithdrawAPI from '@/hooks/useWithdrawAPI';
+import useSavedCards from '@/hooks/useSavedCards';
 import { SmartLink } from '@/lib/linkUtils';
 import { useBalanceUpdater } from '@/hooks/useBalanceUpdater';
 
@@ -14,7 +16,6 @@ interface WalletModalProps {
 // Константы для предотвращения пересоздания при каждом рендере
 const DEPOSIT_AMOUNTS = ['16', '32', '64', '128', '512'] as const;
 const WITHDRAW_AMOUNTS = ['8', '16', '32', '64', '10000'] as const;
-const CARD_NUMBERS = ['77777', '77777', '77777', '77777'] as const;
 
 // Мемоизированный компонент кнопки для предотвращения лишних рендеров
 const AmountButton = memo(function AmountButton({ 
@@ -70,7 +71,9 @@ const CardButton = memo(function CardButton({
  */
 const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalProps) {
   const { createDeposit, setupPaymentHandlers, isLoading: isDepositLoading, error: depositError, clearError } = useDepositAPI();
-  const { increaseBalance } = useBalanceUpdater();
+  const { createWithdraw, isLoading: isWithdrawLoading, error: withdrawError, clearError: clearWithdrawError } = useWithdrawAPI();
+  const { savedCards, addCard } = useSavedCards();
+  const { increaseBalance, decreaseBalance } = useBalanceUpdater();
   const [activeTab, setActiveTab] = useState('deposit');
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [depositAmount, setDepositAmount] = useState('');
@@ -154,7 +157,8 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalPr
     setCardNumber(value);
     setSelectedCardButton(null);
     setCardError(null);
-  }, []);
+    clearWithdrawError(); // Очищаем ошибки API вывода
+  }, [clearWithdrawError]);
 
   // Мемоизированная валидация
   const validateDepositForm = useCallback(() => {
@@ -206,12 +210,34 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalPr
     }
   }, [validateDepositForm, depositAmount, createDeposit, clearError]);
 
-  const handleWithdraw = useCallback(() => {
+  const handleWithdraw = useCallback(async () => {
     if (validateWithdrawForm()) {
-      console.log('Вывод средств:', { withdrawAmount, cardNumber });
-      onClose();
+      clearWithdrawError(); // Очищаем предыдущие ошибки
+      
+      // Сохраняем карту в куки при успешной валидации
+      addCard(cardNumber);
+      
+      const success = await createWithdraw(parseInt(withdrawAmount), cardNumber);
+      
+      if (success) {
+        console.log('Вывод средств успешно выполнен');
+        
+        // Локально уменьшаем баланс на сумму вывода
+        const withdrawAmountNum = parseInt(withdrawAmount);
+        decreaseBalance(withdrawAmountNum);
+        console.log(`✅ Баланс локально уменьшен на ${withdrawAmountNum}`);
+        
+        // Очищаем форму и закрываем модалку
+        setWithdrawAmount('');
+        setCardNumber('');
+        setSelectedAmountButton(null);
+        setSelectedCardButton(null);
+        setAmountError(null);
+        setCardError(null);
+        onClose();
+      }
     }
-  }, [validateWithdrawForm, withdrawAmount, cardNumber, onClose]);
+  }, [validateWithdrawForm, withdrawAmount, cardNumber, createWithdraw, addCard, decreaseBalance, clearWithdrawError, onClose]);
 
   // Мемоизированные обработчики отмены
   const handleDepositCancel = useCallback(() => {
@@ -229,8 +255,9 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalPr
     setSelectedCardButton(null);
     setAmountError(null);
     setCardError(null);
+    clearWithdrawError(); // Очищаем ошибки API вывода
     onClose();
-  }, [onClose]);
+  }, [onClose, clearWithdrawError]);
 
   // Мемоизированный заголовок
   const modalTitle = useMemo(() => (
@@ -283,18 +310,24 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalPr
   ), [selectedAmountButton, handleAmountSelect]);
 
   // Мемоизированные кнопки карт
-  const cardButtons = useMemo(() => (
-    <div className="grid grid-cols-4 gap-1.5">
-      {CARD_NUMBERS.map((card, index) => (
-        <CardButton
-          key={`${card}-${index}`}
-          cardNumber={card}
-          isSelected={selectedCardButton === card}
-          onClick={() => handleCardSelect(card)}
-        />
-      ))}
-    </div>
-  ), [selectedCardButton, handleCardSelect]);
+  const cardButtons = useMemo(() => {
+    if (savedCards.length === 0) {
+      return null;
+    }
+    
+    return (
+      <div className="grid grid-cols-4 gap-1.5">
+        {savedCards.map((card, index) => (
+          <CardButton
+            key={`${card}-${index}`}
+            cardNumber={card}
+            isSelected={selectedCardButton === card}
+            onClick={() => handleCardSelect(card)}
+          />
+        ))}
+      </div>
+    );
+  }, [savedCards, selectedCardButton, handleCardSelect]);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={modalTitle}>
@@ -352,7 +385,8 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalPr
               type="text" 
               value={withdrawAmount}
               onChange={handleAmountChange}
-              className={`w-full bg-[#19191D] text-[#F9F8FC] px-3 py-3 rounded-lg outline-none text-xl font-unbounded ${amountError ? 'border border-red-500' : 'focus:ring-1 focus:ring-[#5C5ADC]'}`} 
+              disabled={isWithdrawLoading}
+              className={`w-full bg-[#19191D] text-[#F9F8FC] px-3 py-3 rounded-lg outline-none text-xl font-unbounded ${amountError ? 'border border-red-500' : 'focus:ring-1 focus:ring-[#5C5ADC]'} ${isWithdrawLoading ? 'opacity-50 cursor-not-allowed' : ''}`} 
               placeholder="Сумма вывода"
             />
             {amountError && (
@@ -370,11 +404,12 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalPr
               value={cardNumber}
               onChange={handleCardChange}
               maxLength={5}
-              className={`w-full bg-[#19191D] text-[#F9F8FC] px-3 py-3 rounded-lg outline-none text-xl font-unbounded ${cardError ? 'border border-red-500' : 'focus:ring-1 focus:ring-[#5C5ADC]'}`} 
+              disabled={isWithdrawLoading}
+              className={`w-full bg-[#19191D] text-[#F9F8FC] px-3 py-3 rounded-lg outline-none text-xl font-unbounded ${(cardError || withdrawError) ? 'border border-red-500' : 'focus:ring-1 focus:ring-[#5C5ADC]'} ${isWithdrawLoading ? 'opacity-50 cursor-not-allowed' : ''}`} 
               placeholder="Номер карты"
             />
-            {cardError && (
-              <p className="text-red-500 text-sm mt-1">*{cardError}</p>
+            {(cardError || withdrawError) && (
+              <p className="text-red-500 text-sm mt-1">*{cardError || withdrawError}</p>
             )}
           </div>
           
@@ -398,10 +433,11 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalPr
               </button>
               <button 
                 onClick={handleWithdraw}
-                className="bg-[#5C5ADC] hover:bg-[#4A48B0] transition-colors py-2.5 px-4 rounded-lg text-[#F9F8FC] font-bold cursor-pointer outline-none focus:outline-none active:outline-none focus:ring-0 active:ring-0"
+                disabled={isWithdrawLoading}
+                className={`bg-[#5C5ADC] hover:bg-[#4A48B0] transition-colors py-2.5 px-4 rounded-lg text-[#F9F8FC] font-bold cursor-pointer outline-none focus:outline-none active:outline-none focus:ring-0 active:ring-0 ${isWithdrawLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                 type="button"
               >
-                Вывести
+                {isWithdrawLoading ? 'Обработка...' : 'Вывести'}
               </button>
             </div>
           </div>
