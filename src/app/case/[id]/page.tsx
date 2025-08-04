@@ -587,6 +587,7 @@ export default function CasePage() {
                         key={`field1-${item.id}-${index}`} 
                         item={item} 
                         className="flex-shrink-0"
+                        isWinning={winningItems.has(item.id)}
                       />
                     ))}
                   </motion.div>
@@ -610,6 +611,7 @@ export default function CasePage() {
                         <CaseSlotItemCard 
                           key={`field1-${item.id}-${index}`} 
                           item={item} 
+                          isWinning={winningItems.has(item.id)}
                         />
                       ))}
                     </motion.div>
@@ -628,6 +630,7 @@ export default function CasePage() {
                         <CaseSlotItemCard 
                           key={`field2-${item.id}-${index}`} 
                           item={item} 
+                          isWinning={winningItems.has(item.id)}
                         />
                       ))}
                     </motion.div>
@@ -652,6 +655,7 @@ export default function CasePage() {
                         <CaseSlotItemCard 
                           key={`field1-${item.id}-${index}`} 
                           item={item} 
+                          isWinning={winningItems.has(item.id)}
                         />
                       ))}
                     </motion.div>
@@ -670,6 +674,7 @@ export default function CasePage() {
                         <CaseSlotItemCard 
                           key={`field2-${item.id}-${index}`} 
                           item={item} 
+                          isWinning={winningItems.has(item.id)}
                         />
                       ))}
                     </motion.div>
@@ -688,6 +693,7 @@ export default function CasePage() {
                         <CaseSlotItemCard 
                           key={`field3-${item.id}-${index}`} 
                           item={item} 
+                          isWinning={winningItems.has(item.id)}
                         />
                       ))}
                     </motion.div>
@@ -712,6 +718,7 @@ export default function CasePage() {
                         <CaseSlotItemCard 
                           key={`field1-${item.id}-${index}`} 
                           item={item} 
+                          isWinning={winningItems.has(item.id)}
                         />
                       ))}
                     </motion.div>
@@ -730,6 +737,7 @@ export default function CasePage() {
                         <CaseSlotItemCard 
                           key={`field2-${item.id}-${index}`} 
                           item={item} 
+                          isWinning={winningItems.has(item.id)}
                         />
                       ))}
                     </motion.div>
@@ -748,6 +756,7 @@ export default function CasePage() {
                         <CaseSlotItemCard 
                           key={`field3-${item.id}-${index}`} 
                           item={item} 
+                          isWinning={winningItems.has(item.id)}
                         />
                       ))}
                     </motion.div>
@@ -766,6 +775,7 @@ export default function CasePage() {
                         <CaseSlotItemCard 
                           key={`field4-${item.id}-${index}`} 
                           item={item} 
+                          isWinning={winningItems.has(item.id)}
                         />
                       ))}
                     </motion.div>
