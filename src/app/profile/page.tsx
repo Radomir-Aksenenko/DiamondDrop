@@ -1,19 +1,25 @@
 'use client';
 
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef, useCallback, useState } from 'react';
 import { usePreloadedData } from '@/components/providers/DataPreloadProvider';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { useInventoryAPI } from '@/hooks/useInventoryAPI';
+import { useInventoryAPI, InventoryItem } from '@/hooks/useInventoryAPI';
 import { useUserBodyAvatar } from '@/hooks/useUserAvatar';
 import InventoryItemCard from '@/components/ui/InventoryItemCard';
+import InventoryModal from '@/components/ui/InventoryModal';
 
 export default function ProfilePage() {
   const { user, isAuthenticated } = usePreloadedData();
   const router = useRouter();
   const { items: inventoryItems, loading, error, hasMore, totalCount, loadMore } = useInventoryAPI();
   const observerRef = useRef<HTMLDivElement>(null);
+  
+  // Состояние для модалки инвентаря
+  const [isInventoryModalOpen, setIsInventoryModalOpen] = useState(false);
+  const [selectedInventoryItem, setSelectedInventoryItem] = useState<InventoryItem | null>(null);
+  const [inventoryModalTab, setInventoryModalTab] = useState<'sell' | 'withdraw'>('sell');
   
   // Данные пользователя
   const userName = user?.nickname ?? (isAuthenticated ? 'Загрузка...' : 'Гость');
@@ -22,6 +28,24 @@ export default function ProfilePage() {
   
   // Получаем URL аватара тела через хук
   const userAvatar = useUserBodyAvatar(userName === 'Загрузка...' || userName === 'Гость' ? null : userName);
+
+  // Обработчики для модалки инвентаря
+  const handleSellClick = useCallback((item: InventoryItem) => {
+    setSelectedInventoryItem(item);
+    setInventoryModalTab('sell');
+    setIsInventoryModalOpen(true);
+  }, []);
+
+  const handleWithdrawClick = useCallback((item: InventoryItem) => {
+    setSelectedInventoryItem(item);
+    setInventoryModalTab('withdraw');
+    setIsInventoryModalOpen(true);
+  }, []);
+
+  const handleCloseInventoryModal = useCallback(() => {
+    setIsInventoryModalOpen(false);
+    setSelectedInventoryItem(null);
+  }, []);
 
   // Функция для обработки пересечения с наблюдателем
   const handleIntersection = useCallback((entries: IntersectionObserverEntry[]) => {
@@ -142,6 +166,8 @@ export default function ProfilePage() {
               key={`${inventoryItem.item.id}-${index}`}
               inventoryItem={inventoryItem}
               index={index}
+              onSellClick={handleSellClick}
+              onWithdrawClick={handleWithdrawClick}
             />
           ))}
         </div>
@@ -194,6 +220,14 @@ export default function ProfilePage() {
           </div>
         )}
       </div>
+      
+      {/* Модалка инвентаря */}
+      <InventoryModal
+        isOpen={isInventoryModalOpen}
+        onClose={handleCloseInventoryModal}
+        selectedItem={selectedInventoryItem}
+        initialTab={inventoryModalTab}
+      />
       
     </div>
   );

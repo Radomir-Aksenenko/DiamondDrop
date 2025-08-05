@@ -7,9 +7,11 @@ import CaseItemCard from './CaseItemCard';
 interface InventoryItemCardProps {
   inventoryItem: InventoryItem;
   index: number;
+  onSellClick?: (item: InventoryItem) => void;
+  onWithdrawClick?: (item: InventoryItem) => void;
 }
 
-export default function InventoryItemCard({ inventoryItem, index }: InventoryItemCardProps) {
+export default function InventoryItemCard({ inventoryItem, index, onSellClick, onWithdrawClick }: InventoryItemCardProps) {
   const { item, amount } = inventoryItem;
   
   // Преобразуем InventoryItem в CaseItem для использования в CaseItemCard
@@ -57,6 +59,7 @@ export default function InventoryItemCard({ inventoryItem, index }: InventoryIte
           <motion.button 
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
+            onClick={() => onSellClick?.(inventoryItem)}
             className='flex flex-col justify-center items-center gap-2 px-4 py-2 rounded-lg bg-[#54A930] hover:bg-[#4A8A2A] transition-colors duration-200 cursor-pointer'
           >
             <span className='text-[#F9F8FC] font-unbounded text-sm font-medium'>Продать</span>
@@ -64,6 +67,7 @@ export default function InventoryItemCard({ inventoryItem, index }: InventoryIte
           <motion.button 
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
+            onClick={() => onWithdrawClick?.(inventoryItem)}
             className='flex flex-col justify-center items-center gap-2 px-4 py-2 rounded-lg bg-[#F9F8FC]/[0.10] hover:bg-[#F9F8FC]/[0.15] transition-colors duration-200 cursor-pointer'
           >
             <span className='text-[#F9F8FC] font-unbounded text-sm font-medium opacity-50 group-hover:opacity-70 transition-opacity duration-200'>
