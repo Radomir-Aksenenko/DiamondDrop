@@ -57,14 +57,14 @@ export default function InventoryItemCard({ inventoryItem, index }: InventoryIte
           <motion.button 
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className='flex flex-col justify-center items-center gap-2 px-4 py-2 rounded-lg bg-[#54A930] hover:bg-[#4A8A2A] transition-colors duration-200'
+            className='flex flex-col justify-center items-center gap-2 px-4 py-2 rounded-lg bg-[#54A930] hover:bg-[#4A8A2A] transition-colors duration-200 cursor-pointer'
           >
             <span className='text-[#F9F8FC] font-unbounded text-sm font-medium'>Продать</span>
           </motion.button>
           <motion.button 
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className='flex flex-col justify-center items-center gap-2 px-4 py-2 rounded-lg bg-[#F9F8FC]/[0.10] hover:bg-[#F9F8FC]/[0.15] transition-colors duration-200'
+            className='flex flex-col justify-center items-center gap-2 px-4 py-2 rounded-lg bg-[#F9F8FC]/[0.10] hover:bg-[#F9F8FC]/[0.15] transition-colors duration-200 cursor-pointer'
           >
             <span className='text-[#F9F8FC] font-unbounded text-sm font-medium opacity-50 group-hover:opacity-70 transition-opacity duration-200'>
               Вывести

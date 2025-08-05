@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { getAuthToken } from '@/lib/auth';
 import { DEV_CONFIG } from '@/lib/config';
 
 // Интерфейс для предмета инвентаря
@@ -33,13 +34,7 @@ export const useInventoryAPI = () => {
 
   const pageSize = 20; // Количество предметов на страницу
 
-  // Функция для получения токена авторизации
-  const getAuthToken = useCallback(() => {
-    if (DEV_CONFIG.skipAuth) {
-      return DEV_CONFIG.mockToken;
-    }
-    return localStorage.getItem('authToken');
-  }, []);
+
 
   // Функция для загрузки инвентаря
   const fetchInventory = useCallback(async (page: number, append: boolean = false) => {
@@ -136,7 +131,7 @@ export const useInventoryAPI = () => {
     } finally {
       setLoading(false);
     }
-  }, [getAuthToken, items, pageSize]);
+  }, [items, pageSize]);
 
   // Функция для загрузки следующей страницы
   const loadMore = useCallback(() => {
