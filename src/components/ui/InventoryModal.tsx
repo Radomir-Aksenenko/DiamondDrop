@@ -6,6 +6,7 @@ import { InventoryItem } from '@/hooks/useInventoryAPI';
 import CaseItemCard from './CaseItemCard';
 import { CaseItem } from '@/hooks/useCasesAPI';
 import { useSellAPI } from '@/hooks/useSellAPI';
+import { useBalanceUpdater } from '@/hooks/useBalanceUpdater';
 
 interface InventoryModalProps {
   isOpen: boolean;
@@ -29,6 +30,7 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
   
   // Хук для продажи предметов
   const { sellItem, isLoading: isSelling, error: sellError, clearError } = useSellAPI();
+  const { increaseBalance } = useBalanceUpdater();
 
   // Максимальное количество доступных предметов
   const maxQuantity = selectedItem?.amount || 1;
@@ -80,11 +82,14 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
     }
 
     try {
-      const success = await sellItem(selectedItem.item.id, selectedQuantity);
+      const result = await sellItem(selectedItem.item.id, selectedQuantity, selectedItem.item.price);
       
-      if (success) {
+      if (result.success && result.totalAmount) {
         // Успешная продажа
-        console.log(`✅ [InventoryModal] Предмет ${selectedItem.item.name} успешно продан`);
+        console.log(`✅ [InventoryModal] Предмет ${selectedItem.item.name} успешно продан на сумму:`, result.totalAmount);
+        
+        // Локально обновляем баланс в хедере
+        increaseBalance(result.totalAmount);
         
         // Вызываем колбэк для обновления инвентаря
         if (onSellSuccess) {
