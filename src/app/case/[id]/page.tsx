@@ -225,7 +225,7 @@ export default function CasePage() {
     const totalDurationMs = (isFastMode ? 1.5 : 6) * 1000;
     
     // Карта скоростей (время в мс : скорость в пикселях за секунду)
-    // Больше времени выделено на медленный конец
+    // Больше времени выделено на медленный конец для создания напряжения
     const speedMap = [
       { time: 30, speed: 45 },
       { time: 50, speed: 42.5 },
@@ -263,29 +263,31 @@ export default function CasePage() {
       { time: 810, speed: 1.4 },
       { time: 840, speed: 1.2 },
       { time: 870, speed: 1 },
-      { time: 900, speed: 0.9 },
-      { time: 920, speed: 0.8 },
-      { time: 940, speed: 0.7 },
-      { time: 955, speed: 0.6 },
-      { time: 970, speed: 0.5 },
-      { time: 980, speed: 0.4 },
-      { time: 987, speed: 0.3 },
-      { time: 992, speed: 0.25 },
-      { time: 995, speed: 0.2 },
-      { time: 996.5, speed: 0.15 },
-      { time: 997.5, speed: 0.12 },
-      { time: 998.2, speed: 0.1 },
-      { time: 998.7, speed: 0.08 },
-      { time: 999.1, speed: 0.06 },
-      { time: 999.4, speed: 0.04 },
-      { time: 999.6, speed: 0.03 },
-      { time: 999.75, speed: 0.02 },
-      { time: 999.85, speed: 0.015 },
-      { time: 999.92, speed: 0.01 },
-      { time: 999.96, speed: 0.007 },
-      { time: 999.98, speed: 0.004 },
-      { time: 999.99, speed: 0.002 },
-      { time: 1000, speed: 0.001 }
+      { time: 890, speed: 0.8 },
+      { time: 910, speed: 0.6 },
+      { time: 925, speed: 0.45 },
+      { time: 940, speed: 0.35 },
+      { time: 950, speed: 0.25 },
+      { time: 960, speed: 0.18 },
+      { time: 970, speed: 0.12 },
+      { time: 980, speed: 0.08 },
+      { time: 987, speed: 0.05 },
+      { time: 992, speed: 0.03 },
+      { time: 995, speed: 0.02 },
+      { time: 996.5, speed: 0.015 },
+      { time: 997.5, speed: 0.012 },
+      { time: 998.2, speed: 0.01 },
+      { time: 998.7, speed: 0.008 },
+      { time: 999.1, speed: 0.006 },
+      { time: 999.4, speed: 0.004 },
+      { time: 999.6, speed: 0.003 },
+      { time: 999.75, speed: 0.002 },
+      { time: 999.85, speed: 0.0015 },
+      { time: 999.92, speed: 0.001 },
+      { time: 999.96, speed: 0.0007 },
+      { time: 999.98, speed: 0.0004 },
+      { time: 999.99, speed: 0.0002 },
+      { time: 1000, speed: 0.0001 }
     ];
 
     // Масштабируем время к общей продолжительности анимации
@@ -418,6 +420,20 @@ export default function CasePage() {
           }
         }
         
+        // СОЗДАЕМ НАПРЯЖЕНИЕ: добавляем 2-4 дорогих предмета перед выигрышным
+        const expensiveItemsCount = Math.floor(Math.random() * 3) + 2; // 2-4 дорогих предмета
+        const expensiveItems = caseData?.items
+          ?.filter(item => item.price > targetCaseItem.price) // Берем предметы дороже выигрышного
+          ?.sort((a, b) => b.price - a.price) // Сортируем по убыванию цены
+          ?.slice(0, 5) || []; // Берем топ-5 самых дорогих, или пустой массив если caseData нет
+        
+        for (let j = 0; j < expensiveItemsCount; j++) {
+          if (expensiveItems.length > 0) {
+            const expensiveItem = expensiveItems[j % expensiveItems.length];
+            infiniteItems.push({ ...expensiveItem, id: `${expensiveItem.id}-${fieldKey}-expensive-${j}` });
+          }
+        }
+        
         // Добавляем выигрышный предмет и запоминаем его позицию
         const targetIndex = infiniteItems.length; // Позиция выигрышного предмета
         infiniteItems.push({ ...targetCaseItem, id: `${targetCaseItem.id}-${fieldKey}-target` });
@@ -449,16 +465,21 @@ export default function CasePage() {
           const itemWidth = cardWidth + gap;
           const containerWidth = 663; // Ширина контейнера
           
-          // Начальная позиция (как в оригинале - стартовая позиция)
+          // Начальная позиция
           const initialOffset = 0;
           
-          // Генерируем случайное смещение в пределах карточки (-30px до +30px от центра)
-          const randomOffset = (Math.random() - 0.5) * 60; // Случайное смещение от -30 до +30 пикселей
+          // Генерируем случайное смещение в пределах всей карточки (не центрируем!)
+          // Карточка может остановиться в любом месте видимой области
+          const randomOffset = (Math.random() - 0.5) * (itemWidth * 0.8); // Случайное смещение в пределах 80% ширины карточки
           
-          // Финальная позиция - центрируем выигрышный предмет + случайное смещение
-          const finalOffset = -(targetIndex * itemWidth) + (containerWidth / 2) - (cardWidth / 2) + randomOffset;
+          // Финальная позиция - НЕ центрируем, а ставим случайно в видимой области
+          const visibleAreaStart = containerWidth * 0.2; // 20% от начала
+          const visibleAreaEnd = containerWidth * 0.8;   // 80% от начала
+          const randomPositionInArea = visibleAreaStart + Math.random() * (visibleAreaEnd - visibleAreaStart);
           
-          console.log(`🎯 Горизонтальная анимация: случайное смещение ${randomOffset.toFixed(1)}px`);
+          const finalOffset = -(targetIndex * itemWidth) + randomPositionInArea + randomOffset;
+          
+          console.log(`🎯 Горизонтальная анимация: случайная позиция в области ${randomPositionInArea.toFixed(1)}px, смещение ${randomOffset.toFixed(1)}px`);
           
           // Устанавливаем начальную позицию
           fieldControl.set({ x: initialOffset });
@@ -475,13 +496,17 @@ export default function CasePage() {
           // Начальная позиция
           const initialOffset = 0;
           
-          // Генерируем случайное смещение в пределах карточки (-40px до +40px от центра)
-          const randomOffset = (Math.random() - 0.5) * 80; // Случайное смещение от -40 до +40 пикселей
+          // Генерируем случайное смещение в пределах всей карточки (не центрируем!)
+          const randomOffset = (Math.random() - 0.5) * (itemHeight * 0.8); // Случайное смещение в пределах 80% высоты карточки
           
-          // Финальная позиция - центрируем выигрышный предмет + случайное смещение
-          const finalOffset = -(targetIndex * itemHeight) + (containerHeight / 2) - (cardHeight / 2) + randomOffset;
+          // Финальная позиция - НЕ центрируем, а ставим случайно в видимой области
+          const visibleAreaStart = containerHeight * 0.2; // 20% от начала
+          const visibleAreaEnd = containerHeight * 0.8;   // 80% от начала
+          const randomPositionInArea = visibleAreaStart + Math.random() * (visibleAreaEnd - visibleAreaStart);
           
-          console.log(`🎯 Вертикальная анимация поля ${i + 1}: случайное смещение ${randomOffset.toFixed(1)}px`);
+          const finalOffset = -(targetIndex * itemHeight) + randomPositionInArea + randomOffset;
+          
+          console.log(`🎯 Вертикальная анимация поля ${i + 1}: случайная позиция в области ${randomPositionInArea.toFixed(1)}px, смещение ${randomOffset.toFixed(1)}px`);
           
           // Устанавливаем начальную позицию
           fieldControl.set({ y: initialOffset });
