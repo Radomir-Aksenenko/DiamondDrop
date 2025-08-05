@@ -325,10 +325,6 @@ export default function CasePage() {
     for (let i = 1; i < animationValues.length; i++) {
       animationValues[i] = animationValues[i] * correctionFactor;
     }
-    
-    // Устанавливаем точную финальную позицию
-    animationValues.push(finalOffset);
-    times.push(1);
 
     if (isHorizontal) {
       return {
