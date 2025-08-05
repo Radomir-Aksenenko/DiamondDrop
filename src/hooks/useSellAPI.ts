@@ -50,7 +50,8 @@ export const useSellAPI = () => {
 
       // Проверяем статус ответа
       if (response.status === 200) {
-        const totalAmount = itemPrice * quantity;
+        const rawAmount = itemPrice * quantity;
+        const totalAmount = rawAmount % 1 === 0 ? rawAmount : parseFloat(rawAmount.toFixed(1));
         console.log(`✅ [SellAPI] Предмет ${itemId} успешно продан (количество: ${quantity}) на сумму: ${totalAmount}`);
         return { success: true, totalAmount };
       } else {

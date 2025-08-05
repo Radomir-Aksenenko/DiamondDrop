@@ -392,19 +392,25 @@ export default function CasePage() {
   const NumberButton = ({ number }: { number: number }) => (
     <motion.button 
       onClick={() => {
+        // Блокируем переключение во время прокрутки
+        if (isSpinning) return;
+        
         if (selectedNumber !== number) {
           setSelectedNumber(number);
           // Сбрасываем позиции анимации при смене количества кейсов
           setTimeout(() => resetAnimationPositions(), 50);
         }
       }}
-      className={`flex cursor-pointer w-[36px] h-[36px] justify-center items-center rounded-[8px] font-unbounded text-sm font-medium transition-all duration-200 ${
-        selectedNumber === number 
-          ? 'border border-[#5C5ADC] bg-[#6563EE]/[0.10] text-[#F9F8FC]' 
-          : 'bg-[#F9F8FC]/[0.05] text-[#F9F8FC] hover:bg-[#F9F8FC]/[0.08]'
+      disabled={isSpinning}
+      className={`flex w-[36px] h-[36px] justify-center items-center rounded-[8px] font-unbounded text-sm font-medium transition-all duration-200 ${
+        isSpinning 
+          ? 'cursor-not-allowed opacity-50 bg-[#F9F8FC]/[0.05] text-[#F9F8FC]'
+          : selectedNumber === number 
+            ? 'border border-[#5C5ADC] bg-[#6563EE]/[0.10] text-[#F9F8FC] cursor-pointer' 
+            : 'bg-[#F9F8FC]/[0.05] text-[#F9F8FC] hover:bg-[#F9F8FC]/[0.08] cursor-pointer'
       }`}
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
+      whileHover={!isSpinning ? { scale: 1.05 } : {}}
+      whileTap={!isSpinning ? { scale: 0.95 } : {}}
       transition={{ type: "spring", stiffness: 400, damping: 17 }}
     >
       {number}
@@ -521,11 +527,19 @@ export default function CasePage() {
                     />
                     <p className="text-[#F9F8FC] font-['Actay_Wide'] text-base font-bold">Быстрый режим</p>
                     <motion.button 
-                      onClick={() => setIsFastMode(!isFastMode)}
-                      className={`flex w-[27px] h-[15px] p-[2px] cursor-pointer ${
+                      onClick={() => {
+                        // Блокируем переключение быстрого режима во время прокрутки
+                        if (isSpinning) return;
+                        setIsFastMode(!isFastMode);
+                      }}
+                      disabled={isSpinning}
+                      className={`flex w-[27px] h-[15px] p-[2px] ${
+                        isSpinning 
+                          ? 'cursor-not-allowed opacity-50' 
+                          : 'cursor-pointer'
+                      } ${
                         isFastMode ? 'justify-end bg-[#5C5ADC]' : 'justify-start bg-[#F9F8FC]/[0.10]'
                       } items-center rounded-[100px] transition-colors duration-200`}
-
                     >
                       <motion.div 
                         className='w-[11px] h-[11px] flex-shrink-0 rounded-[100px] bg-[#F9F8FC]'

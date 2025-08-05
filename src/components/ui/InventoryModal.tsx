@@ -47,6 +47,11 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
     clearError(); // Очищаем ошибки продажи
   }, [selectedItem, clearError]);
 
+  // Функция для форматирования цены (убирает .0 если десятые равны нулю)
+  const formatPrice = (price: number): string => {
+    return price % 1 === 0 ? price.toString() : price.toFixed(1);
+  };
+
   // Функции для работы с количеством
   const handleDecrease = () => {
     if (selectedQuantity > 1) {
@@ -236,7 +241,7 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
           }`}
           type="button"
         >
-          {isSelling ? 'Продажа...' : (activeTab === 'sell' ? `Продать • ${(selectedItem?.item.price || 0) * selectedQuantity} АР` : 'Вывести')}
+          {isSelling ? 'Продажа...' : (activeTab === 'sell' ? `Продать • ${formatPrice((selectedItem?.item.price || 0) * selectedQuantity)} АР` : 'Вывести')}
         </button>
       </div>
     </Modal>
