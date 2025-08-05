@@ -15,13 +15,13 @@ export default function ProfilePage() {
   const userName = user?.nickname ?? (isAuthenticated ? 'Загрузка...' : 'Гость');
   const userLevel = user?.level ?? 1;
   const userBalance = user?.balance ?? 0;
-  const userAvatar = user?.avatarUrl ?? 'https://vzge.me/front/512/megatntmega.png';
+  const userAvatar = `https://vzge.me/front/512/${userName.toLowerCase()}.png`;
   
   // Инвентарь из данных пользователя
   const inventoryItems = user?.inventory ?? [];
 
   return (
-    <div className="w-full max-w-6xl mx-auto pt-8 flex flex-col items-start gap-4 self-stretch">
+    <div className="w-full max-w-6xl mx-auto pt-2 flex flex-col items-start gap-4 self-stretch">
       <button 
         onClick={() => {
           router.back();
