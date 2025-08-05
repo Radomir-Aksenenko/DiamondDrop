@@ -5,8 +5,8 @@ import Modal from './Modal';
 import useDepositAPI from '@/hooks/useDepositAPI';
 import useWithdrawAPI from '@/hooks/useWithdrawAPI';
 import useSavedCards from '@/hooks/useSavedCards';
-import { SmartLink } from '@/lib/linkUtils';
 import { useBalanceUpdater } from '@/hooks/useBalanceUpdater';
+import { SmartLink } from '@/lib/linkUtils';
 import { usePreloadedData } from '@/components/providers/DataPreloadProvider';
 
 interface WalletModalProps {
@@ -74,8 +74,8 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalPr
   const { createDeposit, setupPaymentHandlers, isLoading: isDepositLoading, error: depositError, clearError } = useDepositAPI();
   const { createWithdraw, isLoading: isWithdrawLoading, error: withdrawError, clearError: clearWithdrawError } = useWithdrawAPI();
   const { savedCards, addCard } = useSavedCards();
-  const { increaseBalance, decreaseBalance } = useBalanceUpdater();
-  const { user } = usePreloadedData();
+  const { decreaseBalance } = useBalanceUpdater();
+  const { user, refreshUser } = usePreloadedData();
   const [activeTab, setActiveTab] = useState('deposit');
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [depositAmount, setDepositAmount] = useState('');
@@ -94,20 +94,28 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalPr
     const cleanup = setupPaymentHandlers(
       // onSuccess - при успешной оплате
       async () => {
-        console.log('🎉 Депозит успешно выполнен');
-        console.log('🔄 Локально обновляем баланс пользователя...');
+        console.log('🎉 Оплата успешно произведена, ждем обработки на сервере...');
         
-        // Локально увеличиваем баланс на сумму депозита
-        const depositAmountNum = parseInt(depositAmount);
-        increaseBalance(depositAmountNum);
-        console.log(`✅ Баланс локально увеличен на ${depositAmountNum}`);
-        
-        // Очищаем форму и закрываем модалку
-        setDepositAmount('');
-        setSelectedDepositAmountButton(null);
-        setDepositAmountError(null);
-        clearError();
-        onClose();
+        // Ждем 2 секунды, чтобы дать серверу время обработать платеж
+        setTimeout(async () => {
+          console.log('🔄 Проверяем обновленный баланс на сервере...');
+          
+          try {
+             // Обновляем данные пользователя с сервера
+             await refreshUser();
+             console.log('✅ Баланс успешно обновлен с сервера');
+            
+            // Очищаем форму и закрываем модалку
+            setDepositAmount('');
+            setSelectedDepositAmountButton(null);
+            setDepositAmountError(null);
+            clearError();
+            onClose();
+          } catch (error) {
+            console.error('❌ Ошибка при обновлении баланса:', error);
+            setDepositAmountError('Ошибка при обновлении баланса');
+          }
+        }, 2000);
       },
       // onError - при ошибке оплаты
       (error: string) => {
@@ -117,7 +125,7 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalPr
     );
 
     return cleanup;
-  }, [isOpen, setupPaymentHandlers, onClose, clearError, increaseBalance, depositAmount]);
+  }, [isOpen, setupPaymentHandlers, onClose, clearError, depositAmount, refreshUser]);
 
   // Мемоизированные обработчики для предотвращения лишних рендеров
   const handleDepositAmountSelect = useCallback((amount: string) => {
