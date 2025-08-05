@@ -9,17 +9,23 @@ import { useInventoryAPI, InventoryItem } from '@/hooks/useInventoryAPI';
 import { useUserBodyAvatar } from '@/hooks/useUserAvatar';
 import InventoryItemCard from '@/components/ui/InventoryItemCard';
 import InventoryModal from '@/components/ui/InventoryModal';
+import ItemDescriptionModal from '@/components/ui/ItemDescriptionModal';
+import { CaseItem } from '@/hooks/useCasesAPI';
 
 export default function ProfilePage() {
   const { user, isAuthenticated } = usePreloadedData();
   const router = useRouter();
-  const { items: inventoryItems, loading, error, hasMore, totalCount, loadMore, refresh } = useInventoryAPI();
+  const { items: inventoryItems, loading, error, hasMore, totalCount, loadMore, refresh, softRefresh } = useInventoryAPI();
   const observerRef = useRef<HTMLDivElement>(null);
   
   // Состояние для модалки инвентаря
   const [isInventoryModalOpen, setIsInventoryModalOpen] = useState(false);
   const [selectedInventoryItem, setSelectedInventoryItem] = useState<InventoryItem | null>(null);
   const [inventoryModalTab, setInventoryModalTab] = useState<'sell' | 'withdraw'>('sell');
+  
+  // Состояние для модалки описания предмета
+  const [isItemDescriptionModalOpen, setIsItemDescriptionModalOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<CaseItem | null>(null);
   
   // Данные пользователя
   const userName = user?.nickname ?? (isAuthenticated ? 'Загрузка...' : 'Гость');
@@ -47,10 +53,32 @@ export default function ProfilePage() {
     setSelectedInventoryItem(null);
   }, []);
 
+  // Функции для управления модальным окном описания предмета
+  const handleOpenItemDescriptionModal = useCallback((inventoryItem: InventoryItem) => {
+    // Преобразуем InventoryItem в CaseItem для совместимости с модальным окном
+    const caseItem: CaseItem = {
+      id: inventoryItem.item.id,
+      name: inventoryItem.item.name,
+      description: inventoryItem.item.description,
+      imageUrl: inventoryItem.item.imageUrl,
+      amount: inventoryItem.item.amount,
+      price: inventoryItem.item.price,
+      percentChance: inventoryItem.item.percentChance,
+      rarity: inventoryItem.item.rarity
+    };
+    setSelectedItem(caseItem);
+    setIsItemDescriptionModalOpen(true);
+  }, []);
+
+  const handleCloseItemDescriptionModal = useCallback(() => {
+    setIsItemDescriptionModalOpen(false);
+    setSelectedItem(null);
+  }, []);
+
   // Функция для обработки успешной продажи
   const handleSellSuccess = useCallback(() => {
-    refresh(); // Обновляем инвентарь
-  }, [refresh]);
+    softRefresh(); // Мягко обновляем инвентарь без сброса позиции
+  }, [softRefresh]);
 
   // Функция для обработки пересечения с наблюдателем
   const handleIntersection = useCallback((entries: IntersectionObserverEntry[]) => {
@@ -167,12 +195,13 @@ export default function ProfilePage() {
       <div className='flex flex-col items-start gap-4 self-stretch'>
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full'>
           {inventoryItems.map((inventoryItem, index) => (
-            <InventoryItemCard
+            <InventoryItemCard 
               key={`${inventoryItem.item.id}-${index}`}
               inventoryItem={inventoryItem}
               index={index}
               onSellClick={handleSellClick}
               onWithdrawClick={handleWithdrawClick}
+              onItemClick={handleOpenItemDescriptionModal}
             />
           ))}
         </div>
@@ -235,6 +264,12 @@ export default function ProfilePage() {
         onSellSuccess={handleSellSuccess}
       />
       
+      {/* Модальное окно описания предмета */}
+      <ItemDescriptionModal 
+        isOpen={isItemDescriptionModalOpen}
+        onClose={handleCloseItemDescriptionModal}
+        item={selectedItem}
+      />
     </div>
   );
 }

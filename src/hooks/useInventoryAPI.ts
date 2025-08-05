@@ -140,7 +140,7 @@ export const useInventoryAPI = () => {
     }
   }, [loading, hasMore, currentPage, fetchInventory]);
 
-  // Функция для обновления инвентаря
+  // Функция для полного обновления инвентаря
   const refresh = useCallback(() => {
     setItems([]);
     setCurrentPage(1);
@@ -148,6 +148,63 @@ export const useInventoryAPI = () => {
     setTotalCount(0);
     fetchInventory(1, false);
   }, [fetchInventory]);
+
+  // Функция для мягкого обновления инвентаря (сохраняет текущее состояние пагинации)
+  const softRefresh = useCallback(async () => {
+    const currentPageCount = currentPage;
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Загружаем все страницы заново, но сохраняем пагинацию
+      const allItems: InventoryItem[] = [];
+      let totalItems = 0;
+      
+      for (let page = 1; page <= currentPageCount; page++) {
+        const token = getAuthToken();
+        if (!token) {
+          throw new Error('Токен авторизации не найден');
+        }
+
+        const response = await fetch(
+          `https://battle-api.chasman.engineer/api/v1/users/me/inventory?page=${page}&pageSize=${pageSize}`,
+          {
+            method: 'GET',
+            headers: {
+              'accept': '*/*',
+              'Authorization': token,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`Ошибка загрузки инвентаря: ${response.status}`);
+        }
+
+        const data: InventoryItem[] = await response.json();
+        allItems.push(...data);
+        totalItems += data.length;
+        
+        // Если получили меньше предметов чем ожидали, значит это последняя страница
+        if (data.length < pageSize) {
+          setHasMore(false);
+          break;
+        }
+      }
+      
+      setItems(allItems);
+      setTotalCount(totalItems);
+      
+      console.log(`🔄 [InventoryAPI] Мягкое обновление завершено, предметов: ${allItems.length}`);
+      
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Неизвестная ошибка';
+      setError(errorMessage);
+      console.error('❌ [InventoryAPI] Ошибка мягкого обновления инвентаря:', errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }, [currentPage, pageSize]);
 
   // Начальная загрузка
   useEffect(() => {
@@ -163,5 +220,6 @@ export const useInventoryAPI = () => {
     currentPage,
     loadMore,
     refresh,
+    softRefresh,
   };
 };

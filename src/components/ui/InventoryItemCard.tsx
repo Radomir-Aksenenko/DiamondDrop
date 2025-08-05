@@ -9,9 +9,10 @@ interface InventoryItemCardProps {
   index: number;
   onSellClick?: (item: InventoryItem) => void;
   onWithdrawClick?: (item: InventoryItem) => void;
+  onItemClick?: (item: InventoryItem) => void;
 }
 
-export default function InventoryItemCard({ inventoryItem, index, onSellClick, onWithdrawClick }: InventoryItemCardProps) {
+export default function InventoryItemCard({ inventoryItem, index, onSellClick, onWithdrawClick, onItemClick }: InventoryItemCardProps) {
   const { item, amount } = inventoryItem;
   
   // Преобразуем InventoryItem в CaseItem для использования в CaseItemCard
@@ -27,6 +28,11 @@ export default function InventoryItemCard({ inventoryItem, index, onSellClick, o
     rarity: item.rarity
   };
 
+  // Обработчик клика по предмету
+  const handleItemClick = () => {
+    onItemClick?.(inventoryItem);
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -40,6 +46,7 @@ export default function InventoryItemCard({ inventoryItem, index, onSellClick, o
           item={caseItem}
           hideChance={true}
           className="w-[80px] h-[100px]"
+          onClick={handleItemClick}
         />
       </div>
       
