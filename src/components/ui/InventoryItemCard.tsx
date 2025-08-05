@@ -56,7 +56,7 @@ export default function InventoryItemCard({ inventoryItem, index, onSellClick, o
           <h3 className='text-[#F9F8FC] font-actay-wide text-lg font-bold leading-tight'>
             {item.name}
           </h3>
-          <p className='text-[#F9F8FC] font-actay-wide text-sm font-bold opacity-50 leading-tight'>
+          <p className='text-[#F9F8FC] font-actay-wide text-sm font-bold opacity-50 leading-tight truncate w-full'>
             {item.description || 'Описание отсутствует'}
           </p>
         </div>
