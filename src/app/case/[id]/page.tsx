@@ -219,6 +219,106 @@ export default function CasePage() {
     }
   };
 
+  // Функция для создания кастомной анимации с изменяющимися скоростями
+  const createCustomSpinAnimation = (finalOffset: number, isHorizontal: boolean = true) => {
+    // Определяем общую продолжительность анимации в миллисекундах
+    const totalDurationMs = (isFastMode ? 1.5 : 6) * 1000;
+    
+    // Карта скоростей (время в мс : скорость в пикселях за секунду)
+    const speedMap = [
+      { time: 50, speed: 45 },
+      { time: 75, speed: 42.5 },
+      { time: 100, speed: 40 },
+      { time: 125, speed: 37.5 },
+      { time: 150, speed: 35 },
+      { time: 175, speed: 32.5 },
+      { time: 200, speed: 30 },
+      { time: 225, speed: 27.5 },
+      { time: 250, speed: 25 },
+      { time: 275, speed: 22.5 },
+      { time: 300, speed: 20 },
+      { time: 325, speed: 17.5 },
+      { time: 350, speed: 15 },
+      { time: 375, speed: 12.5 },
+      { time: 400, speed: 12 },
+      { time: 411, speed: 11 },
+      { time: 420, speed: 10 },
+      { time: 430, speed: 5 },
+      { time: 490, speed: 4 },
+      { time: 510, speed: 3 },
+      { time: 530, speed: 2 },
+      { time: 531, speed: 1.5 },
+      { time: 550, speed: 1 },
+      { time: 555, speed: 0.5 },
+      { time: 559, speed: 0.4 },
+      { time: 563, speed: 0.3 },
+      { time: 566, speed: 0.2 },
+      { time: 569, speed: 0.1 }
+    ];
+
+    // Масштабируем время к общей продолжительности анимации
+    const maxSpeedTime = Math.max(...speedMap.map(s => s.time));
+    const scaleFactor = totalDurationMs / maxSpeedTime;
+    
+    const animationValues: number[] = [];
+    const times: number[] = [];
+    
+    let currentPosition = 0;
+    let previousTime = 0;
+    
+    // Добавляем начальную позицию
+    animationValues.push(0);
+    times.push(0);
+    
+    speedMap.forEach((speedPoint, index) => {
+      const scaledTime = speedPoint.time * scaleFactor;
+      const deltaTime = (scaledTime - previousTime) / 1000; // Конвертируем в секунды
+      
+      // Вычисляем смещение на основе скорости и времени
+      const deltaPosition = speedPoint.speed * deltaTime;
+      currentPosition += deltaPosition;
+      
+      animationValues.push(-currentPosition);
+      times.push(scaledTime / totalDurationMs); // Нормализуем к 0-1
+      
+      previousTime = scaledTime;
+    });
+    
+    // Корректируем финальную позицию, чтобы она соответствовала целевому смещению
+    const totalCalculatedDistance = currentPosition;
+    const targetDistance = Math.abs(finalOffset);
+    const correctionFactor = targetDistance / totalCalculatedDistance;
+    
+    // Применяем коррекцию ко всем значениям (кроме первого)
+    for (let i = 1; i < animationValues.length; i++) {
+      animationValues[i] = animationValues[i] * correctionFactor;
+    }
+    
+    // Устанавливаем точную финальную позицию
+    animationValues.push(finalOffset);
+    times.push(1);
+
+    if (isHorizontal) {
+      return {
+        x: animationValues,
+        transition: {
+          duration: totalDurationMs / 1000,
+          times,
+          ease: "linear" as const
+        }
+      };
+    } else {
+      return {
+        y: animationValues,
+        transition: {
+          duration: totalDurationMs / 1000,
+          times,
+          ease: "linear" as const
+        }
+      };
+    }
+  };
+
   // Функция для запуска анимации рулетки (адаптированная из оригинальной рулетки)
   const startSpinAnimation = async (results: CaseOpenResult[]) => {
     console.log('Запуск анимации для результатов:', results);
@@ -317,7 +417,7 @@ export default function CasePage() {
         let animationPromise;
         
         if (selectedNumber === 1) {
-          // Горизонтальная прокрутка для одного кейса (адаптированный алгоритм оригинальной рулетки)
+          // Горизонтальная прокрутка для одного кейса с кастомными скоростями
           const itemWidth = cardWidth + gap;
           const containerWidth = 663; // Ширина контейнера
           
@@ -335,17 +435,12 @@ export default function CasePage() {
           // Устанавливаем начальную позицию
           fieldControl.set({ x: initialOffset });
           
-          // Создаем анимацию с плавной остановкой для горизонтальной прокрутки
-          animationPromise = fieldControl.start({
-            x: finalOffset,
-            transition: {
-              duration: horizontalDuration,
-              ease: [0.23, 1, 0.32, 1], // Плавная остановка без "приклеивания"
-            }
-          });
+          // Создаем кастомную анимацию с изменяющимися скоростями
+          const customAnimation = createCustomSpinAnimation(finalOffset, true);
+          animationPromise = fieldControl.start(customAnimation);
           
         } else {
-          // Вертикальная прокрутка для нескольких кейсов
+          // Вертикальная прокрутка для нескольких кейсов с кастомными скоростями
           const itemHeight = cardHeight + gap;
           const containerHeight = 272; // Высота контейнера
           
@@ -363,14 +458,9 @@ export default function CasePage() {
           // Устанавливаем начальную позицию
           fieldControl.set({ y: initialOffset });
           
-          // Создаем анимацию с плавной остановкой для вертикальной прокрутки
-          animationPromise = fieldControl.start({
-            y: finalOffset,
-            transition: {
-              duration: verticalDuration,
-              ease: [0.23, 1, 0.32, 1], // Плавная остановка без "приклеивания"
-            }
-          });
+          // Создаем кастомную анимацию с изменяющимися скоростями
+          const customAnimation = createCustomSpinAnimation(finalOffset, false);
+          animationPromise = fieldControl.start(customAnimation);
         }
         
         animationPromises.push(animationPromise);
