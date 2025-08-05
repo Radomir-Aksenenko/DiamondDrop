@@ -272,10 +272,20 @@ export default function CasePage() {
       { time: 987, speed: 0.3 },
       { time: 992, speed: 0.25 },
       { time: 995, speed: 0.2 },
-      { time: 997, speed: 0.15 },
-      { time: 998, speed: 0.1 },
-      { time: 999, speed: 0.05 },
-      { time: 1000, speed: 0.02 }
+      { time: 996.5, speed: 0.15 },
+      { time: 997.5, speed: 0.12 },
+      { time: 998.2, speed: 0.1 },
+      { time: 998.7, speed: 0.08 },
+      { time: 999.1, speed: 0.06 },
+      { time: 999.4, speed: 0.04 },
+      { time: 999.6, speed: 0.03 },
+      { time: 999.75, speed: 0.02 },
+      { time: 999.85, speed: 0.015 },
+      { time: 999.92, speed: 0.01 },
+      { time: 999.96, speed: 0.007 },
+      { time: 999.98, speed: 0.004 },
+      { time: 999.99, speed: 0.002 },
+      { time: 1000, speed: 0.001 }
     ];
 
     // Масштабируем время к общей продолжительности анимации
