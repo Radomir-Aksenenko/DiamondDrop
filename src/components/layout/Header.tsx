@@ -49,7 +49,7 @@ export default function Header() {
   const closeUpgradeModal = () => setIsUpgradeModalOpen(false);
 
   const handleOpenInventory = () => {
-    router.push('/inventory');
+    router.push('/profile');
   };
 
   return (

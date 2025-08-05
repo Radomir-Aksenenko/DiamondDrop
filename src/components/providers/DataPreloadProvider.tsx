@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
 import { APIBanner } from '@/hooks/useBannersAPI';
-import { APIUser } from '@/hooks/useUserAPI';
+import { APIUser } from '@/types/user';
 import { CaseData } from '@/hooks/useCasesAPI';
 import { LiveWinData } from '@/hooks/useLiveWins';
 import useGameResultsAPI from '@/hooks/useGameResultsAPI';

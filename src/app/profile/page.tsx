@@ -2,82 +2,23 @@
 
 import React from 'react';
 import { usePreloadedData } from '@/components/providers/DataPreloadProvider';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { motion, useAnimation } from 'framer-motion';
+import { motion } from 'framer-motion';
 import CaseItemCard from '@/components/ui/CaseItemCard';
-import { CaseItem } from '@/hooks/useCasesAPI';
 
-export default function InventoryPage() {
+export default function ProfilePage() {
   const { user, isAuthenticated } = usePreloadedData();
   const router = useRouter();
   
-  // User data
-  const userName = user?.nickname ?? (isAuthenticated ? 'Loading...' : 'Guest');
-
-  // Примеры предметов для демонстрации сетки
-  const inventoryItems: CaseItem[] = [
-    {
-      id: 'netherite_ingot',
-      name: 'Незеритовый слиток',
-      description: 'подписан великим игроком fupir...',
-      imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/netherite_ingot/icon',
-      amount: 2,
-      price: 12,
-      percentChance: 0.5,
-      rarity: 'Legendary'
-    },
-    {
-      id: 'diamond_sword',
-      name: 'Алмазный меч',
-      description: 'подписан великим игроком alex123...',
-      imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/diamond_sword/icon',
-      amount: 1,
-      price: 8,
-      percentChance: 1.2,
-      rarity: 'Epic'
-    },
-    {
-      id: 'golden_apple',
-      name: 'Золотое яблоко',
-      description: 'подписан великим игроком steve...',
-      imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/golden_apple/icon',
-      amount: 3,
-      price: 5,
-      percentChance: 2.5,
-      rarity: 'Rare'
-    },
-    {
-      id: 'enchanted_book',
-      name: 'Зачарованная книга',
-      description: 'подписан великим игроком wizard...',
-      imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/enchanted_book/icon',
-      amount: 1,
-      price: 15,
-      percentChance: 0.8,
-      rarity: 'Legendary'
-    },
-    {
-      id: 'iron_pickaxe',
-      name: 'Железная кирка',
-      description: 'подписан великим игроком miner...',
-      imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/iron_pickaxe/icon',
-      amount: 1,
-      price: 3,
-      percentChance: 5.0,
-      rarity: 'Uncommon'
-    },
-    {
-      id: 'emerald',
-      name: 'Изумруд',
-      description: 'подписан великим игроком trader...',
-      imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/emerald/icon',
-      amount: 5,
-      price: 7,
-      percentChance: 3.2,
-      rarity: 'Rare'
-    }
-  ];
+  // Данные пользователя
+  const userName = user?.nickname ?? (isAuthenticated ? 'Загрузка...' : 'Гость');
+  const userLevel = user?.level ?? 1;
+  const userBalance = user?.balance ?? 0;
+  const userAvatar = user?.avatarUrl ?? 'https://vzge.me/front/512/megatntmega.png';
+  
+  // Инвентарь из данных пользователя
+  const inventoryItems = user?.inventory ?? [];
 
   return (
     <div className="w-full max-w-6xl mx-auto pt-8 flex flex-col items-start gap-4 self-stretch">
@@ -103,11 +44,13 @@ export default function InventoryPage() {
         </motion.div>
         <p className='text-[#F9F8FC] font-unbounded text-2xl font-medium'>Профиль</p>
       </button>
+      
+      {/* Блок профиля */}
       <div className='flex h-[202px] p-4 items-start gap-4 self-stretch rounded-xl bg-[#F9F8FC]/[0.05]'>
         <div className='flex w-[170px] h-[170px] aspect-[1/1] rounded-lg bg-[#5C5ADC] relative overflow-hidden'>
           <>
-          <img
-              src="https://vzge.me/front/512/megatntmega.png"
+            <img
+              src={userAvatar}
               alt="Avatar"
               className="absolute w-[154px] h-[154px] aspect-square ml-[7px] mt-4"
             />
@@ -130,14 +73,16 @@ export default function InventoryPage() {
           </div>
           <div className='flex flex-col justify-center items-start gap-2 self-stretch'>
             <div className='flex justify-between items-center self-stretch'>
-              <p className='text-[#F9F8FC] font-unbounded text-base font-semibold'>lvl 1</p>
-              <p className='text-[#F9F8FC] font-unbounded text-base font-semibold opacity-50'>lvl 2</p>
+              <p className='text-[#F9F8FC] font-unbounded text-base font-semibold'>lvl {userLevel}</p>
+              <p className='text-[#F9F8FC] font-unbounded text-base font-semibold opacity-50'>lvl {userLevel + 1}</p>
             </div>
             <div className='flex h-[18px] pr-2 items-center gap-[10px] self-stretch rounded-[100px] bg-[#0D0D11]'>
-              <div className="w-[314px] self-stretch rounded-[100px] bg-gradient-to-r from-[#313076] to-[#5C5ADC] shadow-[inset_0_4px_25.8px_0_rgba(249,248,252,0.10)]"></div></div>
+              <div className="w-[314px] self-stretch rounded-[100px] bg-gradient-to-r from-[#313076] to-[#5C5ADC] shadow-[inset_0_4px_25.8px_0_rgba(249,248,252,0.10)]"></div>
+            </div>
           </div>
         </div>
       </div>
+      
       {/* Заголовок инвентаря */}
       <div className='flex items-center justify-between self-stretch'>
         <h2 className='text-[#F9F8FC] font-unbounded text-2xl font-semibold'>Инвентарь</h2>

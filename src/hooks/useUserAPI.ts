@@ -3,18 +3,7 @@
 import { useEffect, useState } from 'react';
 import { getAuthToken, hasAuthToken } from '@/lib/auth';
 import { API_ENDPOINTS, DEV_CONFIG, isDevelopment } from '@/lib/config';
-
-/**
- * Интерфейс данных пользователя из API
- */
-export interface APIUser {
-  id: string;
-  nickname: string;
-  balance: number;
-  level: number;
-  avatarUrl: string;
-  permission: string;
-}
+import { APIUser } from '@/types/user';
 
 /**
  * Хук для получения данных пользователя из API

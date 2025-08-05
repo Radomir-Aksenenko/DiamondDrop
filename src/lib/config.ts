@@ -2,6 +2,8 @@
  * Конфигурация приложения
  */
 
+import type { APIUser } from '@/types/user';
+
 // Определяем режим разработки
 export const isDevelopment = process.env.NODE_ENV === 'development';
 
@@ -15,12 +17,39 @@ export const API_ENDPOINTS = {
   cases: `${API_BASE_URL}/cases`,
   users: {
     me: `${API_BASE_URL}/users/me`,
+    inventory: `${API_BASE_URL}/users/me/inventory`,
   },
 
 } as const;
 
 // Настройки для dev режима
-export const DEV_CONFIG = {
+export const DEV_CONFIG: {
+  skipAuth: boolean;
+  mockUser: APIUser;
+  mockBanners: Array<{
+    id: string;
+    imageUrl: string;
+    url: string;
+  }>;
+  mockCases: Array<{
+    id: string;
+    name: string;
+    description: string;
+    imageUrl: string;
+    price: number;
+    items?: Array<{
+      id: string;
+      name: string;
+      description: string;
+      imageUrl: string;
+      amount: number;
+      price: number;
+      percentChance: number;
+      rarity: 'Common' | 'Uncommon' | 'Rare' | 'Epic' | 'Legendary';
+    }>;
+  }>;
+  mockToken: string;
+} = {
   // Пропускать авторизацию в dev режиме
   skipAuth: isDevelopment,
   // Мок данные для dev режима
@@ -31,6 +60,68 @@ export const DEV_CONFIG = {
     level: 99,
     avatarUrl: 'https://avatars.spworlds.ru/face/DevUser?w=100',
     permission: 'admin',
+    inventory: [
+      {
+        id: 'netherite_ingot',
+        name: 'Незеритовый слиток',
+        description: 'подписан великим игроком fupir...',
+        imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/netherite_ingot/icon',
+        amount: 2,
+        price: 12,
+        percentChance: 0.5,
+        rarity: 'Legendary'
+      },
+      {
+        id: 'diamond_sword',
+        name: 'Алмазный меч',
+        description: 'подписан великим игроком alex123...',
+        imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/diamond_sword/icon',
+        amount: 1,
+        price: 8,
+        percentChance: 1.2,
+        rarity: 'Epic'
+      },
+      {
+        id: 'golden_apple',
+        name: 'Золотое яблоко',
+        description: 'подписан великим игроком steve...',
+        imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/golden_apple/icon',
+        amount: 3,
+        price: 5,
+        percentChance: 2.5,
+        rarity: 'Rare'
+      },
+      {
+        id: 'enchanted_book',
+        name: 'Зачарованная книга',
+        description: 'подписан великим игроком wizard...',
+        imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/enchanted_book/icon',
+        amount: 1,
+        price: 15,
+        percentChance: 0.8,
+        rarity: 'Legendary'
+      },
+      {
+        id: 'iron_pickaxe',
+        name: 'Железная кирка',
+        description: 'подписан великим игроком miner...',
+        imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/iron_pickaxe/icon',
+        amount: 1,
+        price: 3,
+        percentChance: 5.0,
+        rarity: 'Uncommon'
+      },
+      {
+        id: 'emerald',
+        name: 'Изумруд',
+        description: 'подписан великим игроком trader...',
+        imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/emerald/icon',
+        amount: 5,
+        price: 7,
+        percentChance: 3.2,
+        rarity: 'Rare'
+      }
+    ]
   },
   mockBanners: [
     {
