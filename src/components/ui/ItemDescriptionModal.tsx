@@ -35,6 +35,7 @@ export default function ItemDescriptionModal({ isOpen, onClose, item }: ItemDesc
         className="flex flex-col gap-6"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -10 }}
         transition={{ duration: 0.3, delay: 0.1 }}
       >
         {/* Основной контент модалки */}
@@ -42,6 +43,7 @@ export default function ItemDescriptionModal({ isOpen, onClose, item }: ItemDesc
           className="flex p-4 items-start gap-4 self-stretch rounded-lg bg-[#F9F8FC]/5"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.9 }}
           transition={{ duration: 0.25, delay: 0.15 }}
          >
            {/* Карточка предмета */}
@@ -49,6 +51,7 @@ export default function ItemDescriptionModal({ isOpen, onClose, item }: ItemDesc
              className="flex-shrink-0"
              initial={{ opacity: 0, x: -10 }}
              animate={{ opacity: 1, x: 0 }}
+             exit={{ opacity: 0, x: -20 }}
              transition={{ duration: 0.3, delay: 0.2 }}
            >
              <CaseItemCard 
@@ -63,6 +66,7 @@ export default function ItemDescriptionModal({ isOpen, onClose, item }: ItemDesc
              className='flex flex-col py-2 justify-start items-start gap-1 flex-1 self-stretch'
              initial={{ opacity: 0, x: 10 }}
              animate={{ opacity: 1, x: 0 }}
+             exit={{ opacity: 0, x: 20 }}
              transition={{ duration: 0.3, delay: 0.25 }}
            >
              {/* Редкость */}
@@ -107,6 +111,7 @@ export default function ItemDescriptionModal({ isOpen, onClose, item }: ItemDesc
            className="grid grid-cols-2 gap-3 mt-4"
            initial={{ opacity: 0, y: 10 }}
            animate={{ opacity: 1, y: 0 }}
+           exit={{ opacity: 0, y: 20 }}
            transition={{ duration: 0.25, delay: 0.45 }}
         >
           <motion.button 
