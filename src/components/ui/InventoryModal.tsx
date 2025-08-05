@@ -236,7 +236,7 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
           }`}
           type="button"
         >
-          {isSelling ? 'Продажа...' : (activeTab === 'sell' ? 'Продать' : 'Вывести')}
+          {isSelling ? 'Продажа...' : (activeTab === 'sell' ? `Продать • ${(selectedItem?.item.price || 0) * selectedQuantity} АР` : 'Вывести')}
         </button>
       </div>
     </Modal>
