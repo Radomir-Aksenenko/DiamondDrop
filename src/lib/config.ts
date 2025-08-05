@@ -58,7 +58,7 @@ export const DEV_CONFIG: {
     nickname: 'DevUser',
     balance: 10000,
     level: 99,
-    avatarUrl: 'https://avatars.spworlds.ru/face/DevUser?w=100',
+    avatarUrl: 'https://avatar.spoverlay.ru/face/DevUser?w=512',
     permission: 'admin',
     inventory: [
       {

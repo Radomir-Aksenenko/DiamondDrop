@@ -55,7 +55,7 @@ const mockUser: APIUser = {
   nickname: 'DevUser',
   balance: 1000,
   level: 5,
-  avatarUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/player_head/icon',
+  avatarUrl: 'https://avatar.spoverlay.ru/face/DevUser?w=512',
   permission: 'user'
 };
 

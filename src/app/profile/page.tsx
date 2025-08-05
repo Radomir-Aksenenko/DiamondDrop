@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { useInventoryAPI } from '@/hooks/useInventoryAPI';
+import { useUserBodyAvatar } from '@/hooks/useUserAvatar';
 import InventoryItemCard from '@/components/ui/InventoryItemCard';
 
 export default function ProfilePage() {
@@ -18,7 +19,9 @@ export default function ProfilePage() {
   const userName = user?.nickname ?? (isAuthenticated ? 'Загрузка...' : 'Гость');
   const userLevel = user?.level ?? 1;
   const userBalance = user?.balance ?? 0;
-  const userAvatar = `https://vzge.me/front/512/${userName.toLowerCase()}.png`;
+  
+  // Получаем URL аватара тела через хук
+  const userAvatar = useUserBodyAvatar(userName === 'Загрузка...' || userName === 'Гость' ? null : userName);
 
   // Функция для обработки пересечения с наблюдателем
   const handleIntersection = useCallback((entries: IntersectionObserverEntry[]) => {

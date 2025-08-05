@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import NavButton from '@/components/ui/NavButton';
 import { usePreloadedData } from '@/components/providers/DataPreloadProvider';
+import { useUserFaceAvatar } from '@/hooks/useUserAvatar';
 import WalletModal from '@/components/ui/WalletModal';
 import UpgradeModal from '@/components/ui/UpgradeModal';
 
@@ -19,8 +20,8 @@ export default function Header() {
   const userName = user?.nickname ?? (isAuthenticated ? 'Загрузка...' : 'Гость');
   const userLevel = user?.level ?? 1;
   
-  // Формируем URL аватара напрямую из никнейма
-  const userAvatarUrl = `https://avatars.spworlds.ru/face/${userName}?w=100`;
+  // Получаем URL аватара через хук
+  const userAvatarUrl = useUserFaceAvatar(userName === 'Загрузка...' || userName === 'Гость' ? null : userName);
 
   // Функция для определения размера текста никнейма в зависимости от длины
   const getNicknameTextSize = (nickname: string) => {
