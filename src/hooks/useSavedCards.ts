@@ -6,62 +6,63 @@ const SAVED_CARDS_KEY = 'diamond_drop_saved_cards';
 const MAX_SAVED_CARDS = 4;
 
 /**
- * Хук для работы с сохраненными картами в куки
+ * Хук для работы с сохраненными картами в localStorage
  */
 export default function useSavedCards() {
   const [savedCards, setSavedCards] = useState<string[]>([]);
 
   /**
-   * Получает значение куки по ключу
+   * Получает значение из localStorage по ключу
    */
-  const getCookieValue = useCallback((key: string): string | null => {
-    if (typeof document === 'undefined') return null;
+  const getStorageValue = useCallback((key: string): string | null => {
+    if (typeof window === 'undefined') return null;
     
-    const cookies = document.cookie.split(';');
-    for (const cookie of cookies) {
-      const [cookieKey, cookieValue] = cookie.trim().split('=');
-      if (cookieKey === key) {
-        return decodeURIComponent(cookieValue);
-      }
+    try {
+      return localStorage.getItem(key);
+    } catch (error) {
+      console.error('Ошибка при чтении из localStorage:', error);
+      return null;
     }
-    return null;
   }, []);
 
-  // Загружаем сохраненные карты из куки при инициализации
+  // Загружаем сохраненные карты из localStorage при инициализации
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const saved = getCookieValue(SAVED_CARDS_KEY);
+      const saved = getStorageValue(SAVED_CARDS_KEY);
       if (saved) {
         try {
           const cards = JSON.parse(saved);
           if (Array.isArray(cards)) {
             setSavedCards(cards);
+            console.log('✅ Загружены сохраненные карты из localStorage:', cards);
           }
         } catch (error) {
           console.error('Ошибка при загрузке сохраненных карт:', error);
         }
       }
     }
-  }, [getCookieValue]);
+  }, [getStorageValue]);
 
   /**
-   * Устанавливает значение куки
+   * Устанавливает значение в localStorage
    */
-  const setCookieValue = useCallback((key: string, value: string, days: number = 30) => {
-    if (typeof document === 'undefined') return;
+  const setStorageValue = useCallback((key: string, value: string) => {
+    if (typeof window === 'undefined') return;
     
-    const expires = new Date();
-    expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
-    
-    document.cookie = `${key}=${encodeURIComponent(value)};expires=${expires.toUTCString()};path=/`;
+    try {
+      localStorage.setItem(key, value);
+    } catch (error) {
+      console.error('Ошибка при записи в localStorage:', error);
+    }
   }, []);
 
   /**
-   * Сохраняет карты в куки
+   * Сохраняет карты в localStorage
    */
   const saveCardsToStorage = useCallback((cards: string[]) => {
-    setCookieValue(SAVED_CARDS_KEY, JSON.stringify(cards));
-  }, [setCookieValue]);
+    setStorageValue(SAVED_CARDS_KEY, JSON.stringify(cards));
+    console.log('💾 Карты сохранены в localStorage:', cards);
+  }, [setStorageValue]);
 
   /**
    * Добавляет новую карту в список сохраненных
@@ -69,8 +70,11 @@ export default function useSavedCards() {
    */
   const addCard = useCallback((cardNumber: string) => {
     if (!cardNumber || cardNumber.length !== 5) {
+      console.warn('⚠️ Попытка добавить некорректную карту:', cardNumber);
       return;
     }
+
+    console.log('💳 Добавление карты:', cardNumber);
 
     setSavedCards(prevCards => {
       // Проверяем, есть ли уже такая карта
@@ -80,18 +84,21 @@ export default function useSavedCards() {
       
       if (existingIndex !== -1) {
         // Карта уже есть - перемещаем её в начало
+        console.log('🔄 Карта уже существует, перемещаем в начало');
         newCards = [cardNumber, ...prevCards.filter(card => card !== cardNumber)];
       } else {
         // Новая карта - добавляем в начало
+        console.log('✨ Добавляем новую карту');
         newCards = [cardNumber, ...prevCards];
         
         // Ограничиваем количество сохраненных карт
         if (newCards.length > MAX_SAVED_CARDS) {
           newCards = newCards.slice(0, MAX_SAVED_CARDS);
+          console.log('✂️ Обрезаем список до максимального количества карт');
         }
       }
       
-      // Сохраняем в куки
+      // Сохраняем в localStorage
       saveCardsToStorage(newCards);
       
       return newCards;
