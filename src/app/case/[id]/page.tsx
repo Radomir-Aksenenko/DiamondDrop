@@ -12,7 +12,6 @@ import { API_BASE_URL } from '@/lib/config';
 import { CaseItem } from '@/hooks/useCasesAPI';
 import { useBalanceUpdater } from '@/hooks/useBalanceUpdater';
 import { getAuthToken } from '@/lib/auth';
-import { getRouletteSpeedMap } from '@/lib/animationConfig';
 
 // Интерфейс для результата открытия кейса
 interface CaseOpenResult {
@@ -220,73 +219,6 @@ export default function CasePage() {
     }
   };
 
-  // Функция для создания кастомной анимации с изменяющимися скоростями
-  const createCustomSpinAnimation = (finalOffset: number, isHorizontal: boolean = true) => {
-    // Определяем общую продолжительность анимации в миллисекундах
-    const totalDurationMs = (isFastMode ? 1.5 : 6) * 1000;
-    
-    // Получаем карту скоростей из конфигурации
-    const speedMap = getRouletteSpeedMap();
-
-    // Масштабируем время к общей продолжительности анимации
-    const maxSpeedTime = Math.max(...speedMap.map(s => s.time));
-    const scaleFactor = totalDurationMs / maxSpeedTime;
-    
-    const animationValues: number[] = [];
-    const times: number[] = [];
-    
-    let currentPosition = 0;
-    let previousTime = 0;
-    
-    // Добавляем начальную позицию
-    animationValues.push(0);
-    times.push(0);
-    
-    speedMap.forEach((speedPoint, index) => {
-      const scaledTime = speedPoint.time * scaleFactor;
-      const deltaTime = (scaledTime - previousTime) / 1000; // Конвертируем в секунды
-      
-      // Вычисляем смещение на основе скорости и времени
-      const deltaPosition = speedPoint.speed * deltaTime;
-      currentPosition += deltaPosition;
-      
-      animationValues.push(-currentPosition);
-      times.push(scaledTime / totalDurationMs); // Нормализуем к 0-1
-      
-      previousTime = scaledTime;
-    });
-    
-    // Корректируем финальную позицию, чтобы она соответствовала целевому смещению
-    const totalCalculatedDistance = currentPosition;
-    const targetDistance = Math.abs(finalOffset);
-    const correctionFactor = targetDistance / totalCalculatedDistance;
-    
-    // Применяем коррекцию ко всем значениям (кроме первого)
-    for (let i = 1; i < animationValues.length; i++) {
-      animationValues[i] = animationValues[i] * correctionFactor;
-    }
-
-    if (isHorizontal) {
-      return {
-        x: animationValues,
-        transition: {
-          duration: totalDurationMs / 1000,
-          times,
-          ease: "linear" as const
-        }
-      };
-    } else {
-      return {
-        y: animationValues,
-        transition: {
-          duration: totalDurationMs / 1000,
-          times,
-          ease: "linear" as const
-        }
-      };
-    }
-  };
-
   // Функция для запуска анимации рулетки (адаптированная из оригинальной рулетки)
   const startSpinAnimation = async (results: CaseOpenResult[]) => {
     console.log('Запуск анимации для результатов:', results);
@@ -358,20 +290,6 @@ export default function CasePage() {
           }
         }
         
-        // СОЗДАЕМ НАПРЯЖЕНИЕ: добавляем 2-4 дорогих предмета перед выигрышным
-        const expensiveItemsCount = Math.floor(Math.random() * 3) + 2; // 2-4 дорогих предмета
-        const expensiveItems = caseData?.items
-          ?.filter(item => item.price > targetCaseItem.price) // Берем предметы дороже выигрышного
-          ?.sort((a, b) => b.price - a.price) // Сортируем по убыванию цены
-          ?.slice(0, 5) || []; // Берем топ-5 самых дорогих, или пустой массив если caseData нет
-        
-        for (let j = 0; j < expensiveItemsCount; j++) {
-          if (expensiveItems.length > 0) {
-            const expensiveItem = expensiveItems[j % expensiveItems.length];
-            infiniteItems.push({ ...expensiveItem, id: `${expensiveItem.id}-${fieldKey}-expensive-${j}` });
-          }
-        }
-        
         // Добавляем выигрышный предмет и запоминаем его позицию
         const targetIndex = infiniteItems.length; // Позиция выигрышного предмета
         infiniteItems.push({ ...targetCaseItem, id: `${targetCaseItem.id}-${fieldKey}-target` });
@@ -399,59 +317,60 @@ export default function CasePage() {
         let animationPromise;
         
         if (selectedNumber === 1) {
-          // Горизонтальная прокрутка для одного кейса с кастомными скоростями
+          // Горизонтальная прокрутка для одного кейса (адаптированный алгоритм оригинальной рулетки)
           const itemWidth = cardWidth + gap;
           const containerWidth = 663; // Ширина контейнера
           
-          // Начальная позиция
+          // Начальная позиция (как в оригинале - стартовая позиция)
           const initialOffset = 0;
           
-          // Генерируем случайное смещение в пределах всей карточки (не центрируем!)
-          // Карточка может остановиться в любом месте видимой области
-          const randomOffset = (Math.random() - 0.5) * (itemWidth * 0.8); // Случайное смещение в пределах 80% ширины карточки
+          // Генерируем случайное смещение в пределах карточки (-30px до +30px от центра)
+          const randomOffset = (Math.random() - 0.5) * 60; // Случайное смещение от -30 до +30 пикселей
           
-          // Финальная позиция - НЕ центрируем, а ставим случайно в видимой области
-          const visibleAreaStart = containerWidth * 0.2; // 20% от начала
-          const visibleAreaEnd = containerWidth * 0.8;   // 80% от начала
-          const randomPositionInArea = visibleAreaStart + Math.random() * (visibleAreaEnd - visibleAreaStart);
+          // Финальная позиция - центрируем выигрышный предмет + случайное смещение
+          const finalOffset = -(targetIndex * itemWidth) + (containerWidth / 2) - (cardWidth / 2) + randomOffset;
           
-          const finalOffset = -(targetIndex * itemWidth) + randomPositionInArea + randomOffset;
-          
-          console.log(`🎯 Горизонтальная анимация: случайная позиция в области ${randomPositionInArea.toFixed(1)}px, смещение ${randomOffset.toFixed(1)}px`);
+          console.log(`🎯 Горизонтальная анимация: случайное смещение ${randomOffset.toFixed(1)}px`);
           
           // Устанавливаем начальную позицию
           fieldControl.set({ x: initialOffset });
           
-          // Создаем кастомную анимацию с изменяющимися скоростями
-          const customAnimation = createCustomSpinAnimation(finalOffset, true);
-          animationPromise = fieldControl.start(customAnimation);
+          // Создаем анимацию с плавной остановкой для горизонтальной прокрутки
+          animationPromise = fieldControl.start({
+            x: finalOffset,
+            transition: {
+              duration: horizontalDuration,
+              ease: [0.23, 1, 0.32, 1], // Плавная остановка без "приклеивания"
+            }
+          });
           
         } else {
-          // Вертикальная прокрутка для нескольких кейсов с кастомными скоростями
+          // Вертикальная прокрутка для нескольких кейсов
           const itemHeight = cardHeight + gap;
           const containerHeight = 272; // Высота контейнера
           
           // Начальная позиция
           const initialOffset = 0;
           
-          // Генерируем случайное смещение в пределах всей карточки (не центрируем!)
-          const randomOffset = (Math.random() - 0.5) * (itemHeight * 0.8); // Случайное смещение в пределах 80% высоты карточки
+          // Генерируем случайное смещение в пределах карточки (-40px до +40px от центра)
+          const randomOffset = (Math.random() - 0.5) * 80; // Случайное смещение от -40 до +40 пикселей
           
-          // Финальная позиция - НЕ центрируем, а ставим случайно в видимой области
-          const visibleAreaStart = containerHeight * 0.2; // 20% от начала
-          const visibleAreaEnd = containerHeight * 0.8;   // 80% от начала
-          const randomPositionInArea = visibleAreaStart + Math.random() * (visibleAreaEnd - visibleAreaStart);
+          // Финальная позиция - центрируем выигрышный предмет + случайное смещение
+          const finalOffset = -(targetIndex * itemHeight) + (containerHeight / 2) - (cardHeight / 2) + randomOffset;
           
-          const finalOffset = -(targetIndex * itemHeight) + randomPositionInArea + randomOffset;
-          
-          console.log(`🎯 Вертикальная анимация поля ${i + 1}: случайная позиция в области ${randomPositionInArea.toFixed(1)}px, смещение ${randomOffset.toFixed(1)}px`);
+          console.log(`🎯 Вертикальная анимация поля ${i + 1}: случайное смещение ${randomOffset.toFixed(1)}px`);
           
           // Устанавливаем начальную позицию
           fieldControl.set({ y: initialOffset });
           
-          // Создаем кастомную анимацию с изменяющимися скоростями
-          const customAnimation = createCustomSpinAnimation(finalOffset, false);
-          animationPromise = fieldControl.start(customAnimation);
+          // Создаем анимацию с плавной остановкой для вертикальной прокрутки
+          animationPromise = fieldControl.start({
+            y: finalOffset,
+            transition: {
+              duration: verticalDuration,
+              ease: [0.23, 1, 0.32, 1], // Плавная остановка без "приклеивания"
+            }
+          });
         }
         
         animationPromises.push(animationPromise);
