@@ -80,7 +80,7 @@ export default function InventoryPage() {
   ];
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 pt-8 flex flex-col items-start gap-4 self-stretch">
+    <div className="w-full max-w-6xl mx-auto pt-8 flex flex-col items-start gap-4 self-stretch">
       <button 
         onClick={() => {
           router.back();
@@ -139,7 +139,7 @@ export default function InventoryPage() {
         </div>
       </div>
       {/* Заголовок инвентаря */}
-      <div className='flex items-center justify-between self-stretch px-6'>
+      <div className='flex items-center justify-between self-stretch'>
         <h2 className='text-[#F9F8FC] font-unbounded text-2xl font-semibold'>Инвентарь</h2>
         <div className='flex items-center gap-2'>
           <span className='text-[#F9F8FC] font-actay-wide text-base font-bold opacity-50'>
@@ -149,7 +149,7 @@ export default function InventoryPage() {
       </div>
 
       {/* Сетка предметов инвентаря */}
-      <div className='flex flex-col items-start gap-4 self-stretch px-6'>
+      <div className='flex flex-col items-start gap-4 self-stretch'>
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full'>
           {inventoryItems.map((item, index) => (
             <motion.div
