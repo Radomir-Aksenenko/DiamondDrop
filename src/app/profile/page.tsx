@@ -72,8 +72,19 @@ export default function ProfilePage() {
 
   const handleCloseItemDescriptionModal = useCallback(() => {
     setIsItemDescriptionModalOpen(false);
-    setSelectedItem(null);
+    // Не сбрасываем selectedItem в null сразу, чтобы анимация закрытия работала корректно
   }, []);
+
+  // Сбрасываем selectedItem с задержкой после закрытия модального окна
+  useEffect(() => {
+    if (!isItemDescriptionModalOpen && selectedItem) {
+      const timer = setTimeout(() => {
+        setSelectedItem(null);
+      }, 300); // Задержка соответствует длительности анимации закрытия
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isItemDescriptionModalOpen, selectedItem]);
 
   // Функция для обработки успешной продажи
   const handleSellSuccess = useCallback(() => {
