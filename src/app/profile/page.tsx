@@ -1,24 +1,50 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import { usePreloadedData } from '@/components/providers/DataPreloadProvider';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import CaseItemCard from '@/components/ui/CaseItemCard';
+import { useInventoryAPI } from '@/hooks/useInventoryAPI';
+import InventoryItemCard from '@/components/ui/InventoryItemCard';
 
 export default function ProfilePage() {
   const { user, isAuthenticated } = usePreloadedData();
   const router = useRouter();
+  const { items: inventoryItems, loading, error, hasMore, totalCount, loadMore } = useInventoryAPI();
+  const observerRef = useRef<HTMLDivElement>(null);
   
   // Данные пользователя
   const userName = user?.nickname ?? (isAuthenticated ? 'Загрузка...' : 'Гость');
   const userLevel = user?.level ?? 1;
   const userBalance = user?.balance ?? 0;
   const userAvatar = `https://vzge.me/front/512/${userName.toLowerCase()}.png`;
-  
-  // Инвентарь из данных пользователя
-  const inventoryItems = user?.inventory ?? [];
+
+  // Функция для обработки пересечения с наблюдателем
+  const handleIntersection = useCallback((entries: IntersectionObserverEntry[]) => {
+    const [entry] = entries;
+    if (entry.isIntersecting && hasMore && !loading) {
+      loadMore();
+    }
+  }, [hasMore, loading, loadMore]);
+
+  // Настройка Intersection Observer для бесконечной прокрутки
+  useEffect(() => {
+    const observer = new IntersectionObserver(handleIntersection, {
+      threshold: 0.1,
+      rootMargin: '100px',
+    });
+
+    if (observerRef.current) {
+      observer.observe(observerRef.current);
+    }
+
+    return () => {
+      if (observerRef.current) {
+        observer.unobserve(observerRef.current);
+      }
+    };
+  }, [handleIntersection]);
 
   return (
     <div className="w-full max-w-6xl mx-auto pt-2 flex flex-col items-start gap-4 self-stretch">
@@ -88,73 +114,46 @@ export default function ProfilePage() {
         <h2 className='text-[#F9F8FC] font-unbounded text-2xl font-semibold'>Инвентарь</h2>
         <div className='flex items-center gap-2'>
           <span className='text-[#F9F8FC] font-actay-wide text-base font-bold opacity-50'>
-            {inventoryItems.length} предметов
+            {totalCount} предметов
           </span>
+          {loading && (
+            <div className="w-4 h-4 border-2 border-[#F9F8FC]/20 border-t-[#F9F8FC] rounded-full animate-spin"></div>
+          )}
         </div>
       </div>
+
+      {/* Ошибка загрузки */}
+      {error && (
+        <div className='flex items-center justify-center w-full py-8'>
+          <div className='text-red-400 font-actay-wide text-sm'>
+            Ошибка загрузки инвентаря: {error}
+          </div>
+        </div>
+      )}
 
       {/* Сетка предметов инвентаря */}
       <div className='flex flex-col items-start gap-4 self-stretch'>
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full'>
-          {inventoryItems.map((item, index) => (
-            <motion.div
-              key={item.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1, duration: 0.3 }}
-              className='relative flex p-4 items-start gap-4 rounded-xl bg-[#F9F8FC]/[0.05] hover:bg-[#F9F8FC]/[0.08] transition-all duration-300 group'
-            >
-              {/* Карточка предмета */}
-              <CaseItemCard 
-                item={item} 
-                hideChance={true}
-                className="flex-shrink-0"
-              />
-              
-              {/* Информация о предмете */}
-              <div className='flex flex-col justify-between items-start flex-1 self-stretch gap-3'>
-                <div className='flex flex-col items-start self-stretch'>
-                  <h3 className='text-[#F9F8FC] font-actay-wide text-lg font-bold leading-tight'>
-                    {item.name}
-                  </h3>
-                  <p className='text-[#F9F8FC] font-actay-wide text-sm font-bold opacity-50 leading-tight'>
-                    {item.description}
-                  </p>
-                </div>
-                
-                {/* Кнопки действий */}
-                <div className='flex items-start gap-2 w-full'>
-                  <motion.button 
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className='flex flex-col justify-center items-center gap-2 px-4 py-2 rounded-lg bg-[#54A930] hover:bg-[#4A8A2A] transition-colors duration-200'
-                  >
-                    <span className='text-[#F9F8FC] font-unbounded text-sm font-medium'>Продать</span>
-                  </motion.button>
-                  <motion.button 
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className='flex flex-col justify-center items-center gap-2 px-4 py-2 rounded-lg bg-[#F9F8FC]/[0.10] hover:bg-[#F9F8FC]/[0.15] transition-colors duration-200'
-                  >
-                    <span className='text-[#F9F8FC] font-unbounded text-sm font-medium opacity-50 group-hover:opacity-70 transition-opacity duration-200'>
-                      Вывести
-                    </span>
-                  </motion.button>
-                </div>
-              </div>
-              
-              {/* Количество предметов */}
-              <div className='absolute right-4 top-4'>
-                <span className='text-[#F9F8FC] text-center font-actay-wide text-lg font-bold opacity-50'>
-                  x{item.amount}
-                </span>
-              </div>
-            </motion.div>
+          {inventoryItems.map((inventoryItem, index) => (
+            <InventoryItemCard
+              key={`${inventoryItem.item.id}-${index}`}
+              inventoryItem={inventoryItem}
+              index={index}
+            />
           ))}
         </div>
+
+        {/* Элемент для наблюдения (бесконечная прокрутка) */}
+        {hasMore && (
+          <div ref={observerRef} className="w-full h-4 flex justify-center items-center">
+            {loading && (
+              <div className="w-6 h-6 border-2 border-[#F9F8FC]/20 border-t-[#F9F8FC] rounded-full animate-spin"></div>
+            )}
+          </div>
+        )}
         
         {/* Пустое состояние, если нет предметов */}
-        {inventoryItems.length === 0 && (
+        {inventoryItems.length === 0 && !loading && (
           <div className='flex flex-col items-center justify-center w-full py-16 gap-4'>
             <div className='w-16 h-16 rounded-full bg-[#F9F8FC]/[0.05] flex items-center justify-center'>
               <svg 
