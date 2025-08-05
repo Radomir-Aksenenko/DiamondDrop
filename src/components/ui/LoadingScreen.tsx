@@ -9,7 +9,9 @@ export default function LoadingScreen() {
   const [dots, setDots] = useState('');
   const [showTimeoutMessage, setShowTimeoutMessage] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
+  const [currentMessageIndex, setCurrentMessageIndex] = useState(() => 
+    Math.floor(Math.random() * 50) // Случайное начальное сообщение
+  );
 
   // 50 креативных подписей для загрузки
   const loadingMessages = [
@@ -74,9 +76,15 @@ export default function LoadingScreen() {
       });
     }, 500);
 
-    // Смена креативных сообщений каждые 2 секунды
+    // Смена креативных сообщений каждые 2 секунды (случайно)
     const messageInterval = setInterval(() => {
-      setCurrentMessageIndex(prev => (prev + 1) % loadingMessages.length);
+      setCurrentMessageIndex(prev => {
+        let newIndex;
+        do {
+          newIndex = Math.floor(Math.random() * loadingMessages.length);
+        } while (newIndex === prev && loadingMessages.length > 1); // Избегаем повторения одного и того же сообщения подряд
+        return newIndex;
+      });
     }, 2000);
 
     // Таймаут на 15 секунд (увеличен для предзагрузки)

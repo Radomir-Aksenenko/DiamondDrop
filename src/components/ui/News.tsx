@@ -136,12 +136,12 @@ export default function News() {
         </div>
         
         {/* Индикаторы (точки) поверх слайдера */}
-        <div className="absolute bottom-8 left-0 right-0 flex justify-center space-x-2 z-20">
+        <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-1.5 z-20">
           {banners.map((_, dotIndex) => (
             <button
               key={dotIndex}
               onClick={() => goToIndex(dotIndex)}
-              className={`w-3 h-3 rounded-full transition-opacity cursor-pointer ${dotIndex === activeIndex ? 'bg-white' : 'bg-white opacity-30'}`}
+              className={`w-2 h-2 rounded-full transition-opacity cursor-pointer ${dotIndex === activeIndex ? 'bg-white' : 'bg-white opacity-30'}`}
               aria-label={`Перейти к баннеру ${dotIndex + 1}`}
             />
           ))}
