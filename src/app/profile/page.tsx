@@ -13,7 +13,7 @@ import InventoryModal from '@/components/ui/InventoryModal';
 export default function ProfilePage() {
   const { user, isAuthenticated } = usePreloadedData();
   const router = useRouter();
-  const { items: inventoryItems, loading, error, hasMore, totalCount, loadMore } = useInventoryAPI();
+  const { items: inventoryItems, loading, error, hasMore, totalCount, loadMore, refresh } = useInventoryAPI();
   const observerRef = useRef<HTMLDivElement>(null);
   
   // Состояние для модалки инвентаря
@@ -46,6 +46,11 @@ export default function ProfilePage() {
     setIsInventoryModalOpen(false);
     setSelectedInventoryItem(null);
   }, []);
+
+  // Функция для обработки успешной продажи
+  const handleSellSuccess = useCallback(() => {
+    refresh(); // Обновляем инвентарь
+  }, [refresh]);
 
   // Функция для обработки пересечения с наблюдателем
   const handleIntersection = useCallback((entries: IntersectionObserverEntry[]) => {
@@ -227,6 +232,7 @@ export default function ProfilePage() {
         onClose={handleCloseInventoryModal}
         selectedItem={selectedInventoryItem}
         initialTab={inventoryModalTab}
+        onSellSuccess={handleSellSuccess}
       />
       
     </div>
