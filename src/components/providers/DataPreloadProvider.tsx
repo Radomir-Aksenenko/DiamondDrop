@@ -30,6 +30,7 @@ interface DataPreloadContextType extends PreloadedData {
   refreshAllData: () => Promise<void>;
   updateBalanceLocally: (amount: number) => void;
   decreaseBalanceLocally: (amount: number) => void;
+  forceReloadData: () => Promise<void>;
 }
 
 // Создаем контекст
@@ -99,6 +100,95 @@ interface DataPreloadProviderProps {
   children: ReactNode;
 }
 
+// Ключи для sessionStorage
+const SESSION_CACHE_KEYS = {
+  IS_INITIALIZED: 'dd_cache_initialized',
+  BANNERS: 'dd_cache_banners',
+  CASES: 'dd_cache_cases',
+  LIVE_WINS: 'dd_cache_live_wins',
+  LAST_LOAD_TIME: 'dd_cache_last_load_time'
+};
+
+// Утилиты для работы с sessionStorage кешем
+const sessionCache = {
+  // Проверяем, инициализирован ли кеш
+  get isInitialized(): boolean {
+    if (typeof window === 'undefined') return false;
+    return sessionStorage.getItem(SESSION_CACHE_KEYS.IS_INITIALIZED) === 'true';
+  },
+  
+  set isInitialized(value: boolean) {
+    if (typeof window === 'undefined') return;
+    sessionStorage.setItem(SESSION_CACHE_KEYS.IS_INITIALIZED, value.toString());
+  },
+
+  // Получаем данные из кеша
+  getBanners(): APIBanner[] | null {
+    if (typeof window === 'undefined') return null;
+    const data = sessionStorage.getItem(SESSION_CACHE_KEYS.BANNERS);
+    return data ? JSON.parse(data) : null;
+  },
+
+  setBanners(banners: APIBanner[] | null) {
+    if (typeof window === 'undefined') return;
+    if (banners) {
+      sessionStorage.setItem(SESSION_CACHE_KEYS.BANNERS, JSON.stringify(banners));
+    } else {
+      sessionStorage.removeItem(SESSION_CACHE_KEYS.BANNERS);
+    }
+  },
+
+  getCases(): CaseData[] | null {
+    if (typeof window === 'undefined') return null;
+    const data = sessionStorage.getItem(SESSION_CACHE_KEYS.CASES);
+    return data ? JSON.parse(data) : null;
+  },
+
+  setCases(cases: CaseData[] | null) {
+    if (typeof window === 'undefined') return;
+    if (cases) {
+      sessionStorage.setItem(SESSION_CACHE_KEYS.CASES, JSON.stringify(cases));
+    } else {
+      sessionStorage.removeItem(SESSION_CACHE_KEYS.CASES);
+    }
+  },
+
+  getLiveWins(): LiveWinData[] | null {
+    if (typeof window === 'undefined') return null;
+    const data = sessionStorage.getItem(SESSION_CACHE_KEYS.LIVE_WINS);
+    return data ? JSON.parse(data) : null;
+  },
+
+  setLiveWins(liveWins: LiveWinData[] | null) {
+    if (typeof window === 'undefined') return;
+    if (liveWins) {
+      sessionStorage.setItem(SESSION_CACHE_KEYS.LIVE_WINS, JSON.stringify(liveWins));
+    } else {
+      sessionStorage.removeItem(SESSION_CACHE_KEYS.LIVE_WINS);
+    }
+  },
+
+  // Очищаем весь кеш
+  clear() {
+    if (typeof window === 'undefined') return;
+    Object.values(SESSION_CACHE_KEYS).forEach(key => {
+      sessionStorage.removeItem(key);
+    });
+  },
+
+  // Устанавливаем время последней загрузки
+  setLastLoadTime(time: number) {
+    if (typeof window === 'undefined') return;
+    sessionStorage.setItem(SESSION_CACHE_KEYS.LAST_LOAD_TIME, time.toString());
+  },
+
+  getLastLoadTime(): number {
+    if (typeof window === 'undefined') return 0;
+    const time = sessionStorage.getItem(SESSION_CACHE_KEYS.LAST_LOAD_TIME);
+    return time ? parseInt(time, 10) : 0;
+  }
+};
+
 export default function DataPreloadProvider({ children }: DataPreloadProviderProps) {
   // Уникальный идентификатор для отслеживания экземпляров
   const [providerId] = useState(() => Math.random().toString(36).substr(2, 9));
@@ -107,33 +197,44 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
   const { fetchGameResults } = useGameResultsAPI();
   
   // Состояние для хранения данных
-  const [banners, setBanners] = useState<APIBanner[]>([]);
+  const [banners, setBanners] = useState<APIBanner[]>(() => sessionCache.getBanners() || []);
   const [user, setUser] = useState<APIUser | null>(null);
-  const [cases, setCases] = useState<CaseData[]>([]);
-  const [liveWins, setLiveWins] = useState<LiveWinData[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [cases, setCases] = useState<CaseData[]>(() => sessionCache.getCases() || []);
+  const [liveWins, setLiveWins] = useState<LiveWinData[]>(() => sessionCache.getLiveWins() || []);
+  const [isLoading, setIsLoading] = useState(!sessionCache.isInitialized);
   const [error, setError] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentToken, setCurrentToken] = useState<string | null>(getAuthToken());
-  const [hasInitialLoad, setHasInitialLoad] = useState(false);
+  const [hasInitialLoad, setHasInitialLoad] = useState(sessionCache.isInitialized);
 
   // Функция загрузки баннеров
-  const loadBanners = useCallback(async (): Promise<APIBanner[]> => {
+  const loadBanners = useCallback(async (forceReload = false): Promise<APIBanner[]> => {
     try {
+      // Проверяем кеш если не принудительная перезагрузка
+      const cachedBanners = sessionCache.getBanners();
+      if (!forceReload && cachedBanners && sessionCache.isInitialized) {
+        console.log(`📦 [${providerId}] Используем кешированные баннеры`);
+        return cachedBanners;
+      }
+
       // В dev режиме используем мок данные
       if (isDevelopment && DEV_CONFIG.skipAuth) {
         console.log(`🔧 [${providerId}] Dev режим: используем мок баннеры`);
-        return [...mockBanners];
+        const result = [...mockBanners];
+        sessionCache.setBanners(result);
+        return result;
       }
 
       const token = getAuthToken();
       if (!token) {
         // Если токен не найден, возвращаем дефолтный баннер
-        return [{
+        const result = [{
           id: 'default',
           imageUrl: '/Frame 116.png',
           url: '/news/1'
         }];
+        sessionCache.setBanners(result);
+        return result;
       }
 
       const response = await fetch(API_ENDPOINTS.banners, {
@@ -148,15 +249,19 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
         throw new Error(`Ошибка API баннеров: ${response.status}`);
       }
 
-      return await response.json();
+      const result = await response.json();
+      sessionCache.setBanners(result);
+      return result;
     } catch (err) {
       console.error('Ошибка при загрузке баннеров:', err);
       // Возвращаем дефолтный баннер при ошибке
-      return [{
+      const result = [{
         id: 'default',
         imageUrl: '/Frame 116.png',
         url: '/news/1'
       }];
+      sessionCache.setBanners(result);
+      return result;
     }
   }, [providerId]);
 
@@ -197,21 +302,32 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
   }, [providerId, cachedMockUser]);
 
   // Функция загрузки кейсов
-  const loadCases = useCallback(async (): Promise<CaseData[]> => {
+  const loadCases = useCallback(async (forceReload = false): Promise<CaseData[]> => {
     try {
+      // Проверяем кеш если не принудительная перезагрузка
+      const cachedCases = sessionCache.getCases();
+      if (!forceReload && cachedCases && sessionCache.isInitialized) {
+        console.log(`📦 [${providerId}] Используем кешированные кейсы`);
+        return cachedCases;
+      }
+
       // В dev режиме используем мок данные
       if (isDevelopment && DEV_CONFIG.skipAuth) {
         console.log(`🔧 [${providerId}] Dev режим: используем мок кейсы`);
-        return DEV_CONFIG.mockCases.map(caseData => ({
+        const result = DEV_CONFIG.mockCases.map(caseData => ({
           ...caseData,
           description: caseData.description || null,
           items: caseData.items || generateRandomItems(caseData.price)
         }));
+        sessionCache.setCases(result);
+        return result;
       }
 
       const token = getAuthToken();
       if (!token) {
-        return [];
+        const result: CaseData[] = [];
+        sessionCache.setCases(result);
+        return result;
       }
 
       const response = await fetch(`${API_BASE_URL}/cases?page=1&pageSize=50`, {
@@ -227,27 +343,42 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
       }
 
       const data = await response.json();
-      return data.cases || [];
+      const result = data.cases || [];
+      sessionCache.setCases(result);
+      return result;
     } catch (err) {
       console.error('Ошибка при загрузке кейсов:', err);
-      return [];
+      const result: CaseData[] = [];
+      sessionCache.setCases(result);
+      return result;
     }
   }, [providerId]);
 
   // Функция загрузки живых выигрышей (начальные данные)
-  const loadInitialLiveWins = useCallback(async (): Promise<LiveWinData[]> => {
+  const loadInitialLiveWins = useCallback(async (forceReload = false): Promise<LiveWinData[]> => {
     try {
+      // Проверяем кеш если не принудительная перезагрузка
+      const cachedLiveWins = sessionCache.getLiveWins();
+      if (!forceReload && cachedLiveWins && sessionCache.isInitialized) {
+        console.log(`📦 [${providerId}] Используем кешированные live wins`);
+        return cachedLiveWins;
+      }
+
       // В dev режиме используем мок данные
       if (isDevelopment && DEV_CONFIG.skipAuth) {
         console.log(`🔧 [${providerId}] Dev режим: используем мок выигрыши`);
-        return [...mockLiveWins];
+        const result = [...mockLiveWins];
+        sessionCache.setLiveWins(result);
+        return result;
       }
 
       // Проверяем наличие токена авторизации
       const token = getAuthToken();
       if (!token) {
         console.log(`⚠️ [${providerId}] Токен не найден, используем мок данные для live wins`);
-        return [...mockLiveWins];
+        const result = [...mockLiveWins];
+        sessionCache.setLiveWins(result);
+        return result;
       }
 
       // Загружаем начальные данные через API
@@ -255,18 +386,44 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
       const apiResults = await fetchGameResults();
       console.log(`✅ [${providerId}] Загружено ${apiResults.length} начальных live wins из API`);
       
+      sessionCache.setLiveWins(apiResults);
       return apiResults;
     } catch (err) {
       console.error(`❌ [${providerId}] Ошибка при загрузке начальных выигрышей:`, err);
       // В случае ошибки возвращаем мок данные как fallback
       console.log(`🔄 [${providerId}] Используем мок данные как fallback`);
-      return [...mockLiveWins];
+      const result = [...mockLiveWins];
+      sessionCache.setLiveWins(result);
+      return result;
     }
   }, [providerId, fetchGameResults]);
 
   // Функция предзагрузки всех данных
-  const preloadAllData = useCallback(async (isInitialLoad = false) => {
+  const preloadAllData = useCallback(async (isInitialLoad = false, forceReload = false) => {
     try {
+      // Если данные уже загружены и это не принудительная перезагрузка, пропускаем
+      if (sessionCache.isInitialized && !forceReload && !isInitialLoad) {
+        console.log(`📦 [${providerId}] Данные уже загружены, используем кеш`);
+        
+        // Обновляем состояние из кеша
+        const cachedBanners = sessionCache.getBanners();
+        const cachedCases = sessionCache.getCases();
+        const cachedLiveWins = sessionCache.getLiveWins();
+        
+        if (cachedBanners) setBanners(cachedBanners);
+        if (cachedCases) setCases(cachedCases);
+        if (cachedLiveWins) setLiveWins(cachedLiveWins);
+        
+        // Загружаем только данные пользователя (они не кешируются)
+        const userData = await loadUser();
+        setUser(userData);
+        setIsAuthenticated(hasAuthToken());
+        
+        setIsLoading(false);
+        setHasInitialLoad(true);
+        return;
+      }
+
       // Устанавливаем состояние загрузки только для первоначальной загрузки
       if (isInitialLoad || !hasInitialLoad) {
         setIsLoading(true);
@@ -277,12 +434,11 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
       console.log(`📊 [${providerId}] Параметры загрузки:`, {
         isInitialLoad,
         hasInitialLoad,
+        forceReload,
+        cacheInitialized: sessionCache.isInitialized,
         currentToken: !!currentToken,
         authToken: !!getAuthToken()
       });
-      
-      // Добавляем stack trace чтобы понять откуда вызывается
-      console.trace(`🔍 [${providerId}] Stack trace для preloadAllData`);
 
       // Проверяем аутентификацию
       const authenticated = hasAuthToken();
@@ -290,10 +446,10 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
 
       // Загружаем все данные параллельно для лучшей производительности
       const [bannersData, userData, casesData, liveWinsData] = await Promise.all([
-        loadBanners(),
-        loadUser(),
-        loadCases(),
-        loadInitialLiveWins()
+        loadBanners(forceReload),
+        loadUser(), // Данные пользователя всегда загружаем заново
+        loadCases(forceReload),
+        loadInitialLiveWins(forceReload)
       ]);
 
       setBanners(bannersData);
@@ -301,7 +457,11 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
       setCases(casesData);
       setLiveWins(liveWinsData);
 
-      console.log(`✅ [${providerId}] Предзагрузка завершена`);
+      // Помечаем кеш как инициализированный
+      sessionCache.isInitialized = true;
+      sessionCache.setLastLoadTime(Date.now());
+
+      console.log(`✅ [${providerId}] Предзагрузка завершена, кеш обновлен`);
 
       // Небольшая задержка для плавности только при первоначальной загрузке
       if (isInitialLoad || !hasInitialLoad) {
@@ -324,12 +484,25 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
   // Функции для обновления отдельных данных
   const refreshBanners = async () => {
     try {
-      const bannersData = await loadBanners();
+      const bannersData = await loadBanners(true);
       setBanners(bannersData);
     } catch (err) {
       console.error('Ошибка обновления баннеров:', err);
     }
   };
+
+  // Функция для принудительной перезагрузки всех данных
+  const forceReloadData = useCallback(async () => {
+    console.log(`🔄 [${providerId}] Принудительная перезагрузка данных...`);
+    
+    // Очищаем кеш сессии
+    sessionCache.clear();
+    
+    setHasInitialLoad(false);
+    
+    // Перезагружаем данные
+    await preloadAllData(true, true);
+  }, [preloadAllData, providerId]);
 
   const refreshUser = async () => {
     try {
@@ -356,7 +529,7 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
 
   const refreshCases = async () => {
     try {
-      const casesData = await loadCases();
+      const casesData = await loadCases(true);
       setCases(casesData);
     } catch (err) {
       console.error('Ошибка обновления кейсов:', err);
@@ -446,7 +619,8 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
         console.log(`🔄 [${providerId}] useEffect #2: Токен изменился:`, {
           old: currentToken ? 'есть' : 'нет',
           new: token ? 'есть' : 'нет',
-          hasInitialLoad
+          hasInitialLoad,
+          cacheInitialized: sessionCache.isInitialized
         });
         
         setCurrentToken(token);
@@ -460,6 +634,13 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
           console.log(`🚪 [${providerId}] useEffect #2: Токен исчез, сбрасываем данные пользователя`);
           setUser(null);
           setIsAuthenticated(false);
+          // Очищаем кеш при выходе пользователя
+          sessionCache.clear();
+          setHasInitialLoad(false);
+        } else if (token && hasInitialLoad && !sessionCache.isInitialized) {
+          // Токен есть, но кеш не инициализирован - загружаем данные
+          console.log(`🔄 [${providerId}] useEffect #2: Токен есть, но кеш не инициализирован - загружаем данные`);
+          preloadAllData(true);
         } else {
           // Токен есть и данные уже загружены - просто обновляем статус аутентификации
           console.log(`✅ [${providerId}] useEffect #2: Токен есть, данные загружены - обновляем только статус аутентификации`);
@@ -491,6 +672,7 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
     refreshAllData,
     updateBalanceLocally,
     decreaseBalanceLocally,
+    forceReloadData,
   };
 
   return (
