@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, notFound } from 'next/navigation';
 import Image from 'next/image';
 import { motion, useAnimation } from 'framer-motion';
 import useCaseAPI from '@/hooks/useCaseAPI';
@@ -446,19 +446,7 @@ export default function CasePage() {
   }
 
   if (!caseData) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center text-white">
-          <div className="text-xl mb-4">Case not found</div>
-          <button 
-            onClick={() => router.back()}
-            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
-          >
-            Go Back
-          </button>
-        </div>
-      </div>
-    );
+    notFound();
   }
 
   return (
