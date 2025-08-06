@@ -18,7 +18,7 @@ export default function CasesGrid() {
    * Обработчик клика по кейсу
    */
   const handleCaseClick = useCallback((caseData: CaseData) => {
-    console.log('Клик по кейсу:', caseData);
+    // Логирование удалено
     // Переходим на страницу кейса используя ID
     router.push(`/case/${caseData.id}`);
   }, [router]);

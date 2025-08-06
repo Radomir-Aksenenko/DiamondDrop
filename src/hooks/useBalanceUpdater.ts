@@ -13,7 +13,7 @@ export const useBalanceUpdater = () => {
    */
   const increaseBalance = (amount: number) => {
     if (amount <= 0) {
-      console.warn('useBalanceUpdater: Attempt to increase balance by non-positive amount:', amount);
+      console.error('useBalanceUpdater: Attempt to increase balance by non-positive amount:', amount);
       return;
     }
     updateBalanceLocally(amount);
@@ -25,7 +25,7 @@ export const useBalanceUpdater = () => {
    */
   const decreaseBalance = (amount: number) => {
     if (amount <= 0) {
-      console.warn('useBalanceUpdater: Attempt to decrease balance by non-positive amount:', amount);
+      console.error('useBalanceUpdater: Attempt to decrease balance by non-positive amount:', amount);
       return;
     }
     decreaseBalanceLocally(amount);

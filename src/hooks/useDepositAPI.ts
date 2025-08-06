@@ -46,7 +46,7 @@ export default function useDepositAPI() {
         
         // Специальная обработка ошибки превышения лимита (429)
         if (response.status === 429) {
-          console.log('⏰ Обнаружена ошибка превышения лимита:', errorData);
+          // Логирование удалено
           throw new Error("Вы превысили лимит, попробуйте позже");
         }
         
@@ -61,14 +61,14 @@ export default function useDepositAPI() {
 
       const depositData: DepositResponse = await response.json();
       
-      console.log('Депозит создан:', depositData);
+      // Логирование удалено
 
       // Открываем окно оплаты с полученным кодом
       openPayment(depositData.code);
 
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Неизвестная ошибка при создании депозита';
-      console.error('Ошибка создания депозита:', errorMessage);
+      console.error('Error creating deposit:', errorMessage);
       setError(errorMessage);
     } finally {
       setIsLoading(false);
@@ -86,26 +86,26 @@ export default function useDepositAPI() {
   ) => {
     // Обработчик успешного открытия окна оплаты
     const handleOpenPaymentResponse = () => {
-      console.log('Окно оплаты успешно открыто, ждём оплату');
+      // Логирование удалено
     };
 
     // Обработчик ошибки открытия окна оплаты
     const handleOpenPaymentError = (err: string) => {
-      console.error(`Не удалось открыть окно оплаты: ${err}`);
+      console.error(`Failed to open payment window: ${err}`);
       setError("Не удалось открыть окно оплаты");
       onError?.("Не удалось открыть окно оплаты");
     };
 
     // Обработчик успешной оплаты
     const handlePaymentResponse = () => {
-      console.log('Оплата успешно произведена');
+      // Логирование удалено
       setError(null);
       onSuccess?.();
     };
 
     // Обработчик ошибки оплаты
     const handlePaymentError = (err: string) => {
-      console.error(`Оплатить не удалось! Ошибка: ${err}`);
+      console.error(`Payment failed! Error: ${err}`);
       
       // Проверяем на ошибку недостатка средств
       let errorMessage = "Ошибка оплаты";

@@ -94,16 +94,16 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalPr
     const cleanup = setupPaymentHandlers(
       // onSuccess - при успешной оплате
       async () => {
-        console.log('🎉 Оплата успешно произведена, ждем обработки на сервере...');
+        // Логирование удалено
         
         // Ждем 2 секунды, чтобы дать серверу время обработать платеж
         setTimeout(async () => {
-          console.log('🔄 Проверяем обновленный баланс на сервере...');
+          // Логирование удалено
           
           try {
              // Обновляем данные пользователя с сервера
              await refreshUser();
-             console.log('✅ Баланс успешно обновлен с сервера');
+             // Логирование удалено
             
             // Очищаем форму и закрываем модалку
             setDepositAmount('');
@@ -112,14 +112,14 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalPr
             clearError();
             onClose();
           } catch (error) {
-            console.error('❌ Ошибка при обновлении баланса:', error);
+            console.error('Error updating balance:', error);
             setDepositAmountError('Ошибка при обновлении баланса');
           }
         }, 2000);
       },
       // onError - при ошибке оплаты
       (error: string) => {
-        console.error('Ошибка при оплате депозита:', error);
+        console.error('Error processing deposit payment:', error);
         setDepositAmountError(error);
       }
     );
@@ -235,16 +235,16 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalPr
       const success = await createWithdraw(parseInt(withdrawAmount), cardNumber);
       
       if (success) {
-        console.log('Вывод средств успешно выполнен');
+        // Логирование удалено
         
         // Локально уменьшаем баланс на сумму вывода
         const withdrawAmountNum = parseInt(withdrawAmount);
         decreaseBalance(withdrawAmountNum);
-        console.log(`✅ Баланс локально уменьшен на ${withdrawAmountNum}`);
+        // Логирование удалено
         
         // Сохраняем карту в куки только после успешного вывода
         addCard(cardNumber);
-        console.log(`💳 Карта ${cardNumber} добавлена в сохраненные после успешного вывода`);
+        // Логирование удалено
         
         // Очищаем форму и закрываем модалку
         setWithdrawAmount('');

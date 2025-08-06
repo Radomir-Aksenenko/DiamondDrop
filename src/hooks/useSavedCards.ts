@@ -20,7 +20,7 @@ export default function useSavedCards() {
     try {
       return localStorage.getItem(key);
     } catch (error) {
-      console.error('Ошибка при чтении из localStorage:', error);
+      console.error('Error reading from localStorage:', error);
       return null;
     }
   }, []);
@@ -34,10 +34,9 @@ export default function useSavedCards() {
           const cards = JSON.parse(saved);
           if (Array.isArray(cards)) {
             setSavedCards(cards);
-            console.log('Saved cards loaded from localStorage:', cards);
           }
         } catch (error) {
-          console.error('Ошибка при загрузке сохраненных карт:', error);
+          console.error('Error loading saved cards:', error);
         }
       }
     }
@@ -52,7 +51,7 @@ export default function useSavedCards() {
     try {
       localStorage.setItem(key, value);
     } catch (error) {
-      console.error('Ошибка при записи в localStorage:', error);
+      console.error('Error writing to localStorage:', error);
     }
   }, []);
 
@@ -61,7 +60,6 @@ export default function useSavedCards() {
    */
   const saveCardsToStorage = useCallback((cards: string[]) => {
     setStorageValue(SAVED_CARDS_KEY, JSON.stringify(cards));
-    console.log('Cards saved to localStorage:', cards);
   }, [setStorageValue]);
 
   /**
@@ -69,12 +67,10 @@ export default function useSavedCards() {
    * @param cardNumber - номер карты для добавления
    */
   const addCard = useCallback((cardNumber: string) => {
-    if (!cardNumber || cardNumber.length !== 5) {
-      console.warn('Attempt to add invalid card:', cardNumber);
+    if (!cardNumber || cardNumber.length < 16) {
+      console.error('Attempt to add invalid card:', cardNumber);
       return;
     }
-
-    console.log('Adding card:', cardNumber);
 
     setSavedCards(prevCards => {
       // Проверяем, есть ли уже такая карта
@@ -84,17 +80,14 @@ export default function useSavedCards() {
       
       if (existingIndex !== -1) {
         // Карта уже есть - перемещаем её в начало
-        console.log('Card already exists, moving to top');
         newCards = [cardNumber, ...prevCards.filter(card => card !== cardNumber)];
       } else {
         // Новая карта - добавляем в начало
-        console.log('Adding new card');
         newCards = [cardNumber, ...prevCards];
         
         // Ограничиваем количество сохраненных карт
         if (newCards.length > MAX_SAVED_CARDS) {
-          newCards = newCards.slice(0, MAX_SAVED_CARDS);
-          console.log('Trimming list to maximum card count');
+          newCards.splice(MAX_SAVED_CARDS);
         }
       }
       

@@ -131,7 +131,7 @@ export default function useCasesAPI() {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Неизвестная ошибка';
       setError(errorMessage);
-      console.error('Ошибка при загрузке кейсов:', errorMessage);
+      console.error('Error loading cases:', errorMessage);
       
       // При ошибке показываем пустой список
       if (!append) {

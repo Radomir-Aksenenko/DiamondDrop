@@ -33,7 +33,7 @@ export default function useBannersAPI() {
 
       // В dev режиме используем мок данные
       if (isDevelopment && DEV_CONFIG.skipAuth) {
-        console.log('🔧 Dev режим: используем мок баннеры');
+        // Информационное логирование удалено
         setBanners([...DEV_CONFIG.mockBanners]);
         setLoading(false);
         return;
@@ -68,7 +68,7 @@ export default function useBannersAPI() {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Неизвестная ошибка';
       setError(errorMessage);
-      console.error('Ошибка при загрузке баннеров:', errorMessage);
+      console.error('Error loading banners:', errorMessage);
       
       // Устанавливаем дефолтный баннер при ошибке
       setBanners([{

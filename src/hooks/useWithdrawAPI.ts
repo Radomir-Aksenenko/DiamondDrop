@@ -42,7 +42,7 @@ export default function useWithdrawAPI() {
         cardId
       };
 
-      console.log('Отправляем запрос на вывод:', requestBody);
+      // Информационное логирование удалено
 
       // Создаем запрос на вывод средств
       const response = await makeAuthenticatedRequest(
@@ -57,23 +57,20 @@ export default function useWithdrawAPI() {
         // Обрабатываем ошибки
         try {
           const errorData: WithdrawErrorResponse = await response.json();
-          console.error('Ошибка вывода средств:', errorData);
+          console.error('Withdrawal error:', errorData);
           
           // Специальная обработка ошибки превышения лимита (429)
           if (response.status === 429) {
-            console.log('Rate limit error detected during withdrawal:', errorData);
             throw new Error("Вы превысили лимит, попробуйте позже");
           }
           
           // Специальная обработка ошибки несуществующей карты
           if (errorData.message === "Receiver card not found.") {
-            console.log('Card not found error detected:', errorData);
             throw new Error("Данная карта не существует");
           }
           
           // Специальная обработка bad request при выводе
           if (response.status === 400) {
-            console.log('Bad request error detected during withdrawal:', errorData);
             throw new Error("Ошибка оплаты, обратитесь к тех поддержке");
           }
           
@@ -97,12 +94,11 @@ export default function useWithdrawAPI() {
       }
 
       // Успешный вывод (код 200)
-      console.log('Вывод средств успешно выполнен');
       return true;
 
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Неизвестная ошибка при выводе средств';
-      console.error('Ошибка создания запроса на вывод:', errorMessage);
+      const errorMessage = err instanceof Error ? err.message : 'Неизвестная ошибка';
+      console.error('Error creating withdrawal request:', errorMessage);
       setError(errorMessage);
       return false;
     } finally {

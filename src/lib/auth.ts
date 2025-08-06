@@ -67,7 +67,7 @@ export async function validateUserAndSetToken(userData: ValidationData): Promise
   try {
     // В dev режиме пропускаем авторизацию и возвращаем мок токен
     if (isDevelopment && DEV_CONFIG.skipAuth) {
-      console.log('🔧 Dev режим: пропускаем авторизацию, используем мок токен');
+      // Информационное логирование удалено
       setAuthToken(DEV_CONFIG.mockToken);
       return DEV_CONFIG.mockToken;
     }
@@ -91,7 +91,7 @@ export async function validateUserAndSetToken(userData: ValidationData): Promise
     
     return data.authToken;
   } catch (error) {
-    console.error('Ошибка при валидации пользователя:', error);
+    console.error('Error validating user:', error);
     throw error;
   }
 }

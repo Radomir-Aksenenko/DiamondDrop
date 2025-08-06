@@ -150,8 +150,6 @@ export default function useLiveWins(options: UseLiveWinsOptions = {}) {
     const newWins = [...processingQueueRef.current];
     processingQueueRef.current = [];
 
-    console.log(`Processing batch of ${newWins.length} wins`);
-
     setWins(prevWins => {
       // Создаем Set существующих ID для быстрой проверки
       const existingIds = new Set(prevWins.map(win => win.id));
@@ -160,13 +158,11 @@ export default function useLiveWins(options: UseLiveWinsOptions = {}) {
       const uniqueNewWins = newWins.filter(newWin => !existingIds.has(newWin.id));
       
       if (uniqueNewWins.length === 0) {
-        console.log('All wins in batch already exist, skipping');
         return prevWins;
       }
 
       // Добавляем новые выигрыши в начало списка и ограничиваем до 10 элементов
       const updatedWins = [...uniqueNewWins, ...prevWins].slice(0, 10);
-      console.log(`Added ${uniqueNewWins.length} new wins, total: ${updatedWins.length}`);
       
       return updatedWins;
     });
@@ -188,30 +184,26 @@ export default function useLiveWins(options: UseLiveWinsOptions = {}) {
     try {
       // Проверяем, что компонент еще смонтирован
       if (!isMountedRef.current) {
-        console.log('Компонент размонтирован, отменяем подключение WebSocket');
         return;
       }
 
       // Проверяем, что пользователь авторизован
       if (!hasAuthToken()) {
-        console.log('Пользователь не авторизован, отменяем подключение WebSocket');
         return;
       }
 
       // Предотвращаем множественные соединения
       if (isConnectingRef.current) {
-        console.log('WebSocket уже подключается, пропускаем новое подключение');
         return;
       }
 
       if (wsRef.current?.readyState === WebSocket.CONNECTING || wsRef.current?.readyState === WebSocket.OPEN) {
-        console.log('WebSocket уже подключен или подключается, пропускаем создание нового соединения');
         return;
       }
 
       // Проверяем поддержку WebSocket в браузере
       if (typeof WebSocket === 'undefined') {
-        console.error('WebSocket не поддерживается в этом браузере');
+        console.error('WebSocket not supported in this browser');
         setError('WebSocket не поддерживается в этом браузере');
         return;
       }
@@ -221,11 +213,10 @@ export default function useLiveWins(options: UseLiveWinsOptions = {}) {
 
       // URL WebSocket из примера
       const wsUrl = 'wss://battle-api.chasman.engineer/ws';
-      console.log('Попытка подключения к WebSocket:', wsUrl);
       wsRef.current = new WebSocket(wsUrl);
 
       wsRef.current.onopen = () => {
-        console.log('WebSocket подключен');
+        // Информационное логирование удалено
         isConnectingRef.current = false;
         setIsConnected(true);
         setError(null);
@@ -245,19 +236,16 @@ export default function useLiveWins(options: UseLiveWinsOptions = {}) {
           
           // Обрабатываем сообщения KeepAlive для поддержания соединения
           if (message.type === 'KeepAlive') {
-            // console.log('Получен KeepAlive:', new Date(message.timestamp * 1000)); // Убрано для предотвращения спама в консоли
+            // Логирование удалено для предотвращения спама в консоли
             return;
           }
           
           // Обрабатываем только сообщения канала LiveWins с данными выигрышей
           if (message.type === 'message' && message.channel === 'LiveWins' && message.data) {
-            console.log('Получен новый выигрыш:', message.data);
-            
             // Увеличиваем счетчик сообщений
             messageCounterRef.current += 1;
             
             const newWin = transformWSData(message.data, messageCounterRef.current);
-            console.log('Transformed win:', newWin);
             
             // Добавляем выигрыш в очередь для обработки
             processingQueueRef.current.push(newWin);
@@ -268,23 +256,16 @@ export default function useLiveWins(options: UseLiveWinsOptions = {}) {
             }, 10);
           }
         } catch (err) {
-          console.error('Ошибка при обработке сообщения WebSocket:', err);
+          console.error('Error processing WebSocket message:', err);
         }
       };
 
       wsRef.current.onclose = (event) => {
-        console.log('WebSocket отключен:', {
-          code: event.code,
-          reason: event.reason || 'Причина не указана',
-          wasClean: event.wasClean,
-          timestamp: new Date().toISOString()
-        });
         isConnectingRef.current = false;
         setIsConnected(false);
         
         // Проверяем, что компонент еще смонтирован
         if (!isMountedRef.current) {
-          console.log('Компонент размонтирован, отменяем переподключение');
           return;
         }
         
@@ -303,7 +284,7 @@ export default function useLiveWins(options: UseLiveWinsOptions = {}) {
           reconnectAttempts.current++;
           const delay = Math.min(1000 * Math.pow(2, reconnectAttempts.current), 30000);
           
-          console.log(`Попытка переподключения ${reconnectAttempts.current}/${maxReconnectAttempts} через ${delay}ms`);
+          // Информационное логирование удалено
           
           // Очищаем предыдущий таймаут переподключения
           if (reconnectTimeoutRef.current) {
@@ -331,7 +312,7 @@ export default function useLiveWins(options: UseLiveWinsOptions = {}) {
           3: 'CLOSED'
         };
         
-        console.error('Ошибка WebSocket:', {
+        console.error('WebSocket error:', {
           type: event.type,
           readyState: ws?.readyState,
           readyStateName: readyStateNames[ws?.readyState as keyof typeof readyStateNames] || 'UNKNOWN',
@@ -344,7 +325,7 @@ export default function useLiveWins(options: UseLiveWinsOptions = {}) {
       };
 
     } catch (err) {
-      console.error('Ошибка при создании WebSocket соединения:', {
+      console.error('Error creating WebSocket connection:', {
         message: err instanceof Error ? err.message : 'Неизвестная ошибка',
         name: err instanceof Error ? err.name : 'Unknown',
         stack: err instanceof Error ? err.stack : undefined,
@@ -355,7 +336,7 @@ export default function useLiveWins(options: UseLiveWinsOptions = {}) {
   }, []);
 
   const disconnect = useCallback(() => {
-    console.log('Отключение WebSocket соединения');
+    // Информационное логирование удалено
     
     // Очищаем все таймауты и интервалы
     if (reconnectTimeoutRef.current) {
@@ -399,23 +380,23 @@ export default function useLiveWins(options: UseLiveWinsOptions = {}) {
     // Функция для проверки авторизации и инициализации подключения
     const initializeConnection = () => {
       if (!isMountedRef.current) {
-        console.log('Компонент размонтирован, отменяем инициализацию');
+        // Логирование удалено
         return;
       }
 
       // Проверяем, авторизован ли пользователь
       if (!hasAuthToken()) {
-        console.log('Пользователь не авторизован, WebSocket подключение отложено');
+        // Логирование удалено
         return;
       }
 
       // Предотвращаем создание множественных соединений
       if (wsRef.current?.readyState === WebSocket.CONNECTING || wsRef.current?.readyState === WebSocket.OPEN) {
-        console.log('WebSocket уже подключен или подключается, пропускаем создание нового соединения');
+        // Логирование удалено
         return;
       }
 
-      console.log('Пользователь авторизован, инициализируем WebSocket подключение через 1 секунду');
+      // Логирование удалено
       
       // Очищаем предыдущий таймаут инициализации
       if (initTimeoutRef.current) {
@@ -451,7 +432,7 @@ export default function useLiveWins(options: UseLiveWinsOptions = {}) {
         clearInterval(authCheckIntervalRef.current);
         authCheckIntervalRef.current = null;
       }
-      console.log('Таймаут ожидания авторизации, WebSocket подключение не будет установлено');
+      // Логирование удалено
     }, 10000);
 
     return () => {
@@ -497,7 +478,7 @@ export default function useLiveWins(options: UseLiveWinsOptions = {}) {
   // Функция для принудительного обновления соединения
   const forceRefresh = useCallback(() => {
     if (!isMountedRef.current) {
-      console.log('Компонент размонтирован, отменяем принудительное обновление');
+      // Логирование удалено
       return;
     }
     
@@ -529,3 +510,5 @@ export default function useLiveWins(options: UseLiveWinsOptions = {}) {
     forceRefresh
   };
 }
+
+// ...existing code...

@@ -25,7 +25,7 @@ export default function useUserAPI() {
 
       // В dev режиме используем мок данные
       if (isDevelopment && DEV_CONFIG.skipAuth) {
-        console.log('🔧 Dev режим: используем мок пользователя');
+        // Информационное логирование удалено
         setUser(DEV_CONFIG.mockUser);
         setLoading(false);
         return;
@@ -55,7 +55,7 @@ export default function useUserAPI() {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Неизвестная ошибка';
       setError(errorMessage);
-      console.error('Ошибка при загрузке данных пользователя:', errorMessage);
+      console.error('Error loading user data:', errorMessage);
       setUser(null);
     } finally {
       setLoading(false);

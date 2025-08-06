@@ -24,8 +24,7 @@ function SPWContent({ children }: { children: React.ReactNode }) {
    * Уведомляет о получении токена (данные загрузятся автоматически через DataPreloadProvider)
    */
   const notifyTokenReceived = async (token: string) => {
-    console.log('✅ Токен авторизации получен, данные будут загружены автоматически');
-    console.log('🔗 Токен:', token.substring(0, 20) + '...');
+    // Информационное логирование удалено
   };
 
   useEffect(() => {
@@ -59,12 +58,8 @@ function SPWContent({ children }: { children: React.ReactNode }) {
           timestamp: user.timestamp || Date.now()
         };
 
-        console.log('Отправляем данные для валидации:', validationData);
-
         // Валидируем пользователя и получаем токен
         const token = await validateUserAndSetToken(validationData);
-        
-        console.log('Токен авторизации получен и сохранен');
         
         // Уведомляем о получении токена
         await notifyTokenReceived(token);
@@ -75,7 +70,7 @@ function SPWContent({ children }: { children: React.ReactNode }) {
         setSPWLoading(false);
         setSPWError(null);
       } catch (error) {
-        console.error('Ошибка валидации пользователя:', error);
+        console.error('User validation error:', error);
         setSPWError('Ошибка валидации пользователя. Попробуйте перезагрузить страницу.');
         setSPWLoading(false);
       }
@@ -83,7 +78,6 @@ function SPWContent({ children }: { children: React.ReactNode }) {
 
     // В dev режиме пропускаем инициализацию SPW и сразу переходим к валидации
     if (isDevelopment && DEV_CONFIG.skipAuth) {
-      console.log('🔧 Dev режим: пропускаем инициализацию SPW');
       
       // Создаем мок пользователя для валидации
       const mockSPWUser: SPWUser = {
@@ -108,9 +102,6 @@ function SPWContent({ children }: { children: React.ReactNode }) {
     const handleReady = () => {
       if (!mounted) return;
       
-      console.log('SPW готов к работе!');
-      console.log('Текущий пользователь:', spw.user);
-      
       // Не вызываем валидацию здесь, так как она будет вызвана в handleInitResponse
       // if (spw.user) {
       //   await handleUserValidation(spw.user);
@@ -120,14 +111,13 @@ function SPWContent({ children }: { children: React.ReactNode }) {
     const handleInitResponse = async (user: SPWUser) => {
       if (!mounted) return;
       
-      console.log(`Вошел как ${user.username} / ${user.minecraftUUID}`);
       await handleUserValidation(user);
     };
 
     const handleInitError = (message: string) => {
       if (!mounted) return;
       
-      console.error(`Ошибка входа: ${message}`);
+      console.error(`Login error: ${message}`);
       setSPWError(`Ошибка инициализации SPWorlds: ${message}`);
       setSPWLoading(false);
     };

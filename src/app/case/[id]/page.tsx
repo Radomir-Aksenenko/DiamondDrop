@@ -160,12 +160,12 @@ export default function CasePage() {
   const openCase = async (isDemo: boolean = false) => {
     // Дополнительная защита от повторного вызова
     if (isSpinning || !caseData) {
-      console.log('Открытие заблокировано: isSpinning =', isSpinning, 'caseData =', !!caseData);
+      // Логирование удалено
       return;
     }
     
     try {
-      console.log('Начинаем открытие кейса...');
+      // Логирование удалено
       setIsSpinning(true);
       
       // Сбрасываем предыдущие анимации
@@ -201,12 +201,12 @@ export default function CasePage() {
       }
       
       const results: CaseOpenResult[] = await response.json();
-      console.log('Получены результаты:', results);
+      // Логирование удалено
       
       // Локально уменьшаем баланс сразу после получения результатов (только для не демо режима)
       if (!isDemo && caseData) {
         const totalCost = caseData.price * selectedNumber;
-        console.log(`🔄 Локально уменьшаем баланс на ${totalCost} (${caseData.price} × ${selectedNumber})`);
+        // Логирование удалено
         decreaseBalance(totalCost);
       }
       
@@ -214,14 +214,14 @@ export default function CasePage() {
       startSpinAnimation(results);
       
     } catch (error) {
-      console.error('Ошибка при открытии кейса:', error);
+      console.error('Error opening case:', error);
       setIsSpinning(false);
     }
   };
 
   // Функция для запуска анимации рулетки (адаптированная из оригинальной рулетки)
   const startSpinAnimation = async (results: CaseOpenResult[]) => {
-    console.log('Запуск анимации для результатов:', results);
+    // Логирование удалено
     // Разные duration для горизонтальной и вертикальной прокрутки
     const baseDuration = isFastMode ? 1.5 : 6; // Ускоренный быстрый режим
     const horizontalDuration = baseDuration; // Одинаковая продолжительность
@@ -330,7 +330,7 @@ export default function CasePage() {
           // Финальная позиция - центрируем выигрышный предмет + случайное смещение
           const finalOffset = -(targetIndex * itemWidth) + (containerWidth / 2) - (cardWidth / 2) + randomOffset;
           
-          console.log(`🎯 Горизонтальная анимация: случайное смещение ${randomOffset.toFixed(1)}px`);
+          // Логирование удалено
           
           // Устанавливаем начальную позицию
           fieldControl.set({ x: initialOffset });
@@ -358,7 +358,7 @@ export default function CasePage() {
           // Финальная позиция - центрируем выигрышный предмет + случайное смещение
           const finalOffset = -(targetIndex * itemHeight) + (containerHeight / 2) - (cardHeight / 2) + randomOffset;
           
-          console.log(`🎯 Вертикальная анимация поля ${i + 1}: случайное смещение ${randomOffset.toFixed(1)}px`);
+          // Логирование удалено
           
           // Устанавливаем начальную позицию
           fieldControl.set({ y: initialOffset });
@@ -380,10 +380,10 @@ export default function CasePage() {
     // Ждем завершения всех анимаций
     try {
       await Promise.all(animationPromises);
-      console.log('Анимация завершена');
+      // Логирование удалено
       setIsSpinning(false);
     } catch (error) {
-      console.error('Ошибка анимации:', error);
+      console.error('Animation error:', error);
       setIsSpinning(false);
     }
   };
@@ -423,36 +423,40 @@ export default function CasePage() {
   // Обработка состояний загрузки и ошибки
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center">
-        <div className="text-[#F9F8FC] font-unbounded text-lg">Загрузка кейса...</div>
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+        <div className="text-white text-xl">Loading case...</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-        <div className="text-red-400 font-unbounded text-lg">Ошибка: {error}</div>
-        <button 
-          onClick={() => router.back()}
-          className="px-4 py-2 bg-[#5C5ADC] text-[#F9F8FC] rounded-lg font-unbounded"
-        >
-          Вернуться назад
-        </button>
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+        <div className="text-center text-white">
+          <div className="text-xl mb-4">Error: {error}</div>
+          <button 
+            onClick={() => router.back()}
+            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+          >
+            Go Back
+          </button>
+        </div>
       </div>
     );
   }
 
   if (!caseData) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-        <div className="text-[#F9F8FC] font-unbounded text-lg">Кейс не найден</div>
-        <button 
-          onClick={() => router.back()}
-          className="px-4 py-2 bg-[#5C5ADC] text-[#F9F8FC] rounded-lg font-unbounded"
-        >
-          Вернуться назад
-        </button>
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+        <div className="text-center text-white">
+          <div className="text-xl mb-4">Case not found</div>
+          <button 
+            onClick={() => router.back()}
+            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+          >
+            Go Back
+          </button>
+        </div>
       </div>
     );
   }
@@ -503,7 +507,7 @@ export default function CasePage() {
                 <div className='flex flex-col items-start gap-2 self-stretch'>
                   <h1 className='text-[#F9F8FC] font-unbounded text-xl font-medium'>{caseData.name}</h1>
                   <p className="text-[#F9F8FC] font-['Actay_Wide'] text-sm font-bold opacity-30 leading-relaxed">
-                    {caseData.description || 'Описание кейса отсутствует'}
+                    {caseData.description || 'Case description not available'}
                   </p>
                 </div>
                 
@@ -525,7 +529,7 @@ export default function CasePage() {
                       className="flex-shrink-0"
                       priority
                     />
-                    <p className="text-[#F9F8FC] font-['Actay_Wide'] text-base font-bold">Быстрый режим</p>
+                    <p className="text-[#F9F8FC] font-['Actay_Wide'] text-base font-bold">Fast Mode</p>
                     <motion.button 
                       onClick={() => {
                         // Блокируем переключение быстрого режима во время прокрутки

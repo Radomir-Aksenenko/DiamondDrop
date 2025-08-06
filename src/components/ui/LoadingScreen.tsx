@@ -9,9 +9,7 @@ export default function LoadingScreen() {
   const [dots, setDots] = useState('');
   const [showTimeoutMessage, setShowTimeoutMessage] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [currentMessageIndex, setCurrentMessageIndex] = useState(() => 
-    Math.floor(Math.random() * 50) // Случайное начальное сообщение
-  );
+  const [currentMessageIndex, setCurrentMessageIndex] = useState(0); // Начинаем с первого сообщения
 
   // 50 креативных подписей для загрузки
   const loadingMessages = [
@@ -68,6 +66,9 @@ export default function LoadingScreen() {
   ];
 
   useEffect(() => {
+    // Устанавливаем случайное начальное сообщение только на клиенте
+    setCurrentMessageIndex(Math.floor(Math.random() * loadingMessages.length));
+    
     // Анимация точек
     const dotsInterval = setInterval(() => {
       setDots(prev => {

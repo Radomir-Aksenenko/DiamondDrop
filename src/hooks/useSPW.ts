@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import spw from '@/lib/spw';
 import { SPWUser, ValidateOptions } from '@/types/spw';
 import { getAuthToken, hasAuthToken } from '@/lib/auth';
@@ -26,12 +26,12 @@ export default function useSPW() {
 
     // Обработчик успешного открытия URL
     const handleOpenURLResponse = () => {
-      console.log('Окно открытия URL успешно открыто');
+      // Логирование удалено
     };
 
     // Обработчик ошибки открытия URL
     const handleOpenURLError = (err: string) => {
-      console.error(`Ошибка запроса окна открытия URL: ${err}`);
+      console.error(`Error opening URL window: ${err}`);
     };
 
     // Добавляем обработчики событий
@@ -64,7 +64,16 @@ export default function useSPW() {
   }, [authToken]);
 
   // Методы для работы с SPWMini
-  const openURL = (url: string) => spw.openURL(url);
+  const openURL = useCallback(async (url: string): Promise<boolean> => {
+    try {
+      await spw.openURL(url);
+      // Логирование удалено
+      return true;
+    } catch (err) {
+      console.error(`Error opening URL window: ${err}`);
+      return false;
+    }
+  }, [spw]);
   const openPayment = (code: string) => spw.openPayment(code);
   const validateUser = (url: string, options?: ValidateOptions) => spw.validateUser(url, options);
 

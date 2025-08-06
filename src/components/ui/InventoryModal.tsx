@@ -84,7 +84,7 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
   // Функция для обработки продажи
   const handleSell = async () => {
     if (!selectedItem) {
-      console.error('❌ [InventoryModal] Предмет не выбран для продажи');
+      console.error('[InventoryModal] No item selected for sale');
       return;
     }
 
@@ -92,8 +92,6 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
       const result = await sellItem(selectedItem.item.id, selectedQuantity, selectedItem.item.price);
       
       if (result.success && result.totalAmount) {
-        // Успешная продажа
-        console.log(`✅ [InventoryModal] Предмет ${selectedItem.item.name} успешно продан на сумму:`, result.totalAmount);
         
         // Локально обновляем баланс в хедере
         increaseBalance(result.totalAmount);
@@ -108,7 +106,7 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
       }
       // Ошибка обрабатывается в хуке useSellAPI
     } catch (error) {
-      console.error('❌ [InventoryModal] Неожиданная ошибка при продаже:', error);
+        console.error('[InventoryModal] Unexpected error during sale:', error);
     }
   };
 
