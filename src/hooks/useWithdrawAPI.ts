@@ -61,19 +61,19 @@ export default function useWithdrawAPI() {
           
           // Специальная обработка ошибки превышения лимита (429)
           if (response.status === 429) {
-            console.log('⏰ Обнаружена ошибка превышения лимита при выводе:', errorData);
+            console.log('Rate limit error detected during withdrawal:', errorData);
             throw new Error("Вы превысили лимит, попробуйте позже");
           }
           
           // Специальная обработка ошибки несуществующей карты
           if (errorData.message === "Receiver card not found.") {
-            console.log('💳 Обнаружена ошибка несуществующей карты:', errorData);
+            console.log('Card not found error detected:', errorData);
             throw new Error("Данная карта не существует");
           }
           
           // Специальная обработка bad request при выводе
           if (response.status === 400) {
-            console.log('❌ Обнаружена ошибка bad request при выводе:', errorData);
+            console.log('Bad request error detected during withdrawal:', errorData);
             throw new Error("Ошибка оплаты, обратитесь к тех поддержке");
           }
           

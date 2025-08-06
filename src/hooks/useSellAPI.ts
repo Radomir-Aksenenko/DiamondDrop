@@ -52,19 +52,19 @@ export const useSellAPI = () => {
       if (response.status === 200) {
         const rawAmount = itemPrice * quantity;
         const totalAmount = rawAmount % 1 === 0 ? rawAmount : parseFloat(rawAmount.toFixed(1));
-        console.log(`✅ [SellAPI] Предмет ${itemId} успешно продан (количество: ${quantity}) на сумму: ${totalAmount}`);
+        console.log(`[SellAPI] Item ${itemId} successfully sold (quantity: ${quantity}) for amount: ${totalAmount}`);
         return { success: true, totalAmount };
       } else {
         const errorMessage = `Ошибка продажи: HTTP ${response.status}`;
         setError(errorMessage);
-        console.error(`❌ [SellAPI] ${errorMessage}`);
+        console.error(`[SellAPI] ${errorMessage}`);
         return { success: false };
       }
       
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Неизвестная ошибка при продаже';
       setError(errorMessage);
-      console.error('❌ [SellAPI] Ошибка продажи предмета:', errorMessage);
+      console.error('[SellAPI] Error selling item:', errorMessage);
       return { success: false };
     } finally {
       setIsLoading(false);

@@ -150,7 +150,7 @@ export default function useLiveWins(options: UseLiveWinsOptions = {}) {
     const newWins = [...processingQueueRef.current];
     processingQueueRef.current = [];
 
-    console.log(`📦 Обрабатываем пакет из ${newWins.length} выигрышей`);
+    console.log(`Processing batch of ${newWins.length} wins`);
 
     setWins(prevWins => {
       // Создаем Set существующих ID для быстрой проверки
@@ -160,13 +160,13 @@ export default function useLiveWins(options: UseLiveWinsOptions = {}) {
       const uniqueNewWins = newWins.filter(newWin => !existingIds.has(newWin.id));
       
       if (uniqueNewWins.length === 0) {
-        console.log('🔄 Все выигрыши в пакете уже существуют, пропускаем');
+        console.log('All wins in batch already exist, skipping');
         return prevWins;
       }
 
       // Добавляем новые выигрыши в начало списка и ограничиваем до 10 элементов
       const updatedWins = [...uniqueNewWins, ...prevWins].slice(0, 10);
-      console.log(`✅ Добавлено ${uniqueNewWins.length} новых выигрышей, всего: ${updatedWins.length}`);
+      console.log(`Added ${uniqueNewWins.length} new wins, total: ${updatedWins.length}`);
       
       return updatedWins;
     });
@@ -257,7 +257,7 @@ export default function useLiveWins(options: UseLiveWinsOptions = {}) {
             messageCounterRef.current += 1;
             
             const newWin = transformWSData(message.data, messageCounterRef.current);
-            console.log('🔄 Преобразованный выигрыш:', newWin);
+            console.log('Transformed win:', newWin);
             
             // Добавляем выигрыш в очередь для обработки
             processingQueueRef.current.push(newWin);
@@ -470,7 +470,7 @@ export default function useLiveWins(options: UseLiveWinsOptions = {}) {
         
         // Если прошло более 30 секунд с последнего посещения и соединение не активно, пытаемся переподключиться
         if (timeSinceLastVisit > 30000 && !isConnected && hasAuthToken()) {
-          console.log('🔄 Страница стала видимой после длительного отсутствия, проверяем WebSocket соединение');
+          console.log('Page became visible after long absence, checking WebSocket connection');
           
           // Пытаемся переподключиться только если соединение не активно
           if (!wsRef.current || wsRef.current.readyState === WebSocket.CLOSED) {
@@ -501,7 +501,7 @@ export default function useLiveWins(options: UseLiveWinsOptions = {}) {
       return;
     }
     
-    console.log('🔄 Принудительное обновление WebSocket соединения');
+    console.log('Force refreshing WebSocket connection');
     
     // Сбрасываем счетчик попыток переподключения
     reconnectAttempts.current = 0;

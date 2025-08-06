@@ -122,13 +122,13 @@ export default function useGameResultsAPI() {
         transformAPIGameResult(result, index)
       );
 
-      console.log('✅ Загружены результаты игр:', transformedResults.length, 'элементов');
+      console.log('Game results loaded:', transformedResults.length, 'items');
       return transformedResults;
 
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Неизвестная ошибка при загрузке результатов игр';
       setError(errorMessage);
-      console.error('❌ Ошибка при загрузке результатов игр:', errorMessage);
+      console.error('Error loading game results:', errorMessage);
       throw err;
     } finally {
       setLoading(false);

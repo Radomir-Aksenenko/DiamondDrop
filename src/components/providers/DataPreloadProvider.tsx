@@ -122,7 +122,7 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
     try {
       // В dev режиме используем мок данные
       if (isDevelopment && DEV_CONFIG.skipAuth) {
-        console.log(`🔧 [${providerId}] Dev режим: используем мок баннеры`);
+        console.log(`[${providerId}] Development mode: using mock banners`);
         return [...mockBanners];
       }
 
@@ -168,7 +168,7 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
     try {
       // В dev режиме используем кешированные мок данные
       if (isDevelopment && DEV_CONFIG.skipAuth) {
-        console.log(`🔧 [${providerId}] Dev режим: используем кешированного мок пользователя`);
+        console.log(`[${providerId}] Development mode: using cached mock user`);
         return cachedMockUser;
       }
 
@@ -201,7 +201,7 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
     try {
       // В dev режиме используем мок данные
       if (isDevelopment && DEV_CONFIG.skipAuth) {
-        console.log(`🔧 [${providerId}] Dev режим: используем мок кейсы`);
+        console.log(`[${providerId}] Development mode: using mock cases`);
         return DEV_CONFIG.mockCases.map(caseData => ({
           ...caseData,
           description: caseData.description || null,
@@ -239,27 +239,27 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
     try {
       // В dev режиме используем мок данные
       if (isDevelopment && DEV_CONFIG.skipAuth) {
-        console.log(`🔧 [${providerId}] Dev режим: используем мок выигрыши`);
+        console.log(`[${providerId}] Dev mode: using mock wins`);
         return [...mockLiveWins];
       }
 
       // Проверяем наличие токена авторизации
       const token = getAuthToken();
       if (!token) {
-        console.log(`⚠️ [${providerId}] Токен не найден, используем мок данные для live wins`);
+        console.log(`[${providerId}] Token not found, using mock data for live wins`);
         return [...mockLiveWins];
       }
 
       // Загружаем начальные данные через API
-      console.log(`🚀 [${providerId}] Загружаем начальные live wins через API...`);
+      console.log(`[${providerId}] Loading initial live wins via API...`);
       const apiResults = await fetchGameResults();
-      console.log(`✅ [${providerId}] Загружено ${apiResults.length} начальных live wins из API`);
+      console.log(`[${providerId}] Loaded ${apiResults.length} initial live wins from API`);
       
       return apiResults;
     } catch (err) {
-      console.error(`❌ [${providerId}] Ошибка при загрузке начальных выигрышей:`, err);
+      console.error(`[${providerId}] Error loading initial wins:`, err);
       // В случае ошибки возвращаем мок данные как fallback
-      console.log(`🔄 [${providerId}] Используем мок данные как fallback`);
+      console.log(`[${providerId}] Using mock data as fallback`);
       return [...mockLiveWins];
     }
   }, [providerId, fetchGameResults]);
@@ -273,8 +273,8 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
         setError(null);
       }
 
-      console.log(`🚀 [${providerId}] Начинаем предзагрузку всех данных...`);
-      console.log(`📊 [${providerId}] Параметры загрузки:`, {
+      console.log(`[${providerId}] Starting preload of all data...`);
+      console.log(`[${providerId}] Loading parameters:`, {
         isInitialLoad,
         hasInitialLoad,
         currentToken: !!currentToken,
@@ -282,7 +282,7 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
       });
       
       // Добавляем stack trace чтобы понять откуда вызывается
-      console.trace(`🔍 [${providerId}] Stack trace для preloadAllData`);
+      console.trace(`[${providerId}] Stack trace for preloadAllData`);
 
       // Проверяем аутентификацию
       const authenticated = hasAuthToken();
@@ -301,7 +301,7 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
       setCases(casesData);
       setLiveWins(liveWinsData);
 
-      console.log(`✅ [${providerId}] Предзагрузка завершена`);
+      console.log(`[${providerId}] Data preload completed successfully`);
 
       // Небольшая задержка для плавности только при первоначальной загрузке
       if (isInitialLoad || !hasInitialLoad) {
@@ -312,7 +312,7 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Неизвестная ошибка';
       setError(errorMessage);
-      console.error(`❌ [${providerId}] Ошибка предзагрузки:`, errorMessage);
+      console.error(`[${providerId}] Preload error:`, errorMessage);
     } finally {
       // Убираем состояние загрузки только после первоначальной загрузки
       if (isInitialLoad || !hasInitialLoad) {
@@ -333,24 +333,23 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
 
   const refreshUser = async () => {
     try {
-      console.log('🔄 refreshUser: Начинаем обновление данных пользователя...');
-      console.trace('🔍 refreshUser: Stack trace для понимания откуда вызывается');
+      console.log('refreshUser: Starting user data update...');
       const oldBalance = user?.balance;
-      console.log('💰 refreshUser: Текущий баланс:', oldBalance);
+      console.log('refreshUser: Current balance:', oldBalance);
       
       const userData = await loadUser();
-      console.log('📊 refreshUser: Получены новые данные пользователя:', userData);
-      console.log('💰 refreshUser: Новый баланс:', userData?.balance);
+      console.log('refreshUser: New user data received:', userData);
+      console.log('refreshUser: New balance:', userData?.balance);
       
       setUser(userData);
       setIsAuthenticated(hasAuthToken());
       
-      console.log('✅ refreshUser: Данные пользователя успешно обновлены');
+      console.log('refreshUser: User data updated successfully');
       if (oldBalance !== userData?.balance) {
-        console.log(`💸 refreshUser: Баланс изменился с ${oldBalance} на ${userData?.balance}`);
+        console.log(`refreshUser: Balance changed from ${oldBalance} to ${userData?.balance}`);
       }
     } catch (err) {
-      console.error('❌ refreshUser: Ошибка обновления пользователя:', err);
+      console.error('refreshUser: Error updating user data:', err);
     }
   };
 
@@ -369,18 +368,17 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
 
   // Функция для локального увеличения баланса (при депозите)
   const updateBalanceLocally = useCallback((amount: number) => {
-    console.log(`💰 updateBalanceLocally: Вызвана функция увеличения баланса на ${amount}`);
-    console.trace('🔍 updateBalanceLocally: Stack trace для понимания откуда вызывается');
+    console.log(`updateBalanceLocally: Balance increase function called with amount: ${amount}`);
     
     setUser(prevUser => {
       if (!prevUser) {
-        console.log('⚠️ updateBalanceLocally: Пользователь не найден, пропускаем обновление');
+        console.log('updateBalanceLocally: User not found, skipping update');
         return prevUser;
       }
       
       const oldBalance = prevUser.balance;
       const newBalance = oldBalance + amount;
-      console.log(`💰 updateBalanceLocally: Увеличиваем баланс с ${oldBalance} на ${amount}, новый баланс: ${newBalance}`);
+      console.log(`updateBalanceLocally: Increasing balance from ${oldBalance} by ${amount}, new balance: ${newBalance}`);
       
       return {
         ...prevUser,
@@ -391,18 +389,17 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
 
   // Функция для локального уменьшения баланса (при покупке кейса)
   const decreaseBalanceLocally = useCallback((amount: number) => {
-    console.log(`💰 decreaseBalanceLocally: Вызвана функция уменьшения баланса на ${amount}`);
-    console.trace('🔍 decreaseBalanceLocally: Stack trace для понимания откуда вызывается');
+    console.log(`decreaseBalanceLocally: Balance decrease function called with amount: ${amount}`);
     
     setUser(prevUser => {
       if (!prevUser) {
-        console.log('⚠️ decreaseBalanceLocally: Пользователь не найден, пропускаем обновление');
+        console.log('decreaseBalanceLocally: User not found, skipping update');
         return prevUser;
       }
       
       const oldBalance = prevUser.balance;
       const newBalance = Math.max(0, oldBalance - amount);
-      console.log(`💰 decreaseBalanceLocally: Уменьшаем баланс с ${oldBalance} на ${amount}, новый баланс: ${newBalance}`);
+      console.log(`decreaseBalanceLocally: Decreasing balance from ${oldBalance} by ${amount}, new balance: ${newBalance}`);
       
       return {
         ...prevUser,
@@ -416,42 +413,42 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
     const token = getAuthToken();
     const hasToken = token || (isDevelopment && DEV_CONFIG.skipAuth);
     
-    console.log(`🔧 [${providerId}] useEffect (единый): Инициализация, токен:`, !!token, 'dev режим:', isDevelopment && DEV_CONFIG.skipAuth);
-    console.log(`🔧 [${providerId}] useEffect: hasToken =`, hasToken, 'hasInitialLoad =', hasInitialLoad, 'currentToken =', !!currentToken);
+    console.log(`[${providerId}] useEffect (main): Initialization, token:`, !!token, 'dev mode:', isDevelopment && DEV_CONFIG.skipAuth);
+    console.log(`[${providerId}] useEffect: hasToken =`, hasToken, 'hasInitialLoad =', hasInitialLoad, 'currentToken =', !!currentToken);
     
     // Устанавливаем текущий токен если он изменился
     if (token !== currentToken) {
-      console.log(`🔄 [${providerId}] useEffect: Токен изменился:`, {
-        old: currentToken ? 'есть' : 'нет',
-        new: token ? 'есть' : 'нет'
+      console.log(`[${providerId}] useEffect: Token changed:`, {
+        old: currentToken ? 'exists' : 'none',
+        new: token ? 'exists' : 'none'
       });
       setCurrentToken(token);
     }
     
     // Загружаем данные только если есть токен и еще не было начальной загрузки
     if (hasToken && !hasInitialLoad) {
-      console.log(`🚀 [${providerId}] useEffect: Вызываем preloadAllData(true) - первая загрузка`);
+      console.log(`[${providerId}] useEffect: Calling preloadAllData(true) - initial load`);
       preloadAllData(true);
     } else if (!hasToken && hasInitialLoad) {
       // Токен исчез - сбрасываем состояние
-      console.log(`🚪 [${providerId}] useEffect: Токен исчез, сбрасываем данные пользователя`);
+      console.log(`[${providerId}] useEffect: Token disappeared, resetting user data`);
       setUser(null);
       setIsAuthenticated(false);
     } else if (hasToken && hasInitialLoad) {
       // Токен есть и данные уже загружены - просто обновляем статус аутентификации
-      console.log(`✅ [${providerId}] useEffect: Токен есть, данные загружены - обновляем только статус аутентификации`);
+      console.log(`[${providerId}] useEffect: Token exists, data loaded - updating authentication status only`);
       setIsAuthenticated(hasAuthToken());
       setIsLoading(false);
     } else {
       // Если токена нет, показываем состояние ожидания токена
-      console.log(`⏳ [${providerId}] useEffect: Ожидаем получение токена авторизации...`);
+      console.log(`[${providerId}] useEffect: Waiting for authorization token...`);
       setIsLoading(true);
     }
   }, [currentToken, hasInitialLoad, preloadAllData, providerId]);
 
   // Отдельный useEffect для периодической проверки токена (только для отслеживания изменений)
   useEffect(() => {
-    console.log(`🔧 [${providerId}] useEffect (интервал): Инициализация интервала проверки токена`);
+    console.log(`[${providerId}] useEffect (interval): Initializing token check interval`);
     let isActive = true;
     
     const checkTokenInterval = setInterval(() => {
@@ -461,14 +458,14 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
       
       // Проверяем, действительно ли токен изменился
       if (token !== currentToken) {
-        console.log(`🔄 [${providerId}] useEffect (интервал): Обнаружено изменение токена, обновляем состояние`);
+        console.log(`[${providerId}] useEffect (interval): Token change detected, updating state`);
         setCurrentToken(token);
         // Основная логика загрузки будет обработана в первом useEffect
       }
     }, 5000);
 
     return () => {
-      console.log(`🔧 [${providerId}] useEffect (интервал): Очистка интервала проверки токена`);
+      console.log(`[${providerId}] useEffect (interval): Cleaning up token check interval`);
       isActive = false;
       clearInterval(checkTokenInterval);
     };

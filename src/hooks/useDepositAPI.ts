@@ -52,7 +52,7 @@ export default function useDepositAPI() {
         
         // Специальная обработка ошибки недостатка средств
         if (response.status === 400 && errorData.error === "error._server.transactions.pay.senderNotEnoughBalance") {
-          console.log('💳 Обнаружена ошибка недостатка средств:', errorData);
+          console.log('Insufficient funds error detected:', errorData);
           throw new Error("Недостаточно средств");
         }
         
@@ -110,7 +110,7 @@ export default function useDepositAPI() {
       // Проверяем на ошибку недостатка средств
       let errorMessage = "Ошибка оплаты";
       if (err.includes("senderNotEnoughBalance")) {
-        console.log('💳 Обнаружена ошибка недостатка средств в handlePaymentError:', err);
+        console.log('Insufficient funds error detected in handlePaymentError:', err);
         errorMessage = "Недостаточно средств";
       }
       

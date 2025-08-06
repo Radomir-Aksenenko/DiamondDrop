@@ -34,7 +34,7 @@ export default function useSavedCards() {
           const cards = JSON.parse(saved);
           if (Array.isArray(cards)) {
             setSavedCards(cards);
-            console.log('✅ Загружены сохраненные карты из localStorage:', cards);
+            console.log('Saved cards loaded from localStorage:', cards);
           }
         } catch (error) {
           console.error('Ошибка при загрузке сохраненных карт:', error);
@@ -61,7 +61,7 @@ export default function useSavedCards() {
    */
   const saveCardsToStorage = useCallback((cards: string[]) => {
     setStorageValue(SAVED_CARDS_KEY, JSON.stringify(cards));
-    console.log('💾 Карты сохранены в localStorage:', cards);
+    console.log('Cards saved to localStorage:', cards);
   }, [setStorageValue]);
 
   /**
@@ -70,11 +70,11 @@ export default function useSavedCards() {
    */
   const addCard = useCallback((cardNumber: string) => {
     if (!cardNumber || cardNumber.length !== 5) {
-      console.warn('⚠️ Попытка добавить некорректную карту:', cardNumber);
+      console.warn('Attempt to add invalid card:', cardNumber);
       return;
     }
 
-    console.log('💳 Добавление карты:', cardNumber);
+    console.log('Adding card:', cardNumber);
 
     setSavedCards(prevCards => {
       // Проверяем, есть ли уже такая карта
@@ -84,17 +84,17 @@ export default function useSavedCards() {
       
       if (existingIndex !== -1) {
         // Карта уже есть - перемещаем её в начало
-        console.log('🔄 Карта уже существует, перемещаем в начало');
+        console.log('Card already exists, moving to top');
         newCards = [cardNumber, ...prevCards.filter(card => card !== cardNumber)];
       } else {
         // Новая карта - добавляем в начало
-        console.log('✨ Добавляем новую карту');
+        console.log('Adding new card');
         newCards = [cardNumber, ...prevCards];
         
         // Ограничиваем количество сохраненных карт
         if (newCards.length > MAX_SAVED_CARDS) {
           newCards = newCards.slice(0, MAX_SAVED_CARDS);
-          console.log('✂️ Обрезаем список до максимального количества карт');
+          console.log('Trimming list to maximum card count');
         }
       }
       

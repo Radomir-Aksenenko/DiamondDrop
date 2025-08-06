@@ -72,16 +72,16 @@ export const useInventoryAPI = () => {
       setTotalCount(prevCount => append ? prevCount + data.length : data.length);
       setCurrentPage(page);
 
-      console.log(`📦 [InventoryAPI] Загружена страница ${page}, предметов: ${data.length}`);
+      console.log(`[InventoryAPI] Page ${page} loaded, items: ${data.length}`);
       
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Неизвестная ошибка';
       setError(errorMessage);
-      console.error('❌ [InventoryAPI] Ошибка загрузки инвентаря:', errorMessage);
+      console.error('[InventoryAPI] Error loading inventory:', errorMessage);
       
       // В случае ошибки используем мок-данные в режиме разработки
       if (DEV_CONFIG.skipAuth && page === 1) {
-        console.log('🔄 [InventoryAPI] Используем мок-данные как fallback');
+        console.log('[InventoryAPI] Using mock data as fallback');
         const mockItems: InventoryItem[] = [
           {
             item: {
@@ -195,12 +195,12 @@ export const useInventoryAPI = () => {
       setItems(allItems);
       setTotalCount(totalItems);
       
-      console.log(`🔄 [InventoryAPI] Мягкое обновление завершено, предметов: ${allItems.length}`);
+      console.log(`[InventoryAPI] Soft refresh completed, items: ${allItems.length}`);
       
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Неизвестная ошибка';
       setError(errorMessage);
-      console.error('❌ [InventoryAPI] Ошибка мягкого обновления инвентаря:', errorMessage);
+      console.error('[InventoryAPI] Error during soft inventory refresh:', errorMessage);
     } finally {
       setLoading(false);
     }
