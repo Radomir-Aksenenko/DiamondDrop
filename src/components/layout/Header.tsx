@@ -81,29 +81,29 @@ export default function Header() {
           <NavButton icon="Update" onClick={openUpgradeModal} label="Апгрейд" />
           <NavButton icon="About" href="/about" label="О проекте" />
         </nav>
-        <div className='h-[44px] bg-[#19191D] flex items-center rounded-[12px]'>
-          <div className='flex items-center pt-1 pl-3 pr-1.5 min-w-0 flex-1'>
-            <span className='text-[#F9F8FC] font-unbounded text-20 font-bold whitespace-nowrap'>{Math.floor(userBalance).toLocaleString('ru-RU')}</span>
-            <span className='text-[#F9F8FC]/50 font-actay-wide text-16 font-bold ml-1 whitespace-nowrap'>АР</span>
+        <div className='flex items-center gap-2'>
+          <div className='h-[44px] bg-[#18181D] flex items-center rounded-[12px]'>
+            <div className='flex items-center pt-1 pl-3 pr-1.5 min-w-0 flex-1'>
+              <span className='text-[#F9F8FC] font-unbounded text-20 font-bold whitespace-nowrap'>{Math.floor(userBalance).toLocaleString('ru-RU')}</span>
+              <span className='text-[#F9F8FC]/50 font-actay-wide text-16 font-bold ml-1 whitespace-nowrap'>АР</span>
+            </div>
+            <button 
+              onClick={handleOpenWalletModal}
+              className='flex items-center justify-center gap-2.5 p-3 rounded-[12px] bg-[#5C5ADC] hover:bg-[#4A48B0] transition-colors cursor-pointer flex-shrink-0'
+            >
+              <Image
+                src="/Wallet.svg"
+                alt="WalletIcon"
+                width={22}
+                height={20}
+                className='aspect-[11/10]'
+              />
+            </button>
           </div>
           <button 
-            onClick={handleOpenWalletModal}
-            className='flex items-center justify-center gap-2.5 p-3 rounded-[12px] bg-[#5C5ADC] hover:bg-[#4A48B0] transition-colors cursor-pointer flex-shrink-0'
-          >
-            <Image
-              src="/Wallet.svg"
-              alt="WalletIcon"
-              width={22}
-              height={20}
-              className='aspect-[11/10]'
-            />
-          </button>
-        </div>
-      </div>
-          <div 
-            className='flex p-3 justify-center items-center gap-2.5 rounded-md bg-[#F9F8FC]/5 cursor-pointer hover:bg-[#F9F8FC]/10 transition-colors ml-2'
             onClick={handleOpenInventory}
-            title="Open Inventory"
+            className='flex items-center justify-center p-3 rounded-[12px] bg-[#F9F8FC]/5 hover:bg-[#F9F8FC]/10 transition-colors cursor-pointer'
+            title="Открыть инвентарь"
           >
             <Image
               src="/User.svg"
@@ -112,8 +112,10 @@ export default function Header() {
               height={24}
               className="aspect-square"
             />
-          </div>
-      <div className='h-[3px] bg-[#151519]'></div>
+          </button>
+        </div>
+      </div>
+      <div className='h-[3px] bg-[#18181D]'></div>
       {/* Модальное окно кошелька */}
       <WalletModal isOpen={isWalletModalOpen} onClose={handleCloseWalletModal} />
 
