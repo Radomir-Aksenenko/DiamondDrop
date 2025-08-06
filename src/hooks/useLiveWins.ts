@@ -245,7 +245,7 @@ export default function useLiveWins(options: UseLiveWinsOptions = {}) {
           
           // Обрабатываем сообщения KeepAlive для поддержания соединения
           if (message.type === 'KeepAlive') {
-            console.log('Получен KeepAlive:', new Date(message.timestamp * 1000));
+            // console.log('Получен KeepAlive:', new Date(message.timestamp * 1000)); // Убрано для предотвращения спама в консоли
             return;
           }
           
