@@ -7,6 +7,7 @@ import CaseItemCard from './CaseItemCard';
 import { CaseItem } from '@/hooks/useCasesAPI';
 import { useSellAPI } from '@/hooks/useSellAPI';
 import { useBalanceUpdater } from '@/hooks/useBalanceUpdater';
+import { useLinkHandler } from '@/lib/linkUtils';
 
 interface InventoryModalProps {
   isOpen: boolean;
@@ -31,6 +32,7 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
   // Хук для продажи предметов
   const { sellItem, isLoading: isSelling, error: sellError, clearError } = useSellAPI();
   const { increaseBalance } = useBalanceUpdater();
+  const { handleLinkClick } = useLinkHandler();
 
   // Максимальное количество доступных предметов
   const maxQuantity = selectedItem?.amount || 1;
@@ -76,7 +78,7 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
 
   // Функция для обработки кнопки вывода
   const handleWithdraw = () => {
-    window.open('https://discord.gg/6uSgHru2bv', '_blank');
+    handleLinkClick('https://discord.gg/6uSgHru2bv');
   };
 
   // Функция для обработки продажи
