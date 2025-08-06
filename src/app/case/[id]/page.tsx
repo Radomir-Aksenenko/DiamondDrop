@@ -423,15 +423,15 @@ export default function CasePage() {
   // Обработка состояний загрузки и ошибки
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
-        <div className="text-white text-xl">Loading case...</div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-white text-xl">Загрузка...</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center text-white">
           <div className="text-xl mb-4">Error: {error}</div>
           <button 
@@ -447,7 +447,7 @@ export default function CasePage() {
 
   if (!caseData) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center text-white">
           <div className="text-xl mb-4">Case not found</div>
           <button 
