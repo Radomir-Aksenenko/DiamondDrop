@@ -411,30 +411,48 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
     });
   }, []);
 
-  // Запускаем предзагрузку при монтировании только если есть токен или в dev режиме
+  // Единый useEffect для управления загрузкой данных
   useEffect(() => {
     const token = getAuthToken();
-    const shouldLoad = (token || (isDevelopment && DEV_CONFIG.skipAuth)) && !hasInitialLoad;
+    const hasToken = token || (isDevelopment && DEV_CONFIG.skipAuth);
     
-    console.log(`🔧 [${providerId}] useEffect #1 (монтирование): Инициализация, токен:`, !!token, 'dev режим:', isDevelopment && DEV_CONFIG.skipAuth);
-    console.log(`🔧 [${providerId}] useEffect #1: shouldLoad =`, shouldLoad, '(токен:', !!token, 'hasInitialLoad =', hasInitialLoad, ')');
+    console.log(`🔧 [${providerId}] useEffect (единый): Инициализация, токен:`, !!token, 'dev режим:', isDevelopment && DEV_CONFIG.skipAuth);
+    console.log(`🔧 [${providerId}] useEffect: hasToken =`, hasToken, 'hasInitialLoad =', hasInitialLoad, 'currentToken =', !!currentToken);
     
-    if (shouldLoad) {
-      console.log(`🚀 [${providerId}] useEffect #1: Вызываем preloadAllData(true) - первая загрузка`);
+    // Устанавливаем текущий токен если он изменился
+    if (token !== currentToken) {
+      console.log(`🔄 [${providerId}] useEffect: Токен изменился:`, {
+        old: currentToken ? 'есть' : 'нет',
+        new: token ? 'есть' : 'нет'
+      });
+      setCurrentToken(token);
+    }
+    
+    // Загружаем данные только если есть токен и еще не было начальной загрузки
+    if (hasToken && !hasInitialLoad) {
+      console.log(`🚀 [${providerId}] useEffect: Вызываем preloadAllData(true) - первая загрузка`);
       preloadAllData(true);
-    } else if ((token || (isDevelopment && DEV_CONFIG.skipAuth)) && hasInitialLoad) {
-      console.log(`⚠️ [${providerId}] useEffect #1: Токен есть, но данные уже загружены - пропускаем загрузку`);
+    } else if (!hasToken && hasInitialLoad) {
+      // Токен исчез - сбрасываем состояние
+      console.log(`🚪 [${providerId}] useEffect: Токен исчез, сбрасываем данные пользователя`);
+      setUser(null);
+      setIsAuthenticated(false);
+    } else if (hasToken && hasInitialLoad) {
+      // Токен есть и данные уже загружены - просто обновляем статус аутентификации
+      console.log(`✅ [${providerId}] useEffect: Токен есть, данные загружены - обновляем только статус аутентификации`);
+      setIsAuthenticated(hasAuthToken());
+      setIsLoading(false);
     } else {
       // Если токена нет, показываем состояние ожидания токена
-      console.log(`⏳ [${providerId}] useEffect #1: Ожидаем получение токена авторизации...`);
+      console.log(`⏳ [${providerId}] useEffect: Ожидаем получение токена авторизации...`);
       setIsLoading(true);
     }
-  }, [preloadAllData, hasInitialLoad, providerId]);
+  }, [currentToken, hasInitialLoad, preloadAllData, providerId]);
 
-  // Отслеживаем изменения токена и перезагружаем данные (оптимизированная версия)
+  // Отдельный useEffect для периодической проверки токена (только для отслеживания изменений)
   useEffect(() => {
-    console.log(`🔧 [${providerId}] useEffect #2 (токен): Инициализация интервала проверки токена`);
-    let isActive = true; // Флаг для предотвращения race conditions
+    console.log(`🔧 [${providerId}] useEffect (интервал): Инициализация интервала проверки токена`);
+    let isActive = true;
     
     const checkTokenInterval = setInterval(() => {
       if (!isActive) return;
@@ -443,37 +461,18 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
       
       // Проверяем, действительно ли токен изменился
       if (token !== currentToken) {
-        console.log(`🔄 [${providerId}] useEffect #2: Токен изменился:`, {
-          old: currentToken ? 'есть' : 'нет',
-          new: token ? 'есть' : 'нет',
-          hasInitialLoad
-        });
-        
+        console.log(`🔄 [${providerId}] useEffect (интервал): Обнаружено изменение токена, обновляем состояние`);
         setCurrentToken(token);
-        
-        // Загружаем данные только если токен появился и мы еще не делали начальную загрузку
-        if (token && !hasInitialLoad) {
-          console.log(`🚀 [${providerId}] useEffect #2: Первая загрузка после получения токена`);
-          preloadAllData(true);
-        } else if (!token && hasInitialLoad) {
-          // Токен исчез - сбрасываем состояние
-          console.log(`🚪 [${providerId}] useEffect #2: Токен исчез, сбрасываем данные пользователя`);
-          setUser(null);
-          setIsAuthenticated(false);
-        } else {
-          // Токен есть и данные уже загружены - просто обновляем статус аутентификации
-          console.log(`✅ [${providerId}] useEffect #2: Токен есть, данные загружены - обновляем только статус аутентификации`);
-          setIsAuthenticated(hasAuthToken());
-        }
+        // Основная логика загрузки будет обработана в первом useEffect
       }
-    }, 5000); // Увеличиваем интервал до 5 секунд для снижения нагрузки
+    }, 5000);
 
     return () => {
-      console.log(`🔧 [${providerId}] useEffect #2: Очистка интервала проверки токена`);
+      console.log(`🔧 [${providerId}] useEffect (интервал): Очистка интервала проверки токена`);
       isActive = false;
       clearInterval(checkTokenInterval);
     };
-  }, [currentToken, hasInitialLoad, preloadAllData, providerId]);
+  }, [currentToken, providerId]);
 
   // Значение контекста
   const contextValue: DataPreloadContextType = {
