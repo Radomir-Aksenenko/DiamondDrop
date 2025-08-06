@@ -75,6 +75,26 @@ export default function ProfilePage() {
     // Не сбрасываем selectedItem в null сразу, чтобы анимация закрытия работала корректно
   }, []);
 
+  // Функция для правильного склонения слова "предмет"
+  const getItemsCountText = useCallback((count: number) => {
+    const lastDigit = count % 10;
+    const lastTwoDigits = count % 100;
+    
+    if (lastTwoDigits >= 11 && lastTwoDigits <= 14) {
+      return `${count} предметов`;
+    }
+    
+    if (lastDigit === 1) {
+      return `${count} предмет`;
+    }
+    
+    if (lastDigit >= 2 && lastDigit <= 4) {
+      return `${count} предмета`;
+    }
+    
+    return `${count} предметов`;
+  }, []);
+
   // Сбрасываем selectedItem с задержкой после закрытия модального окна
   useEffect(() => {
     if (!isItemDescriptionModalOpen && selectedItem) {
@@ -185,7 +205,7 @@ export default function ProfilePage() {
         <h2 className='text-[#F9F8FC] font-unbounded text-2xl font-semibold'>Инвентарь</h2>
         <div className='flex items-center gap-2'>
           <span className='text-[#F9F8FC] font-actay-wide text-base font-bold opacity-50'>
-            {totalCount} предметов
+            {getItemsCountText(totalCount)}
           </span>
           {loading && (
             <div className="w-4 h-4 border-2 border-[#F9F8FC]/20 border-t-[#F9F8FC] rounded-full animate-spin"></div>
