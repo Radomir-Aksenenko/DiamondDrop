@@ -517,7 +517,7 @@ export default function CasePage() {
                       className="flex-shrink-0"
                       priority
                     />
-                    <p className="text-[#F9F8FC] font-['Actay_Wide'] text-base font-bold">Fast Mode</p>
+                    <p className="text-[#F9F8FC] font-['Actay_Wide'] text-base font-bold">Быстрый режим</p>
                     <motion.button 
                       onClick={() => {
                         // Блокируем переключение быстрого режима во время прокрутки
