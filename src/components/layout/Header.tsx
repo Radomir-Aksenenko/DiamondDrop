@@ -100,19 +100,19 @@ export default function Header() {
           </button>
         </div>
       </div>
-      <div 
-        className='flex p-3 justify-center items-center gap-2.5 rounded-md bg-[#F9F8FC]/5 cursor-pointer hover:bg-[#F9F8FC]/10 transition-colors'
-        onClick={handleOpenInventory}
-        title="Open Inventory"
-      >
-        <Image
-          src="/User.svg"
-          alt="UserIcon"
-          width={24}
-          height={24}
-          className="aspect-square"
-        />
-      </div>
+          <div 
+            className='flex p-3 justify-center items-center gap-2.5 rounded-md bg-[#F9F8FC]/5 cursor-pointer hover:bg-[#F9F8FC]/10 transition-colors ml-2'
+            onClick={handleOpenInventory}
+            title="Open Inventory"
+          >
+            <Image
+              src="/User.svg"
+              alt="UserIcon"
+              width={24}
+              height={24}
+              className="aspect-square"
+            />
+          </div>
       <div className='h-[3px] bg-[#151519]'></div>
       {/* Модальное окно кошелька */}
       <WalletModal isOpen={isWalletModalOpen} onClose={handleCloseWalletModal} />
