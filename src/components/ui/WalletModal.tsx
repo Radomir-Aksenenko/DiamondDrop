@@ -208,6 +208,9 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose, presetAmount }:
     } else if (parseInt(depositAmount) > 10000) {
       setDepositAmountError('Сумма превышает максимальную');
       isValid = false;
+    } else if (parseFloat(depositAmount) !== parseInt(depositAmount)) {
+      setDepositAmountError('Пополнение возможно только целыми значениями');
+      isValid = false;
     }
     
     return isValid;

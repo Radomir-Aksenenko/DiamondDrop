@@ -79,7 +79,12 @@ export default function Header() {
         <div className='flex items-center gap-2'>
           <div className='h-[44px] bg-[#18181D] flex items-center rounded-[12px]'>
             <div className='flex items-center pt-1 pl-3 pr-1.5 min-w-0 flex-1'>
-              <span className='text-[#F9F8FC] font-unbounded text-20 font-bold whitespace-nowrap'>{Math.floor(userBalance).toLocaleString('ru-RU')}</span>
+              <span className='text-[#F9F8FC] font-unbounded text-20 font-bold whitespace-nowrap'>
+                {userBalance % 1 === 0 
+                  ? Math.floor(userBalance).toLocaleString('ru-RU')
+                  : userBalance.toLocaleString('ru-RU', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+                }
+              </span>
               <span className='text-[#F9F8FC]/50 font-actay-wide text-16 font-bold ml-1 whitespace-nowrap'>АР</span>
             </div>
             <button 

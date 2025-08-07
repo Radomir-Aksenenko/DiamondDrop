@@ -179,7 +179,9 @@ export default function CasePage() {
     // Если баланса недостаточно, открываем модалку пополнения с предустановленной суммой
     if (user.balance < totalCost) {
       const neededAmount = totalCost - user.balance;
-      openWalletModal(neededAmount);
+      // Округляем недостающую сумму вверх до целого числа
+      const roundedNeededAmount = Math.ceil(neededAmount);
+      openWalletModal(roundedNeededAmount);
       return;
     }
 
