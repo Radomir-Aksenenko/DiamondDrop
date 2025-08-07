@@ -12,6 +12,8 @@ import { API_BASE_URL } from '@/lib/config';
 import { CaseItem } from '@/hooks/useCasesAPI';
 import { useBalanceUpdater } from '@/hooks/useBalanceUpdater';
 import { getAuthToken } from '@/lib/auth';
+import { useWalletModal } from '@/contexts/WalletModalContext';
+import { usePreloadedData } from '@/components/providers/DataPreloadProvider';
 
 // Интерфейс для результата открытия кейса
 interface CaseOpenResult {
@@ -35,6 +37,8 @@ export default function CasePage() {
   
   const { caseData, loading, error } = useCaseAPI(caseId);
   const { decreaseBalance } = useBalanceUpdater();
+  const { openWalletModal } = useWalletModal();
+  const { user } = usePreloadedData();
   
   const [isFastMode, setIsFastMode] = useState(false);
   const [selectedNumber, setSelectedNumber] = useState(1);
@@ -154,6 +158,33 @@ export default function CasePage() {
     }));
     
     return displayItems;
+  };
+
+  // Функция для проверки баланса и открытия кейса
+  const handleOpenCase = async (isDemo: boolean = false) => {
+    // Для демо режима не проверяем баланс
+    if (isDemo) {
+      await openCase(true);
+      return;
+    }
+
+    // Проверяем баланс пользователя
+    if (!user || !caseData) {
+      console.error('Данные пользователя или кейса не загружены');
+      return;
+    }
+
+    const totalCost = caseData.price * selectedNumber;
+    
+    // Если баланса недостаточно, открываем модалку пополнения с предустановленной суммой
+    if (user.balance < totalCost) {
+      const neededAmount = totalCost - user.balance;
+      openWalletModal(neededAmount);
+      return;
+    }
+
+    // Если баланса достаточно, открываем кейс
+    await openCase(false);
   };
 
   // Функция для открытия кейсов через API
@@ -545,7 +576,7 @@ export default function CasePage() {
                 {/* Кнопки действий */}
                 <div className='flex items-center gap-2'>
                   <motion.button 
-                    onClick={() => openCase(false)}
+                    onClick={() => handleOpenCase(false)}
                     disabled={isSpinning}
                     className={`flex px-4 py-3 justify-center items-center gap-2 rounded-xl transition-colors duration-200 ${
                       isSpinning 
@@ -571,7 +602,7 @@ export default function CasePage() {
                   </motion.button>
                   
                   <motion.button 
-                    onClick={() => openCase(true)}
+                    onClick={() => handleOpenCase(true)}
                     disabled={isSpinning}
                     className={`flex px-4 py-3 justify-center items-center gap-[10px] rounded-[8px] bg-[#F9F8FC]/[0.05] text-[#F9F8FC] font-unbounded text-sm font-medium transition-colors duration-200 ${
                       isSpinning ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'

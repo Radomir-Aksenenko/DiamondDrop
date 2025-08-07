@@ -8,10 +8,11 @@ import { usePreloadedData } from '@/components/providers/DataPreloadProvider';
 import { useUserFaceAvatar } from '@/hooks/useUserAvatar';
 import WalletModal from '@/components/ui/WalletModal';
 import UpgradeModal from '@/components/ui/UpgradeModal';
+import { useWalletModal } from '@/contexts/WalletModalContext';
 
 export default function Header() {
   const { user, isAuthenticated } = usePreloadedData();
-  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+  const { openWalletModal, closeWalletModal, isWalletModalOpen, walletPresetAmount } = useWalletModal();
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const router = useRouter();
   
@@ -38,13 +39,7 @@ export default function Header() {
     // Информационное логирование удалено
   }, [userBalance]);
   
-  const handleOpenWalletModal = () => {
-    setIsWalletModalOpen(true);
-  };
-  
-  const handleCloseWalletModal = () => {
-    setIsWalletModalOpen(false);
-  };
+
 
   const openUpgradeModal = () => setIsUpgradeModalOpen(true);
   const closeUpgradeModal = () => setIsUpgradeModalOpen(false);
@@ -88,7 +83,7 @@ export default function Header() {
               <span className='text-[#F9F8FC]/50 font-actay-wide text-16 font-bold ml-1 whitespace-nowrap'>АР</span>
             </div>
             <button 
-              onClick={handleOpenWalletModal}
+              onClick={() => openWalletModal()}
               className='flex items-center justify-center gap-2.5 p-3 rounded-[12px] bg-[#5C5ADC] hover:bg-[#4A48B0] transition-colors cursor-pointer flex-shrink-0'
             >
               <Image
@@ -117,7 +112,11 @@ export default function Header() {
       </div>
       <div className='h-[3px] bg-[#18181D]'></div>
       {/* Модальное окно кошелька */}
-      <WalletModal isOpen={isWalletModalOpen} onClose={handleCloseWalletModal} />
+      <WalletModal 
+        isOpen={isWalletModalOpen} 
+        onClose={closeWalletModal} 
+        presetAmount={walletPresetAmount}
+      />
 
       {/* Модальное окно апгрейда */}
       <UpgradeModal 

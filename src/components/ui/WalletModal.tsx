@@ -12,6 +12,7 @@ import { usePreloadedData } from '@/components/providers/DataPreloadProvider';
 interface WalletModalProps {
   isOpen: boolean;
   onClose: () => void;
+  presetAmount?: number; // Предустановленная сумма для пополнения
 }
 
 // Константы для предотвращения пересоздания при каждом рендере
@@ -69,8 +70,9 @@ const CardButton = memo(function CardButton({
  * Оптимизированное модальное окно кошелька
  * @param isOpen - Флаг открытия модального окна
  * @param onClose - Функция закрытия модального окна
+ * @param presetAmount - Предустановленная сумма для пополнения
  */
-const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalProps) {
+const WalletModal = memo(function WalletModal({ isOpen, onClose, presetAmount }: WalletModalProps) {
   const { createDeposit, setupPaymentHandlers, isLoading: isDepositLoading, error: depositError, clearError } = useDepositAPI();
   const { createWithdraw, isLoading: isWithdrawLoading, error: withdrawError, clearError: clearWithdrawError } = useWithdrawAPI();
   const { savedCards, addCard } = useSavedCards();
@@ -86,6 +88,21 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose }: WalletModalPr
   const [amountError, setAmountError] = useState<string | null>(null);
   const [depositAmountError, setDepositAmountError] = useState<string | null>(null);
   const [cardError, setCardError] = useState<string | null>(null);
+
+  // Обработка предустановленной суммы пополнения
+  useEffect(() => {
+    if (isOpen && presetAmount && presetAmount > 0) {
+      // Переключаемся на вкладку пополнения
+      setActiveTab('deposit');
+      // Устанавливаем предустановленную сумму
+      setDepositAmount(presetAmount.toString());
+      // Сбрасываем выбранную кнопку, так как сумма может не совпадать с предустановленными
+      setSelectedDepositAmountButton(null);
+      // Очищаем ошибки
+      setDepositAmountError(null);
+      clearError();
+    }
+  }, [isOpen, presetAmount, clearError]);
 
   // Настройка обработчиков событий оплаты
   useEffect(() => {

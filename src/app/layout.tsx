@@ -3,6 +3,7 @@ import { Unbounded } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import SPWProvider from "@/components/providers/SPWProvider";
+import { WalletModalProvider } from "@/contexts/WalletModalContext";
 
 const unbounded = Unbounded({
   variable: "--font-unbounded",
@@ -26,12 +27,14 @@ export default function RootLayout({
         className={`${unbounded.variable} antialiased text-[#F9F8FC]`}
       >
         <SPWProvider>
-          <Header />
-          <main className="pt-[85px] px-6">
-            <div className="pt-4">
-              {children}
-            </div>
-          </main>
+          <WalletModalProvider>
+            <Header />
+            <main className="pt-[85px] px-6">
+              <div className="pt-4">
+                {children}
+              </div>
+            </main>
+          </WalletModalProvider>
         </SPWProvider>
       </body>
     </html>
