@@ -40,7 +40,7 @@ function TeamMemberCard({ member }: { member: TeamMember }) {
           alt={member.name} 
           width={150}
           height={225}
-          className="object-contain w-full h-full" 
+          className={`object-contain w-full h-full ${member.name === 'megatntmega' ? 'scale-x-[-1]' : ''}`}
         />
       </div>
       
