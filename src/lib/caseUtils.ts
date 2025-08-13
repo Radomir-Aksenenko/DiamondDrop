@@ -54,7 +54,8 @@ export function generateRandomItems(casePrice: number): CaseItem[] {
       amount: Math.floor(Math.random() * 32) + 1,
       price: Math.round(basePrice * 100) / 100,
       percentChance: Math.round(baseChance * 100) / 100,
-      rarity: rarity
+      rarity: rarity,
+      isWithdrawable: Math.random() > 0.3 // 70% шанс что предмет доступен для вывода
     });
   }
   

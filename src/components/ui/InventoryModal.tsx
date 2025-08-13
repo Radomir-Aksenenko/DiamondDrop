@@ -140,7 +140,8 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
     amount: selectedItem.item.amount,
     price: selectedItem.item.price,
     percentChance: selectedItem.item.percentChance,
-    rarity: selectedItem.item.rarity
+    rarity: selectedItem.item.rarity,
+    isWithdrawable: selectedItem.item.isWithdrawable
   } : null;
 
   return (

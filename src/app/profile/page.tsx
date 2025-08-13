@@ -64,7 +64,8 @@ export default function ProfilePage() {
       amount: inventoryItem.item.amount,
       price: inventoryItem.item.price,
       percentChance: inventoryItem.item.percentChance,
-      rarity: inventoryItem.item.rarity
+      rarity: inventoryItem.item.rarity,
+      isWithdrawable: inventoryItem.item.isWithdrawable
     };
     setSelectedItem(caseItem);
     setIsItemDescriptionModalOpen(true);

@@ -25,6 +25,7 @@ interface CaseOpenResult {
   price: number
   percentChance: number
   rarity: 'Common' | 'Uncommon' | 'Rare' | 'Epic' | 'Legendary'
+  isWithdrawable: boolean
 }
 
 /**
@@ -292,7 +293,8 @@ export default function CasePage() {
           amount: targetItem.amount,
           price: targetItem.price,
           percentChance: targetItem.percentChance,
-          rarity: targetItem.rarity
+          rarity: targetItem.rarity,
+          isWithdrawable: true // По умолчанию предметы доступны для вывода
         };
         
         // Создаем массив предметов для анимации (адаптированный алгоритм оригинальной рулетки)

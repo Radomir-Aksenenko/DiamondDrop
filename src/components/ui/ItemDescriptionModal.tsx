@@ -32,7 +32,7 @@ export default function ItemDescriptionModal({ isOpen, onClose, item }: ItemDesc
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Описание">
       <motion.div 
-        className="flex flex-col gap-6"
+        className="flex flex-col"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -10 }}
@@ -106,9 +106,22 @@ export default function ItemDescriptionModal({ isOpen, onClose, item }: ItemDesc
            </motion.div>
          </motion.div>
          
+         {/* Предупреждение - отображается только если предмет недоступен для вывода */}
+         {!item.isWithdrawable && (
+           <motion.div 
+             className='flex justify-center items-start gap-1 self-stretch p-[8px_12px] rounded-lg border border-[rgba(245,60,60,0.30)] bg-[rgba(245,60,60,0.10)] mt-2'
+             initial={{ opacity: 0, y: 10 }}
+             animate={{ opacity: 1, y: 0 }}
+             exit={{ opacity: 0, y: -10 }}
+             transition={{ duration: 0.25, delay: 0.4 }}
+           >
+            <p className='text-[#F53C3C] text-12 font-bold font-actay-wide'>Данный предмет недоступен для вывода и может быть обменен только на АРы.</p>
+           </motion.div>
+         )}
+         
          {/* Кнопки действий */}
          <motion.div 
-           className="grid grid-cols-2 gap-3 mt-4"
+           className="grid grid-cols-2 gap-3 mt-6"
            initial={{ opacity: 0, y: 10 }}
            animate={{ opacity: 1, y: 0 }}
            exit={{ opacity: 0, y: 20 }}

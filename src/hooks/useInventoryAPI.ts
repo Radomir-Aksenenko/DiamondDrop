@@ -13,6 +13,7 @@ export interface InventoryItem {
     price: number;
     percentChance: number;
     rarity: 'Common' | 'Uncommon' | 'Rare' | 'Epic' | 'Legendary';
+    isWithdrawable: boolean;
   };
   amount: number;
 }
@@ -92,7 +93,8 @@ export const useInventoryAPI = () => {
               amount: 1,
               price: 128,
               percentChance: 100,
-              rarity: "Legendary"
+              rarity: "Legendary",
+              isWithdrawable: false
             },
             amount: 21
           },
@@ -105,7 +107,8 @@ export const useInventoryAPI = () => {
               amount: 1,
               price: 0.3,
               percentChance: 100,
-              rarity: "Uncommon"
+              rarity: "Uncommon",
+              isWithdrawable: true
             },
             amount: 179
           },
@@ -118,7 +121,8 @@ export const useInventoryAPI = () => {
               amount: 1,
               price: 20,
               percentChance: 100,
-              rarity: "Rare"
+              rarity: "Rare",
+              isWithdrawable: true
             },
             amount: 35
           }

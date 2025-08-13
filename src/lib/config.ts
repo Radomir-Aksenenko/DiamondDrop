@@ -46,6 +46,7 @@ export const DEV_CONFIG: {
       price: number;
       percentChance: number;
       rarity: 'Common' | 'Uncommon' | 'Rare' | 'Epic' | 'Legendary';
+      isWithdrawable: boolean;
     }>;
   }>;
   mockToken: string;
@@ -69,7 +70,8 @@ export const DEV_CONFIG: {
         amount: 2,
         price: 12,
         percentChance: 0.5,
-        rarity: 'Legendary'
+        rarity: 'Legendary',
+        isWithdrawable: false
       },
       {
         id: 'diamond_sword',
@@ -79,7 +81,8 @@ export const DEV_CONFIG: {
         amount: 1,
         price: 8,
         percentChance: 1.2,
-        rarity: 'Epic'
+        rarity: 'Epic',
+        isWithdrawable: true
       },
       {
         id: 'golden_apple',
@@ -89,7 +92,8 @@ export const DEV_CONFIG: {
         amount: 3,
         price: 5,
         percentChance: 2.5,
-        rarity: 'Rare'
+        rarity: 'Rare',
+        isWithdrawable: true
       },
       {
         id: 'enchanted_book',
@@ -99,7 +103,8 @@ export const DEV_CONFIG: {
         amount: 1,
         price: 15,
         percentChance: 0.8,
-        rarity: 'Legendary'
+        rarity: 'Legendary',
+        isWithdrawable: false
       },
       {
         id: 'iron_pickaxe',
@@ -109,7 +114,8 @@ export const DEV_CONFIG: {
         amount: 1,
         price: 3,
         percentChance: 5.0,
-        rarity: 'Uncommon'
+        rarity: 'Uncommon',
+        isWithdrawable: true
       },
       {
         id: 'emerald',
@@ -119,7 +125,8 @@ export const DEV_CONFIG: {
         amount: 5,
         price: 7,
         percentChance: 3.2,
-        rarity: 'Rare'
+        rarity: 'Rare',
+        isWithdrawable: true
       }
     ]
   },
@@ -151,7 +158,8 @@ export const DEV_CONFIG: {
           amount: 64,
           price: 0.5,
           percentChance: 45.0,
-          rarity: 'Common' as const
+          rarity: 'Common' as const,
+          isWithdrawable: true
         },
         {
           id: 'iron-ingot-1',
@@ -161,7 +169,8 @@ export const DEV_CONFIG: {
           amount: 16,
           price: 8.0,
           percentChance: 25.0,
-          rarity: 'Uncommon' as const
+          rarity: 'Uncommon' as const,
+          isWithdrawable: true
         },
         {
           id: 'gold-ingot-1',
@@ -171,7 +180,8 @@ export const DEV_CONFIG: {
           amount: 8,
           price: 24.0,
           percentChance: 15.0,
-          rarity: 'Rare' as const
+          rarity: 'Rare' as const,
+          isWithdrawable: false
         },
         {
           id: 'diamond-1',
@@ -181,7 +191,8 @@ export const DEV_CONFIG: {
           amount: 4,
           price: 64.0,
           percentChance: 10.0,
-          rarity: 'Epic' as const
+          rarity: 'Epic' as const,
+          isWithdrawable: true
         },
         {
           id: 'netherite-1',
@@ -191,7 +202,8 @@ export const DEV_CONFIG: {
           amount: 1,
           price: 256.0,
           percentChance: 5.0,
-          rarity: 'Legendary' as const
+          rarity: 'Legendary' as const,
+          isWithdrawable: false
         }
       ]
     },

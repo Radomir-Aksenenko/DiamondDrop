@@ -25,7 +25,8 @@ export default function InventoryItemCard({ inventoryItem, index, onSellClick, o
     amount: item.amount, // Количество предметов в одном стаке
     price: item.price,
     percentChance: item.percentChance,
-    rarity: item.rarity
+    rarity: item.rarity,
+    isWithdrawable: item.isWithdrawable
   };
 
   // Обработчик клика по предмету
