@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
+// Заменено на обычный img тег
 import { CaseItem } from '@/hooks/useCasesAPI';
 
 // Интерфейс пропсов компонента
@@ -99,12 +99,10 @@ export default function CaseItemCard({
         <>
           {/* Иконка предмета */}
           <div className="relative w-12 h-12 flex items-center justify-center group mb-2">
-            <Image
+            <img
               src={item.imageUrl || '/09b1b0e86eb0cd8a7909f6f74b56ddc17804658d.png'}
               alt={item.name}
-              fill
-              style={{ objectFit: 'contain' }}
-              className="drop-shadow-lg"
+              className="w-full h-full object-contain drop-shadow-lg"
             />
             
             {/* Иконка лупы при наведении */}
@@ -199,12 +197,10 @@ export default function CaseItemCard({
 
           {/* Средняя часть - иконка предмета */}
           <div className="relative w-12 h-12 flex items-center justify-center group">
-            <Image
+            <img
               src={item.imageUrl || '/09b1b0e86eb0cd8a7909f6f74b56ddc17804658d.png'}
               alt={item.name}
-              fill
-              style={{ objectFit: 'contain' }}
-              className="drop-shadow-lg"
+              className="w-full h-full object-contain drop-shadow-lg"
             />
             
             {/* Иконка лупы при наведении */}

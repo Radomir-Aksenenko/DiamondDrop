@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+// Убран импорт Image из next/image - заменен на обычные img теги
 import { usePreloadedData } from '@/components/providers/DataPreloadProvider';
 import { useLinkHandler, isExternalLink } from '@/lib/linkUtils';
 
@@ -93,14 +93,10 @@ export default function News() {
                     className="w-[770px] h-[200px] bg-[#19191D] rounded-lg flex flex-col items-center justify-center cursor-pointer hover:opacity-90 transition-opacity relative overflow-hidden"
                   >
                     <div className="absolute inset-0 w-full h-full">
-                      <Image 
+                      <img 
                         src={banner.imageUrl} 
                         alt={`Баннер ${banners.indexOf(banner) + 1}`}
-                        fill
-                        style={{ 
-                          objectFit: 'cover'
-                        }}
-                        priority={activeIndex === banners.indexOf(banner)}
+                        className="w-full h-full object-cover"
                       />
                     </div>
                   </div>
@@ -118,16 +114,12 @@ export default function News() {
                     className="w-[770px] h-[200px] bg-[#19191D] rounded-lg flex flex-col items-center justify-center cursor-pointer hover:opacity-90 transition-opacity relative overflow-hidden"
                   >
                     <div className="absolute inset-0 w-full h-full">
-                      <Image 
-                        src={banner.imageUrl} 
-                        alt={`Баннер ${banners.indexOf(banner) + 1}`}
-                        fill
-                        style={{ 
-                          objectFit: 'cover'
-                        }}
-                        priority={activeIndex === banners.indexOf(banner)}
-                      />
-                    </div>
+                    <img 
+                      src={banner.imageUrl} 
+                      alt={`Баннер ${banners.indexOf(banner) + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
                   </div>
                 </Link>
               );

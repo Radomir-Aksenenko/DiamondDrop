@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter, useParams, notFound } from 'next/navigation';
-import Image from 'next/image';
+// Убран импорт Image из next/image - заменен на обычные img теги
 import { motion, useAnimation } from 'framer-motion';
 import useCaseAPI from '@/hooks/useCaseAPI';
 import CaseItemCard from '@/components/ui/CaseItemCard';
@@ -495,7 +495,7 @@ export default function CasePage() {
           whileTap={{ scale: 0.95 }}
           transition={{ type: "spring", stiffness: 400, damping: 25 }}
         >
-          <Image 
+          <img 
             src="/Arrow - Left.svg" 
             alt="Назад" 
             width={18} 
@@ -513,13 +513,12 @@ export default function CasePage() {
           <div className="flex flex-col items-start gap-2 self-stretch p-4 rounded-xl bg-[#F9F8FC]/[0.05] w-[679px] h-[288px]">
             <div className='flex h-[256px] items-center gap-4 self-stretch'>
               {/* Изображение кейса */}
-              <Image
+              <img
                 src={getCaseImageUrl()}
                 alt={`Изображение кейса ${caseData.name}`}
                 width={256}
                 height={256}
                 className="object-cover rounded-lg w-[256px] h-[256px] flex-shrink-0"
-                priority
               />
               
               {/* Информация о кейсе */}
@@ -542,13 +541,12 @@ export default function CasePage() {
                 {/* Быстрый режим */}
                 <div className='flex items-center gap-4 self-stretch'>
                   <div className='flex items-center gap-2'>
-                    <Image
+                    <img
                       src="/Fast.svg"
                       alt="Иконка быстрого режима"
                       width={10}
                       height={14}
                       className="flex-shrink-0"
-                      priority
                     />
                     <p className="text-[#F9F8FC] font-['Actay_Wide'] text-base font-bold">Быстрый режим</p>
                     <motion.button 

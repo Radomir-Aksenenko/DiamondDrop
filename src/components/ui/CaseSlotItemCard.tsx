@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
+// Убран импорт Image из next/image - заменен на обычные img теги
 import { CaseItem } from '@/hooks/useCasesAPI';
 
 // Интерфейс пропсов компонента
@@ -80,12 +80,10 @@ export default function CaseSlotItemCard({
     >
       {/* Верхняя часть - иконка предмета */}
       <div className="relative w-12 h-12 flex items-center justify-center">
-        <Image
+        <img
           src={item.imageUrl || '/09b1b0e86eb0cd8a7909f6f74b56ddc17804658d.png'}
           alt={item.name}
-          fill
-          style={{ objectFit: 'contain' }}
-          className="drop-shadow-lg"
+          className="w-full h-full object-contain drop-shadow-lg"
         />
         {/* Количество поверх изображения */}
         <div className="absolute -bottom-1 -right-1">

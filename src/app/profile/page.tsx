@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useCallback, useState } from 'react';
 import { usePreloadedData } from '@/components/providers/DataPreloadProvider';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
+// Убран импорт Image из next/image - заменен на обычные img теги
 import { motion } from 'framer-motion';
 import { useInventoryAPI, InventoryItem } from '@/hooks/useInventoryAPI';
 import { useUserBodyAvatar } from '@/hooks/useUserAvatar';
@@ -151,7 +151,7 @@ export default function ProfilePage() {
           whileTap={{ scale: 0.95 }}
           transition={{ type: "spring", stiffness: 400, damping: 25 }}
         >
-          <Image 
+          <img 
             src="/Arrow - Left.svg" 
             alt="Назад" 
             width={18} 

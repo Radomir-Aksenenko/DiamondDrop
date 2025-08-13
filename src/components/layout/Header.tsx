@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
+// Убран импорт Image из next/image - заменен на обычные img теги
 import { useRouter } from 'next/navigation';
 import NavButton from '@/components/ui/NavButton';
 import { usePreloadedData } from '@/components/providers/DataPreloadProvider';
@@ -91,13 +91,13 @@ export default function Header() {
               onClick={() => openWalletModal()}
               className='flex items-center justify-center gap-2.5 p-3 rounded-[12px] bg-[#5C5ADC] hover:bg-[#4A48B0] transition-colors cursor-pointer flex-shrink-0'
             >
-              <Image
-                src="/Wallet.svg"
-                alt="WalletIcon"
-                width={22}
-                height={20}
-                className='aspect-[11/10]'
-              />
+              <img
+              src="/Wallet.svg"
+              alt="WalletIcon"
+              width={22}
+              height={20}
+              className='aspect-[11/10]'
+            />
             </button>
           </div>
           <button 
@@ -105,13 +105,13 @@ export default function Header() {
             className='flex items-center justify-center p-3 rounded-[12px] bg-[#F9F8FC]/5 hover:bg-[#F9F8FC]/10 transition-colors cursor-pointer'
             title="Открыть инвентарь"
           >
-            <Image
-              src="/User.svg"
-              alt="UserIcon"
-              width={24}
-              height={24}
-              className="aspect-square"
-            />
+            <img
+            src="/User.svg"
+            alt="UserIcon"
+            width={24}
+            height={24}
+            className="aspect-square"
+          />
           </button>
         </div>
       </div>

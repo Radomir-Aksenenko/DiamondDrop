@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
+// Убран импорт Image из next/image - заменен на обычные img теги
 
 interface TeamMember {
   name: string;
@@ -35,7 +35,7 @@ function TeamMemberCard({ member }: { member: TeamMember }) {
     <div className="flex flex-col items-center">
       {/* Изображение участника */}
       <div className="mb-3 w-[150px] h-[225px] flex items-center justify-center">
-        <Image 
+        <img 
           src={member.imageUrl} 
           alt={member.name} 
           width={150}

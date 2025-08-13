@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
+// Заменено на обычный img тег
 
 // Типы редкости карточек
 export type RarityType = 'Common' | 'Uncommon' | 'Rare' | 'Epic' | 'Legendary';
@@ -95,12 +95,10 @@ export default function RarityCard({
       >
         {/* Левая часть - иконка предмета */}
         <div className={`relative ${imageSize} flex items-center justify-center flex-shrink-0`}>
-          <Image
+          <img
             src={itemImage}
             alt={itemName || `${rarity} предмет`}
-            fill
-            style={{ objectFit: 'contain' }}
-            className="drop-shadow-lg"
+            className="w-full h-full object-contain drop-shadow-lg"
           />
           {/* Количество поверх изображения */}
           <div className="absolute -bottom-1 -right-1">
@@ -231,12 +229,10 @@ export default function RarityCard({
 
       {/* Нижняя часть - иконка предмета */}
       <div className={`relative ${imageSize} flex items-center justify-center`}>
-        <Image
+        <img
           src={itemImage}
           alt={itemName || `${rarity} предмет`}
-          fill
-          style={{ objectFit: 'contain' }}
-          className="drop-shadow-lg"
+          className="w-full h-full object-contain drop-shadow-lg"
         />
         {/* Количество поверх изображения */}
         <div className="absolute -bottom-1 -right-1">

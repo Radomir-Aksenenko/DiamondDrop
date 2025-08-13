@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
+// Убран импорт Image из next/image - заменен на обычные img теги
 import { CaseData } from '@/hooks/useCasesAPI';
 
 interface CaseCardProps {
@@ -52,7 +52,7 @@ export default function CaseCard({ caseData, onClick }: CaseCardProps) {
       {/* Изображение кейса */}
       <div className='flex-1 flex items-center justify-center w-full min-h-0 mb-2'>
         {caseData.imageUrl ? (
-          <Image 
+          <img 
             src={caseData.imageUrl} 
             alt={caseData.name} 
             width={120} 
