@@ -39,8 +39,13 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
 
   // Синхронизация активной вкладки с initialTab
   useEffect(() => {
-    setActiveTab(initialTab);
-  }, [initialTab]);
+    // Если предмет нельзя вывести и пытаемся открыть вкладку вывода, переключаемся на продажу
+    if (initialTab === 'withdraw' && selectedItem && !selectedItem.item.isWithdrawable) {
+      setActiveTab('sell');
+    } else {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab, selectedItem?.item.isWithdrawable]);
 
   // Сброс количества при смене предмета
   useEffect(() => {
@@ -111,25 +116,36 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
   };
 
   // Мемоизированный заголовок с вкладками
-  const modalTitle = useMemo(() => (
-    <div className="flex items-center gap-4">
-      <button 
-        className={`text-xl font-bold ${activeTab === 'sell' ? 'text-[#F9F8FC]' : 'text-[#F9F8FC]/50 hover:text-[#F9F8FC]/70'} transition-colors cursor-pointer`}
-        onClick={() => setActiveTab('sell')}
-        type="button"
-      >
-        Продажа
-      </button>
-      <span className="text-[#F9F8FC]/30">/</span>
-      <button 
-        className={`text-xl font-bold ${activeTab === 'withdraw' ? 'text-[#F9F8FC]' : 'text-[#F9F8FC]/50 hover:text-[#F9F8FC]/70'} transition-colors cursor-pointer`}
-        onClick={() => setActiveTab('withdraw')}
-        type="button"
-      >
-        Вывод
-      </button>
-    </div>
-  ), [activeTab]);
+  const modalTitle = useMemo(() => {
+    const isWithdrawable = selectedItem?.item.isWithdrawable ?? false;
+    
+    return (
+      <div className="flex items-center gap-4">
+        <button 
+          className={`text-xl font-bold ${activeTab === 'sell' ? 'text-[#F9F8FC]' : 'text-[#F9F8FC]/50 hover:text-[#F9F8FC]/70'} transition-colors cursor-pointer`}
+          onClick={() => setActiveTab('sell')}
+          type="button"
+        >
+          Продажа
+        </button>
+        <span className="text-[#F9F8FC]/30">/</span>
+        <button 
+          className={`text-xl font-bold transition-colors ${
+            !isWithdrawable 
+              ? 'text-[#F9F8FC]/25 cursor-not-allowed' 
+              : activeTab === 'withdraw' 
+                ? 'text-[#F9F8FC]' 
+                : 'text-[#F9F8FC]/50 hover:text-[#F9F8FC]/70 cursor-pointer'
+          }`}
+          onClick={isWithdrawable ? () => setActiveTab('withdraw') : undefined}
+          disabled={!isWithdrawable}
+          type="button"
+        >
+          Вывод
+        </button>
+      </div>
+    );
+  }, [activeTab, selectedItem?.item.isWithdrawable]);
 
   // Преобразуем selectedItem в CaseItem для отображения
   const caseItem: CaseItem | null = selectedItem ? {
@@ -234,9 +250,9 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
         </button>
         <button 
           onClick={activeTab === 'withdraw' ? handleWithdraw : handleSell}
-          disabled={isSelling}
+          disabled={isSelling || (activeTab === 'withdraw' && !selectedItem?.item.isWithdrawable)}
           className={`py-2.5 px-4 rounded-lg text-[#F9F8FC] font-bold outline-none focus:outline-none active:outline-none focus:ring-0 active:ring-0 transition-colors ${
-            isSelling 
+            isSelling || (activeTab === 'withdraw' && !selectedItem?.item.isWithdrawable)
               ? 'bg-[#5C5ADC]/50 cursor-not-allowed' 
               : 'bg-[#5C5ADC] hover:bg-[#4A48B0] cursor-pointer'
           }`}

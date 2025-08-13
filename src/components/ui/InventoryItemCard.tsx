@@ -76,12 +76,21 @@ export default function InventoryItemCard({ inventoryItem, index, onSellClick, o
             <span className='text-[#F9F8FC] font-unbounded text-sm font-medium'>Продать</span>
           </motion.button>
           <motion.button 
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => onWithdrawClick?.(inventoryItem)}
-            className='flex flex-col justify-center items-center gap-2 px-4 py-2 rounded-lg bg-[#F9F8FC]/[0.10] hover:bg-[#F9F8FC]/[0.15] transition-colors duration-200 cursor-pointer'
+            whileHover={item.isWithdrawable ? { scale: 1.02 } : {}}
+            whileTap={item.isWithdrawable ? { scale: 0.98 } : {}}
+            onClick={item.isWithdrawable ? () => onWithdrawClick?.(inventoryItem) : undefined}
+            disabled={!item.isWithdrawable}
+            className={`flex flex-col justify-center items-center gap-2 px-4 py-2 rounded-lg transition-colors duration-200 ${
+              item.isWithdrawable 
+                ? 'bg-[#F9F8FC]/[0.10] hover:bg-[#F9F8FC]/[0.15] cursor-pointer' 
+                : 'bg-[#F9F8FC]/[0.05] cursor-not-allowed'
+            }`}
           >
-            <span className='text-[#F9F8FC] font-unbounded text-sm font-medium opacity-50 group-hover:opacity-70 transition-opacity duration-200'>
+            <span className={`text-[#F9F8FC] font-unbounded text-sm font-medium transition-opacity duration-200 ${
+              item.isWithdrawable 
+                ? 'opacity-50 group-hover:opacity-70' 
+                : 'opacity-25'
+            }`}>
               Вывести
             </span>
           </motion.button>
