@@ -153,10 +153,11 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose, presetAmount }:
   }, [clearError]);
 
   const handleAmountSelect = useCallback((amount: string) => {
-    // Если выбрана кнопка "Макс", устанавливаем весь доступный баланс
+    // Если выбрана кнопка "Макс", устанавливаем весь доступный баланс, округленный в меньшую сторону
     if (amount === '10000') {
       const userBalance = user?.balance ?? 0;
-      setWithdrawAmount(userBalance.toString());
+      const roundedBalance = Math.floor(userBalance).toString();
+      setWithdrawAmount(roundedBalance);
       setSelectedAmountButton(amount);
       setAmountError(null);
     } else {
