@@ -23,7 +23,7 @@ function SPWContent({ children }: { children: React.ReactNode }) {
   /**
    * Уведомляет о получении токена (данные загрузятся автоматически через DataPreloadProvider)
    */
-  const notifyTokenReceived = async (token: string) => {
+  const notifyTokenReceived = async () => {
     // Информационное логирование удалено
   };
 
@@ -59,10 +59,10 @@ function SPWContent({ children }: { children: React.ReactNode }) {
         };
 
         // Валидируем пользователя и получаем токен
-        const token = await validateUserAndSetToken(validationData);
+        await validateUserAndSetToken(validationData);
         
         // Уведомляем о получении токена
-        await notifyTokenReceived(token);
+        await notifyTokenReceived();
         
         // Ждем небольшую задержку чтобы DataPreloadProvider успел начать загрузку
         await new Promise(resolve => setTimeout(resolve, 100));

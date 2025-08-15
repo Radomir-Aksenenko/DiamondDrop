@@ -4,13 +4,7 @@ import { useState, useCallback } from 'react';
 import { getAuthToken } from '@/lib/auth';
 import { API_BASE_URL } from '@/lib/config';
 
-/**
- * Интерфейс для ответа API продажи
- */
-interface SellResponse {
-  success: boolean;
-  message?: string;
-}
+
 
 /**
  * Хук для продажи предметов из инвентаря

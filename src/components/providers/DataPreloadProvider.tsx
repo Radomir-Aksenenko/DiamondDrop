@@ -100,9 +100,6 @@ interface DataPreloadProviderProps {
 }
 
 export default function DataPreloadProvider({ children }: DataPreloadProviderProps) {
-  // Уникальный идентификатор для отслеживания экземпляров
-  const [providerId] = useState(() => Math.random().toString(36).substr(2, 9));
-  
   // Хук для загрузки результатов игр
   const { fetchGameResults } = useGameResultsAPI();
   
@@ -157,7 +154,7 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
         url: '/news/1'
       }];
     }
-  }, [providerId]);
+  }, []);
 
   // Кешированный мок пользователя для dev режима
   const [cachedMockUser] = useState(() => ({ ...mockUser }));
@@ -192,7 +189,7 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
       console.error('Error loading user data:', err);
       return null;
     }
-  }, [providerId, cachedMockUser]);
+  }, [cachedMockUser]);
 
   // Функция загрузки кейсов
   const loadCases = useCallback(async (): Promise<CaseData[]> => {
@@ -229,7 +226,7 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
       console.error('Error loading cases:', err);
       return [];
     }
-  }, [providerId]);
+  }, []);
 
   // Функция загрузки живых выигрышей (начальные данные)
   const loadInitialLiveWins = useCallback(async (): Promise<LiveWinData[]> => {
@@ -254,7 +251,7 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
       // В случае ошибки возвращаем мок данные как fallback
       return [...mockLiveWins];
     }
-  }, [providerId, fetchGameResults]);
+  }, [fetchGameResults]);
 
   // Функция предзагрузки всех данных
   const preloadAllData = useCallback(async (isInitialLoad = false) => {
@@ -298,7 +295,7 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
         setIsLoading(false);
       }
     }
-  }, [providerId, hasInitialLoad, loadBanners, loadUser, loadCases, loadInitialLiveWins, hasAuthToken]);
+  }, [hasInitialLoad, loadBanners, loadUser, loadCases, loadInitialLiveWins]);
 
   // Функция обновления баннеров
   const refreshBanners = useCallback(async () => {

@@ -10,12 +10,13 @@ import { useUserBodyAvatar } from '@/hooks/useUserAvatar';
 import InventoryItemCard from '@/components/ui/InventoryItemCard';
 import InventoryModal from '@/components/ui/InventoryModal';
 import ItemDescriptionModal from '@/components/ui/ItemDescriptionModal';
+import DeliveryTab from '@/components/ui/DeliveryTab';
 import { CaseItem } from '@/hooks/useCasesAPI';
 
 export default function ProfilePage() {
   const { user, isAuthenticated } = usePreloadedData();
   const router = useRouter();
-  const { items: inventoryItems, loading, error, hasMore, totalCount, loadMore, refresh, softRefresh } = useInventoryAPI();
+  const { items: inventoryItems, loading, error, hasMore, loadMore, softRefresh } = useInventoryAPI();
   const observerRef = useRef<HTMLDivElement>(null);
   
   // Состояние для модалки инвентаря
@@ -28,12 +29,11 @@ export default function ProfilePage() {
   const [selectedItem, setSelectedItem] = useState<CaseItem | null>(null);
   
   // Состояние для активной вкладки
-  const [activeTab, setActiveTab] = useState<'inventory' | 'deliveries' | 'freeCases'>('inventory');
+  const [activeTab, setActiveTab] = useState<'inventory' | 'deliveries' | 'freeCases'>('deliveries');
   
   // Данные пользователя
   const userName = user?.nickname ?? (isAuthenticated ? 'Загрузка...' : 'Гость');
   const userLevel = user?.level ?? 1;
-  const userBalance = user?.balance ?? 0;
   
   // Получаем URL аватара тела через хук
   const userAvatar = useUserBodyAvatar(userName === 'Загрузка...' || userName === 'Гость' ? null : userName);
@@ -79,25 +79,7 @@ export default function ProfilePage() {
     // Не сбрасываем selectedItem в null сразу, чтобы анимация закрытия работала корректно
   }, []);
 
-  // Функция для правильного склонения слова "предмет"
-  const getItemsCountText = useCallback((count: number) => {
-    const lastDigit = count % 10;
-    const lastTwoDigits = count % 100;
-    
-    if (lastTwoDigits >= 11 && lastTwoDigits <= 14) {
-      return `${count} предметов`;
-    }
-    
-    if (lastDigit === 1) {
-      return `${count} предмет`;
-    }
-    
-    if (lastDigit >= 2 && lastDigit <= 4) {
-      return `${count} предмета`;
-    }
-    
-    return `${count} предметов`;
-  }, []);
+
 
   // Сбрасываем selectedItem с задержкой после закрытия модального окна
   useEffect(() => {
@@ -130,13 +112,14 @@ export default function ProfilePage() {
       rootMargin: '100px',
     });
 
-    if (observerRef.current) {
-      observer.observe(observerRef.current);
+    const currentElement = observerRef.current;
+    if (currentElement) {
+      observer.observe(currentElement);
     }
 
     return () => {
-      if (observerRef.current) {
-        observer.unobserve(observerRef.current);
+      if (currentElement) {
+        observer.unobserve(currentElement);
       }
     };
   }, [handleIntersection]);
@@ -363,55 +346,7 @@ export default function ProfilePage() {
         )}
 
         {activeTab === 'deliveries' && (
-          <div className='flex flex-col items-center justify-center w-full py-16 gap-4'>
-            <div className='w-16 h-16 rounded-full bg-[#F9F8FC]/[0.05] flex items-center justify-center'>
-              <svg 
-                width="32" 
-                height="32" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                xmlns="http://www.w3.org/2000/svg"
-                className="text-[#F9F8FC] opacity-50"
-              >
-                <path 
-                  d="M16 3H5C3.89543 3 3 3.89543 3 5V19C3 20.1046 3.89543 21 5 21H19C20.1046 21 21 20.1046 21 19V8L16 3Z" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                />
-                <path 
-                  d="M16 3V8H21" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                />
-                <path 
-                  d="M12 18V12" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                />
-                <path 
-                  d="M9 15L12 12L15 15" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </div>
-            <div className='text-center'>
-              <h3 className='text-[#F9F8FC] font-unbounded text-lg font-medium mb-2'>
-                Нет доставок
-              </h3>
-              <p className='text-[#F9F8FC] font-actay-wide text-sm opacity-50'>
-                Здесь будут отображаться ваши доставки
-              </p>
-            </div>
-          </div>
+          <DeliveryTab />
         )}
 
         {activeTab === 'freeCases' && (

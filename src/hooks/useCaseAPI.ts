@@ -4,7 +4,6 @@ import { useEffect, useState, useCallback } from 'react';
 import { getAuthToken } from '@/lib/auth';
 import { API_BASE_URL, isDevelopment, DEV_CONFIG } from '@/lib/config';
 import { CaseData } from './useCasesAPI';
-import { generateRandomItems } from '@/lib/caseUtils';
 
 /**
  * Хук для получения данных отдельного кейса из API

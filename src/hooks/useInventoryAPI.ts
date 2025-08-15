@@ -18,12 +18,7 @@ export interface InventoryItem {
   amount: number;
 }
 
-// Интерфейс для ответа API
-interface InventoryResponse {
-  items: InventoryItem[];
-  totalCount: number;
-  hasMore: boolean;
-}
+
 
 export const useInventoryAPI = () => {
   const [items, setItems] = useState<InventoryItem[]>([]);
@@ -32,6 +27,7 @@ export const useInventoryAPI = () => {
   const [hasMore, setHasMore] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const pageSize = 20; // Количество предметов на страницу
 
@@ -128,14 +124,14 @@ export const useInventoryAPI = () => {
           }
         ];
         
-        setItems(append ? [...items, ...mockItems] : mockItems);
+        setItems(prevItems => append ? [...prevItems, ...mockItems] : mockItems);
         setHasMore(false);
         setTotalCount(mockItems.length);
       }
     } finally {
       setLoading(false);
     }
-  }, [items, pageSize]);
+  }, [pageSize]);
 
   // Функция для загрузки следующей страницы
   const loadMore = useCallback(() => {
@@ -212,8 +208,11 @@ export const useInventoryAPI = () => {
 
   // Начальная загрузка
   useEffect(() => {
-    fetchInventory(1, false);
-  }, []);
+    if (!isInitialized) {
+      setIsInitialized(true);
+      fetchInventory(1, false);
+    }
+  }, [fetchInventory, isInitialized]);
 
   return {
     items,

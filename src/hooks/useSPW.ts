@@ -73,7 +73,7 @@ export default function useSPW() {
       console.error(`Error opening URL window: ${err}`);
       return false;
     }
-  }, [spw]);
+  }, []);
   const openPayment = (code: string) => spw.openPayment(code);
   const validateUser = (url: string, options?: ValidateOptions) => spw.validateUser(url, options);
 

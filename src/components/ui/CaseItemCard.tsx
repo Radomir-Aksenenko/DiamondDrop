@@ -3,6 +3,7 @@
 import React from 'react';
 // Заменено на обычный img тег
 import { CaseItem } from '@/hooks/useCasesAPI';
+import { handleItemImageError, getItemImageUrl } from '@/utils/imageUtils';
 
 // Интерфейс пропсов компонента
 interface CaseItemCardProps {
@@ -86,7 +87,7 @@ export default function CaseItemCard({
 
   return (
     <div 
-      className={`${className} ${onClick ? 'cursor-pointer hover:brightness-75 transition-all duration-200 group' : ''}`}
+      className={`relative ${className} ${onClick ? 'cursor-pointer hover:brightness-75 transition-all duration-200 group' : ''}`}
       style={{
         background: config.background,
         border: config.border,
@@ -94,38 +95,40 @@ export default function CaseItemCard({
       }}
       onClick={onClick}
     >
+      {/* Иконка лупы при наведении на всю карточку */}
+      {onClick && (
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg bg-black/20 z-10">
+          <svg 
+            width="32" 
+            height="32" 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            xmlns="http://www.w3.org/2000/svg"
+            className="text-white/80 drop-shadow-lg"
+          >
+            <path 
+              d="M21 21L16.514 16.506M19 10.5C19 15.194 15.194 19 10.5 19C5.806 19 2 15.194 2 10.5C2 5.806 5.806 2 10.5 2C15.194 2 19 5.806 19 10.5Z" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+            />
+          </svg>
+        </div>
+      )}
       {hideChance ? (
         // Версия без шанса - только иконка и цена
         <>
           {/* Иконка предмета */}
-          <div className="relative w-12 h-12 flex items-center justify-center group mb-2">
+          <div className="relative w-12 h-12 flex items-center justify-center mb-2">
             <img
-              src={item.imageUrl || '/09b1b0e86eb0cd8a7909f6f74b56ddc17804658d.png'}
+              src={getItemImageUrl(item.imageUrl)}
               alt={item.name}
               className="w-full h-full object-contain drop-shadow-lg"
+              onError={handleItemImageError}
             />
             
-            {/* Иконка лупы при наведении */}
-            {onClick && (
-              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded">
-                <svg 
-                  width="32" 
-                  height="32" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="text-white drop-shadow-lg"
-                >
-                  <path 
-                    d="M21 21L16.514 16.506M19 10.5C19 15.194 15.194 19 10.5 19C5.806 19 2 15.194 2 10.5C2 5.806 5.806 2 10.5 2C15.194 2 19 5.806 19 10.5Z" 
-                    stroke="currentColor" 
-                    strokeWidth="2" 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
-            )}
+
             
             {/* Количество поверх изображения */}
             <div className="absolute -bottom-1 -right-1">
@@ -196,34 +199,15 @@ export default function CaseItemCard({
           </div>
 
           {/* Средняя часть - иконка предмета */}
-          <div className="relative w-12 h-12 flex items-center justify-center group">
+          <div className="relative w-12 h-12 flex items-center justify-center">
             <img
-              src={item.imageUrl || '/09b1b0e86eb0cd8a7909f6f74b56ddc17804658d.png'}
+              src={getItemImageUrl(item.imageUrl)}
               alt={item.name}
               className="w-full h-full object-contain drop-shadow-lg"
+              onError={handleItemImageError}
             />
             
-            {/* Иконка лупы при наведении */}
-            {onClick && (
-              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded">
-                <svg 
-                  width="32" 
-                  height="32" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="text-white drop-shadow-lg"
-                >
-                  <path 
-                    d="M21 21L16.514 16.506M19 10.5C19 15.194 15.194 19 10.5 19C5.806 19 2 15.194 2 10.5C2 5.806 5.806 2 10.5 2C15.194 2 19 5.806 19 10.5Z" 
-                    stroke="currentColor" 
-                    strokeWidth="2" 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
-            )}
+
             
             {/* Количество поверх изображения */}
             <div className="absolute -bottom-1 -right-1">

@@ -7,7 +7,7 @@ import CaseItemCard from './CaseItemCard';
 import { CaseItem } from '@/hooks/useCasesAPI';
 import { useSellAPI } from '@/hooks/useSellAPI';
 import { useBalanceUpdater } from '@/hooks/useBalanceUpdater';
-import { useLinkHandler } from '@/lib/linkUtils';
+import useItemWithdrawAPI from '@/hooks/useItemWithdrawAPI';
 
 interface InventoryModalProps {
   isOpen: boolean;
@@ -31,8 +31,9 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
   
   // Хук для продажи предметов
   const { sellItem, isLoading: isSelling, error: sellError, clearError } = useSellAPI();
+  // Хук для вывода предметов
+  const { withdrawItem, isLoading: isWithdrawing, error: withdrawError, clearError: clearWithdrawError } = useItemWithdrawAPI();
   const { increaseBalance } = useBalanceUpdater();
-  const { handleLinkClick } = useLinkHandler();
 
   // Максимальное количество доступных предметов
   const maxQuantity = selectedItem?.amount || 1;
@@ -45,14 +46,15 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
     } else {
       setActiveTab(initialTab);
     }
-  }, [initialTab, selectedItem?.item.isWithdrawable]);
+  }, [initialTab, selectedItem]);
 
   // Сброс количества при смене предмета
   useEffect(() => {
     setSelectedQuantity(1);
     setIsMaxSelected(false);
     clearError(); // Очищаем ошибки продажи
-  }, [selectedItem, clearError]);
+    clearWithdrawError(); // Очищаем ошибки вывода
+  }, [selectedItem, clearError, clearWithdrawError]);
 
   // Функция для форматирования цены (убирает .0 если десятые равны нулю)
   const formatPrice = (price: number): string => {
@@ -82,8 +84,28 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
   };
 
   // Функция для обработки кнопки вывода
-  const handleWithdraw = () => {
-    handleLinkClick('https://discord.gg/6uSgHru2bv');
+  const handleWithdraw = async () => {
+    if (!selectedItem) {
+      console.error('[InventoryModal] No item selected for withdrawal');
+      return;
+    }
+
+    try {
+      const success = await withdrawItem(selectedItem.item.id, selectedQuantity);
+      
+      if (success) {
+        // Вызываем колбэк для обновления инвентаря
+        if (onSellSuccess) {
+          onSellSuccess();
+        }
+        
+        // Закрываем модальное окно
+        onClose();
+      }
+      // Ошибка обрабатывается в хуке useItemWithdrawAPI
+    } catch (error) {
+        console.error('[InventoryModal] Unexpected error during withdrawal:', error);
+    }
   };
 
   // Функция для обработки продажи
@@ -239,6 +261,15 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
         </div>
       )}
       
+      {/* Отображение ошибок вывода */}
+      {withdrawError && (
+        <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+          <p className="text-red-400 text-sm font-medium">
+            {withdrawError}
+          </p>
+        </div>
+      )}
+      
       {/* Кнопки */}
       <div className="grid grid-cols-2 gap-2 mt-4">
         <button 
@@ -250,15 +281,15 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
         </button>
         <button 
           onClick={activeTab === 'withdraw' ? handleWithdraw : handleSell}
-          disabled={isSelling || (activeTab === 'withdraw' && !selectedItem?.item.isWithdrawable)}
+          disabled={isSelling || isWithdrawing || (activeTab === 'withdraw' && !selectedItem?.item.isWithdrawable)}
           className={`py-2.5 px-4 rounded-lg text-[#F9F8FC] font-bold outline-none focus:outline-none active:outline-none focus:ring-0 active:ring-0 transition-colors ${
-            isSelling || (activeTab === 'withdraw' && !selectedItem?.item.isWithdrawable)
+            isSelling || isWithdrawing || (activeTab === 'withdraw' && !selectedItem?.item.isWithdrawable)
               ? 'bg-[#5C5ADC]/50 cursor-not-allowed' 
               : 'bg-[#5C5ADC] hover:bg-[#4A48B0] cursor-pointer'
           }`}
           type="button"
         >
-          {isSelling ? 'Продажа...' : (activeTab === 'sell' ? `Продать • ${formatPrice((selectedItem?.item.price || 0) * selectedQuantity)} АР` : 'Вывести')}
+          {isSelling ? 'Продажа...' : isWithdrawing ? 'Вывод...' : (activeTab === 'sell' ? `Продать • ${formatPrice((selectedItem?.item.price || 0) * selectedQuantity)} АР` : 'Вывести')}
         </button>
       </div>
     </Modal>

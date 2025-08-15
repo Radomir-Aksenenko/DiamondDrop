@@ -69,7 +69,7 @@ export default function AboutPage() {
       
       {/* Сетка участников команды */}
       <div className="grid grid-cols-3 gap-x-2 gap-y-4 justify-items-center">
-        {teamMembers.map((member, index) => (
+        {teamMembers.map((member) => (
           <div key={member.name}>
             <TeamMemberCard member={member} />
           </div>
