@@ -54,7 +54,7 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
     setIsMaxSelected(false);
     clearError(); // Очищаем ошибки продажи
     clearWithdrawError(); // Очищаем ошибки вывода
-  }, [selectedItem, clearError, clearWithdrawError]);
+  }, [selectedItem?.item.id, clearError, clearWithdrawError]);
 
   // Функция для форматирования цены (убирает .0 если десятые равны нулю)
   const formatPrice = (price: number): string => {
@@ -207,10 +207,10 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
           <div className='flex justify-between items-center self-stretch'>
             <div className='flex items-center gap-1'>
               <button
-                onClick={activeTab === 'sell' ? handleDecrease : undefined}
-                disabled={activeTab === 'withdraw' || selectedQuantity <= 1}
+                onClick={handleDecrease}
+                disabled={selectedQuantity <= 1}
                 className={`flex w-9 p-2.5 px-2 py-1.5 flex-col items-center justify-center gap-2.5 rounded-md transition-colors ${
-                  activeTab === 'withdraw' || selectedQuantity <= 1
+                  selectedQuantity <= 1
                     ? 'bg-[#F9F8FC]/5 opacity-50 cursor-not-allowed' 
                     : 'bg-[#F9F8FC]/5 hover:bg-[#F9F8FC]/10 active:bg-[#F9F8FC]/15 cursor-pointer'
                 }`}
@@ -222,10 +222,10 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
                 <span className='text-[#F9F8FC] text-center text-16 font-bold'>{selectedQuantity}</span>
               </div>
               <button
-                onClick={activeTab === 'sell' ? handleIncrease : undefined}
-                disabled={activeTab === 'withdraw' || selectedQuantity >= maxQuantity}
+                onClick={handleIncrease}
+                disabled={selectedQuantity >= maxQuantity}
                 className={`flex w-9 p-2.5 px-2 py-1.5 flex-col items-center justify-center gap-2.5 rounded-md transition-colors ${
-                  activeTab === 'withdraw' || selectedQuantity >= maxQuantity
+                  selectedQuantity >= maxQuantity
                     ? 'bg-[#F9F8FC]/5 opacity-50 cursor-not-allowed' 
                     : 'bg-[#F9F8FC]/5 hover:bg-[#F9F8FC]/10 active:bg-[#F9F8FC]/15 cursor-pointer'
                 }`}
@@ -235,14 +235,11 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
               </button>
             </div>
             <button 
-              onClick={activeTab === 'sell' ? handleMaxClick : undefined}
-              disabled={activeTab === 'withdraw'}
+              onClick={handleMaxClick}
               className={`text-[#F9F8FC] text-center text-16 font-bold px-3 py-1.5 rounded-md transition-all ${
-                activeTab === 'withdraw'
-                  ? 'bg-[#F9F8FC]/5 opacity-50 cursor-not-allowed border border-transparent'
-                  : isMaxSelected 
-                    ? 'bg-[#6563EE]/10 border border-[#5C5ADC] cursor-pointer' 
-                    : 'bg-[#F9F8FC]/5 hover:bg-[#6563EE]/10 border border-transparent hover:border-[#5C5ADC] cursor-pointer'
+                isMaxSelected 
+                  ? 'bg-[#6563EE]/10 border border-[#5C5ADC] cursor-pointer' 
+                  : 'bg-[#F9F8FC]/5 hover:bg-[#6563EE]/10 border border-transparent hover:border-[#5C5ADC] cursor-pointer'
               }`}
               type="button"
             >
