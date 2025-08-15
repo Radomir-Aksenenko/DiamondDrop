@@ -48,13 +48,21 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
     }
   }, [initialTab, selectedItem]);
 
-  // Сброс количества при смене предмета
+  // Сброс количества при переключении вкладок
   useEffect(() => {
     setSelectedQuantity(1);
     setIsMaxSelected(false);
-    clearError(); // Очищаем ошибки продажи
-    clearWithdrawError(); // Очищаем ошибки вывода
-  }, [selectedItem?.item.id, clearError, clearWithdrawError]);
+  }, [activeTab]);
+
+  // Сброс количества при смене предмета
+  useEffect(() => {
+    if (selectedItem?.item.id) {
+      setSelectedQuantity(1);
+      setIsMaxSelected(false);
+      clearError(); // Очищаем ошибки продажи
+      clearWithdrawError(); // Очищаем ошибки вывода
+    }
+  }, [selectedItem?.item.id]);
 
   // Функция для форматирования цены (убирает .0 если десятые равны нулю)
   const formatPrice = (price: number): string => {
@@ -63,6 +71,9 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
 
   // Функции для работы с количеством
   const handleDecrease = () => {
+    // Блокируем для вывода
+    if (activeTab === 'withdraw') return;
+    
     if (selectedQuantity > 1) {
       const newQuantity = selectedQuantity - 1;
       setSelectedQuantity(newQuantity);
@@ -71,6 +82,9 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
   };
 
   const handleIncrease = () => {
+    // Блокируем для вывода
+    if (activeTab === 'withdraw') return;
+    
     if (selectedQuantity < maxQuantity) {
       const newQuantity = selectedQuantity + 1;
       setSelectedQuantity(newQuantity);
@@ -79,6 +93,9 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
   };
 
   const handleMaxClick = () => {
+    // Блокируем для вывода
+    if (activeTab === 'withdraw') return;
+    
     setSelectedQuantity(maxQuantity);
     setIsMaxSelected(true);
   };
@@ -208,9 +225,9 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
             <div className='flex items-center gap-1'>
               <button
                 onClick={handleDecrease}
-                disabled={selectedQuantity <= 1}
+                disabled={activeTab === 'withdraw' || selectedQuantity <= 1}
                 className={`flex w-9 p-2.5 px-2 py-1.5 flex-col items-center justify-center gap-2.5 rounded-md transition-colors ${
-                  selectedQuantity <= 1
+                  activeTab === 'withdraw' || selectedQuantity <= 1
                     ? 'bg-[#F9F8FC]/5 opacity-50 cursor-not-allowed' 
                     : 'bg-[#F9F8FC]/5 hover:bg-[#F9F8FC]/10 active:bg-[#F9F8FC]/15 cursor-pointer'
                 }`}
@@ -223,9 +240,9 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
               </div>
               <button
                 onClick={handleIncrease}
-                disabled={selectedQuantity >= maxQuantity}
+                disabled={activeTab === 'withdraw' || selectedQuantity >= maxQuantity}
                 className={`flex w-9 p-2.5 px-2 py-1.5 flex-col items-center justify-center gap-2.5 rounded-md transition-colors ${
-                  selectedQuantity >= maxQuantity
+                  activeTab === 'withdraw' || selectedQuantity >= maxQuantity
                     ? 'bg-[#F9F8FC]/5 opacity-50 cursor-not-allowed' 
                     : 'bg-[#F9F8FC]/5 hover:bg-[#F9F8FC]/10 active:bg-[#F9F8FC]/15 cursor-pointer'
                 }`}
@@ -236,10 +253,13 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
             </div>
             <button 
               onClick={handleMaxClick}
+              disabled={activeTab === 'withdraw'}
               className={`text-[#F9F8FC] text-center text-16 font-bold px-3 py-1.5 rounded-md transition-all ${
-                isMaxSelected 
-                  ? 'bg-[#6563EE]/10 border border-[#5C5ADC] cursor-pointer' 
-                  : 'bg-[#F9F8FC]/5 hover:bg-[#6563EE]/10 border border-transparent hover:border-[#5C5ADC] cursor-pointer'
+                activeTab === 'withdraw'
+                  ? 'bg-[#F9F8FC]/5 opacity-50 cursor-not-allowed'
+                  : isMaxSelected 
+                    ? 'bg-[#6563EE]/10 border border-[#5C5ADC] cursor-pointer' 
+                    : 'bg-[#F9F8FC]/5 hover:bg-[#6563EE]/10 border border-transparent hover:border-[#5C5ADC] cursor-pointer'
               }`}
               type="button"
             >
