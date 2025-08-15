@@ -29,7 +29,7 @@ export default function ProfilePage() {
   const [selectedItem, setSelectedItem] = useState<CaseItem | null>(null);
   
   // Состояние для активной вкладки
-  const [activeTab, setActiveTab] = useState<'inventory' | 'deliveries' | 'freeCases'>('deliveries');
+  const [activeTab, setActiveTab] = useState<'inventory' | 'deliveries' | 'freeCases'>('inventory');
   
   // Данные пользователя
   const userName = user?.nickname ?? (isAuthenticated ? 'Загрузка...' : 'Гость');
