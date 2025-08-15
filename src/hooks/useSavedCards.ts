@@ -67,7 +67,7 @@ export default function useSavedCards() {
    * @param cardNumber - номер карты для добавления
    */
   const addCard = useCallback((cardNumber: string) => {
-    if (!cardNumber || cardNumber.length < 16) {
+    if (!cardNumber || cardNumber.length < 5) {
       console.error('Attempt to add invalid card:', cardNumber);
       return;
     }
