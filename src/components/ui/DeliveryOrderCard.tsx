@@ -90,7 +90,7 @@ export function DeliveryOrderCard({ order, onConfirmDelivery, onBranchClick, onI
         />
         <div className='flex flex-col items-start gap-[3px] flex-[1_0_0]'>
           <div className='self-stretch'>
-            <span className='text-[rgba(249,248,252,0.30)] font-["Actay_Wide"] text-base font-bold leading-normal'>Филиал ПВЗ: </span>
+            <span className='text-[rgba(249,248,252,0.30)] font-["Actay_Wide"] text-base font-bold leading-normal'>Филиал: </span>
             <span 
               className='text-[rgba(249,248,252,0.50)] font-["Actay_Wide"] text-base font-bold leading-normal underline decoration-[rgba(241,241,241,0.50)] cursor-pointer hover:text-[rgba(249,248,252,0.70)] transition-colors'
               onClick={() => onBranchClick(order.branch.name)}
