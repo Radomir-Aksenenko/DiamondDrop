@@ -27,6 +27,67 @@ export default function DeliveryTab(): React.JSX.Element {
   
   // Хук для склонения слов
   const { pluralizeItems } = usePluralize();
+
+  // Универсальная функция маппинга API-статусов в UI-статусы
+  const mapApiStatusToDeliveryStatus = useCallback((status: Order['status']): DeliveryStatus => {
+    switch (status) {
+      case 'Unknown':
+        return DeliveryStatus.UNKNOWN;
+      case 'Created':
+        return DeliveryStatus.CREATED;
+      case 'Accepted':
+        return DeliveryStatus.ACCEPTED;
+      case 'InDelivery':
+        return DeliveryStatus.IN_DELIVERY;
+      case 'Delivered':
+        return DeliveryStatus.DELIVERED;
+      case 'Confirmed':
+        return DeliveryStatus.CONFIRMED;
+      case 'Cancelled':
+        return DeliveryStatus.CANCELLED;
+      default:
+        return DeliveryStatus.UNKNOWN;
+    }
+  }, []);
+
+  // Конфигурация группировки и сортировки по блокам (легко изменяемая)
+  type BlockKey = 'active' | 'history';
+  const deliveryBlockConfig: Record<BlockKey, {
+    statuses: DeliveryStatus[]; // какие статусы включать в блок
+    priority: Partial<Record<DeliveryStatus, number>>; // приоритет сортировки по статусам (меньше = выше)
+    secondarySort?: 'createdAtDesc' | 'createdAtAsc'; // вторичная сортировка внутри одного статуса
+  }> = {
+    active: {
+      // Можно легко переставлять порядок статусов для активного блока
+      statuses: [
+        DeliveryStatus.IN_DELIVERY,
+        DeliveryStatus.ACCEPTED,
+        DeliveryStatus.DELIVERED,
+        DeliveryStatus.CREATED,
+      ],
+      priority: {
+        [DeliveryStatus.DELIVERED]: 0,
+        [DeliveryStatus.IN_DELIVERY]: 1,
+        [DeliveryStatus.ACCEPTED]: 2,
+        [DeliveryStatus.CREATED]: 3,
+      },
+      secondarySort: 'createdAtDesc',
+    },
+    history: {
+      statuses: [
+        DeliveryStatus.CONFIRMED,
+        DeliveryStatus.CANCELLED,
+        DeliveryStatus.UNKNOWN,
+      ],
+      priority: {
+        [DeliveryStatus.CONFIRMED]: 0,
+        [DeliveryStatus.CANCELLED]: 1,
+        [DeliveryStatus.UNKNOWN]: 2,
+
+      },
+      secondarySort: 'createdAtDesc',
+    },
+  };
   
   // Функции для управления модальным окном описания предмета
   const handleOpenItemDescriptionModal = useCallback((item: CaseItem) => {
@@ -81,16 +142,10 @@ export default function DeliveryTab(): React.JSX.Element {
 
   // Функция для преобразования данных API в формат DeliveryOrder
   const convertToDeliveryOrder = useCallback((order: Order): DeliveryOrder => {
+    const mappedStatus = mapApiStatusToDeliveryStatus(order.status);
     return {
       id: order.id,
-      status: order.status === 'Unknown' ? DeliveryStatus.UNKNOWN :
-              order.status === 'Created' ? DeliveryStatus.CREATED :
-              order.status === 'Accepted' ? DeliveryStatus.ACCEPTED :
-              order.status === 'InDelivery' ? DeliveryStatus.IN_DELIVERY :
-              order.status === 'Delivered' ? DeliveryStatus.DELIVERED :
-              order.status === 'Confirmed' ? DeliveryStatus.CONFIRMED :
-              order.status === 'Cancelled' ? DeliveryStatus.CANCELLED :
-              DeliveryStatus.UNKNOWN,
+      status: mappedStatus,
       item: {
         id: order.item.item.id,
         name: order.item.item.name,
@@ -110,23 +165,33 @@ export default function DeliveryTab(): React.JSX.Element {
       },
       showConfirmButton: order.status === 'Delivered'
     };
-  }, []);
+  }, [mapApiStatusToDeliveryStatus]);
 
-  // Преобразуем данные из API и разделяем на текущие и историю
-  const deliveryOrders = orders.map(convertToDeliveryOrder);
-  
-  // Разделяем заказы на текущие и историю
-  const currentOrders = deliveryOrders.filter(order => 
-    order.status === DeliveryStatus.CREATED || 
-    order.status === DeliveryStatus.ACCEPTED || 
-    order.status === DeliveryStatus.IN_DELIVERY || 
-    order.status === DeliveryStatus.DELIVERED
-  );
-  
-  const historyOrders = deliveryOrders.filter(order => 
-    order.status === DeliveryStatus.CONFIRMED || 
-    order.status === DeliveryStatus.CANCELLED
-  );
+  // Универсальная функция группировки и сортировки заказов по указанному блоку
+  const groupAndSortOrders = useCallback((srcOrders: Order[], block: BlockKey): DeliveryOrder[] => {
+    const cfg = deliveryBlockConfig[block];
+    const withStatus = srcOrders
+      .map((o) => ({ api: o, status: mapApiStatusToDeliveryStatus(o.status) }))
+      .filter(({ status }) => cfg.statuses.includes(status));
+
+    withStatus.sort((a, b) => {
+      const pa = cfg.priority[a.status] ?? 999;
+      const pb = cfg.priority[b.status] ?? 999;
+      if (pa !== pb) return pa - pb;
+      // Вторичная сортировка по дате создания
+      if (cfg.secondarySort === 'createdAtAsc') {
+        return new Date(a.api.createdAt).getTime() - new Date(b.api.createdAt).getTime();
+      }
+      // По умолчанию убывание (сначала новые)
+      return new Date(b.api.createdAt).getTime() - new Date(a.api.createdAt).getTime();
+    });
+
+    return withStatus.map(({ api }) => convertToDeliveryOrder(api));
+  }, [convertToDeliveryOrder, deliveryBlockConfig, mapApiStatusToDeliveryStatus]);
+
+  // Получаем заказы для каждого блока с учетом конфигурации
+  const currentOrders = groupAndSortOrders(orders, 'active');
+  const historyOrders = groupAndSortOrders(orders, 'history');
 
   // Подсчёт общего количества предметов
   const currentOrdersCount = currentOrders.reduce((total, order) => total + order.amount, 0);
