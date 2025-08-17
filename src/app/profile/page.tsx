@@ -125,7 +125,7 @@ export default function ProfilePage() {
   }, [handleIntersection]);
 
   return (
-    <div className="w-full max-w-6xl mx-auto pt-2 flex flex-col items-start gap-4 self-stretch">
+    <div className="w-full max-w-6xl mx-auto pt-2 flex flex-col items-start gap-2 self-stretch">
       <button 
         onClick={() => {
           router.back();
@@ -280,8 +280,8 @@ export default function ProfilePage() {
             )}
 
             {/* Сетка предметов инвентаря */}
-            <div className='flex flex-col items-start gap-4 self-stretch'>
-              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full'>
+            <div className='flex flex-col items-start gap-2 self-stretch'>
+              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 w-full'>
                 {inventoryItems.map((inventoryItem, index) => (
                   <InventoryItemCard 
                     key={`${inventoryItem.item.id}-${index}`}
@@ -305,7 +305,7 @@ export default function ProfilePage() {
               
               {/* Пустое состояние, если нет предметов */}
               {inventoryItems.length === 0 && !loading && (
-                <div className='flex flex-col items-center justify-center w-full py-16 gap-4'>
+                <div className='flex flex-col items-center justify-center w-full py-16 gap-2'>
                   <div className='w-16 h-16 rounded-full bg-[#F9F8FC]/[0.05] flex items-center justify-center'>
                     <svg 
                       width="32" 
@@ -350,7 +350,7 @@ export default function ProfilePage() {
         )}
 
         {activeTab === 'freeCases' && (
-          <div className='flex flex-col items-center justify-center w-full py-16 gap-4'>
+          <div className='flex flex-col items-center justify-center w-full py-16 gap-2'>
             <div className='w-16 h-16 rounded-full bg-[#F9F8FC]/[0.05] flex items-center justify-center'>
               <svg 
                 width="32" 
