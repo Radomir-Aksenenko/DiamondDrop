@@ -83,14 +83,14 @@ export default function DeliveryTab(): React.JSX.Element {
   const convertToDeliveryOrder = useCallback((order: Order): DeliveryOrder => {
     return {
       id: order.id,
-      status: order.status === 'Unknown' ? DeliveryStatus.CREATED :
+      status: order.status === 'Unknown' ? DeliveryStatus.UNKNOWN :
               order.status === 'Created' ? DeliveryStatus.CREATED :
               order.status === 'Accepted' ? DeliveryStatus.ACCEPTED :
               order.status === 'InDelivery' ? DeliveryStatus.IN_DELIVERY :
               order.status === 'Delivered' ? DeliveryStatus.DELIVERED :
               order.status === 'Confirmed' ? DeliveryStatus.CONFIRMED :
               order.status === 'Cancelled' ? DeliveryStatus.CANCELLED :
-              DeliveryStatus.CREATED,
+              DeliveryStatus.UNKNOWN,
       item: {
         id: order.item.item.id,
         name: order.item.item.name,

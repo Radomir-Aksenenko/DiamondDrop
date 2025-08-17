@@ -6,6 +6,7 @@ import { CaseItem } from '@/hooks/useCasesAPI';
 
 // Типы статусов доставки
 export enum DeliveryStatus {
+  UNKNOWN = 'unknown',
   CREATED = 'created',
   ACCEPTED = 'accepted',
   IN_DELIVERY = 'in_delivery',
@@ -17,15 +18,21 @@ export enum DeliveryStatus {
 // Функция для получения стилей статуса
 function getStatusStyles(status: DeliveryStatus): { text: string; color: string; bgColor: string } {
   switch (status) {
+    case DeliveryStatus.UNKNOWN:
+      return {
+        text: 'Ошибка. Свяжитесь с тех. поддержкой',
+        color: 'text-[#E74A4A]',
+        bgColor: 'bg-[rgba(231,74,74,0.10)]'
+      };
     case DeliveryStatus.CREATED:
       return {
-        text: 'Заказ создан',
+        text: 'Ожидает принятия курьером',
         color: 'text-[#F9F8FC]/50',
         bgColor: 'bg-[rgba(249,248,252,0.05)]'
       };
     case DeliveryStatus.ACCEPTED:
       return {
-        text: 'Заказ принят',
+        text: 'Принят курьером',
         color: 'text-[#5C5ADC]',
         bgColor: 'bg-[rgba(92,90,220,0.10)]'
       };
@@ -43,9 +50,9 @@ function getStatusStyles(status: DeliveryStatus): { text: string; color: string;
       };
     case DeliveryStatus.CONFIRMED:
       return {
-        text: 'Получен',
-        color: 'text-[#11AB47]',
-        bgColor: 'bg-[rgba(17,171,71,0.10)]'
+        text: 'Доставлен',
+        color: 'text-[#9CA3AF]',
+        bgColor: 'bg-[rgba(156,163,175,0.10)]'
       };
     case DeliveryStatus.CANCELLED:
       return {
