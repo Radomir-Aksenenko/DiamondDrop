@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, memo, useEffect } from 'react';
+import React, { useState, useMemo, memo, useEffect, useCallback, useRef } from 'react';
 import Modal from './Modal';
 import { InventoryItem } from '@/hooks/useInventoryAPI';
 import CaseItemCard from './CaseItemCard';
@@ -26,7 +26,10 @@ interface InventoryModalProps {
  */
 const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedItem, initialTab = 'sell', onSellSuccess }: InventoryModalProps) {
   const [activeTab, setActiveTab] = useState(initialTab);
-  const [selectedQuantity, setSelectedQuantity] = useState(1);
+  
+  // Используем useRef для хранения текущего количества - это предотвратит сброс при обновлениях
+  const quantityRef = useRef(1);
+  const [displayQuantity, setDisplayQuantity] = useState(1);
   const [isMaxSelected, setIsMaxSelected] = useState(false);
   
   // Хук для продажи предметов
@@ -37,59 +40,65 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
 
   // Максимальное количество доступных предметов
   const maxQuantity = selectedItem?.amount || 1;
+  
+  // Стабильный идентификатор предмета для отслеживания смены
+  const itemId = selectedItem?.item.id;
+  const previousItemIdRef = useRef<string | null>(null);
 
-  // Синхронизация активной вкладки с initialTab
+  // Инициализируем количество только при первом открытии или смене предмета
   useEffect(() => {
-    // Если предмет нельзя вывести и пытаемся открыть вкладку вывода, переключаемся на продажу
-    if (initialTab === 'withdraw' && selectedItem && !selectedItem.item.isWithdrawable) {
-      setActiveTab('sell');
-    } else {
-      setActiveTab(initialTab);
-    }
-  }, [initialTab, selectedItem]);
-
-  // Сброс количества при переключении вкладок
-  useEffect(() => {
-    setSelectedQuantity(1);
-    setIsMaxSelected(false);
-  }, [activeTab]);
-
-  // Сброс количества при смене предмета
-  useEffect(() => {
-    if (selectedItem?.item.id) {
-      setSelectedQuantity(1);
+    if (isOpen && itemId && itemId !== previousItemIdRef.current) {
+      quantityRef.current = 1;
+      setDisplayQuantity(1);
       setIsMaxSelected(false);
-      clearError(); // Очищаем ошибки продажи
-      clearWithdrawError(); // Очищаем ошибки вывода
+      previousItemIdRef.current = itemId;
+      clearError();
+      clearWithdrawError();
     }
-  }, [selectedItem?.item.id, clearError, clearWithdrawError]);
+  }, [isOpen, itemId, clearError, clearWithdrawError]);
+
+  // Синхронизация активной вкладки с initialTab только при открытии
+  useEffect(() => {
+    if (isOpen) {
+      if (initialTab === 'withdraw' && selectedItem && !selectedItem.item.isWithdrawable) {
+        setActiveTab('sell');
+      } else {
+        setActiveTab(initialTab);
+      }
+    }
+  }, [isOpen, initialTab, selectedItem]);
 
   // Функция для форматирования цены (убирает .0 если десятые равны нулю)
   const formatPrice = (price: number): string => {
     return price % 1 === 0 ? price.toString() : price.toFixed(1);
   };
 
-  // Функции для работы с количеством
-  const handleDecrease = () => {
-    if (selectedQuantity > 1) {
-      const newQuantity = selectedQuantity - 1;
-      setSelectedQuantity(newQuantity);
-      setIsMaxSelected(newQuantity === maxQuantity);
-    }
-  };
+  // Стабильные функции для работы с количеством
+  const updateQuantity = useCallback((newQuantity: number) => {
+    if (newQuantity < 1 || newQuantity > maxQuantity) return;
+    
+    quantityRef.current = newQuantity;
+    setDisplayQuantity(newQuantity);
+    setIsMaxSelected(newQuantity === maxQuantity);
+  }, [maxQuantity]);
 
-  const handleIncrease = () => {
-    if (selectedQuantity < maxQuantity) {
-      const newQuantity = selectedQuantity + 1;
-      setSelectedQuantity(newQuantity);
-      setIsMaxSelected(newQuantity === maxQuantity);
+  const handleDecrease = useCallback(() => {
+    const currentQuantity = quantityRef.current;
+    if (currentQuantity > 1) {
+      updateQuantity(currentQuantity - 1);
     }
-  };
+  }, [updateQuantity]);
 
-  const handleMaxClick = () => {
-    setSelectedQuantity(maxQuantity);
-    setIsMaxSelected(true);
-  };
+  const handleIncrease = useCallback(() => {
+    const currentQuantity = quantityRef.current;
+    if (currentQuantity < maxQuantity) {
+      updateQuantity(currentQuantity + 1);
+    }
+  }, [updateQuantity, maxQuantity]);
+
+  const handleMaxClick = useCallback(() => {
+    updateQuantity(maxQuantity);
+  }, [updateQuantity, maxQuantity]);
 
   // Функция для обработки кнопки вывода
   const handleWithdraw = async () => {
@@ -99,7 +108,7 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
     }
 
     try {
-      const success = await withdrawItem(selectedItem.item.id, selectedQuantity);
+      const success = await withdrawItem(selectedItem.item.id, quantityRef.current);
       
       if (success) {
         // Вызываем колбэк для обновления инвентаря
@@ -124,7 +133,7 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
     }
 
     try {
-      const result = await sellItem(selectedItem.item.id, selectedQuantity, selectedItem.item.price);
+      const result = await sellItem(selectedItem.item.id, quantityRef.current, selectedItem.item.price);
       
       if (result.success && result.totalAmount) {
         
@@ -216,9 +225,9 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
             <div className='flex items-center gap-1'>
               <button
                 onClick={handleDecrease}
-                disabled={selectedQuantity <= 1}
+                disabled={displayQuantity <= 1}
                 className={`flex w-9 p-2.5 px-2 py-1.5 flex-col items-center justify-center gap-2.5 rounded-md transition-colors ${
-                  selectedQuantity <= 1
+                  displayQuantity <= 1
                     ? 'bg-[#F9F8FC]/5 opacity-50 cursor-not-allowed' 
                     : 'bg-[#F9F8FC]/5 hover:bg-[#F9F8FC]/10 active:bg-[#F9F8FC]/15 cursor-pointer'
                 }`}
@@ -227,13 +236,13 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
                 <span className='text-[#F9F8FC] text-center text-16 font-bold'>-</span>
               </button>
               <div className='flex w-9 p-2.5 px-2 py-1.5 flex-col items-center justify-center gap-2.5 rounded-md bg-[#5C5ADC]'>
-                <span className='text-[#F9F8FC] text-center text-16 font-bold'>{selectedQuantity}</span>
+                <span className='text-[#F9F8FC] text-center text-16 font-bold'>{displayQuantity}</span>
               </div>
               <button
                 onClick={handleIncrease}
-                disabled={selectedQuantity >= maxQuantity}
+                disabled={displayQuantity >= maxQuantity}
                 className={`flex w-9 p-2.5 px-2 py-1.5 flex-col items-center justify-center gap-2.5 rounded-md transition-colors ${
-                  selectedQuantity >= maxQuantity
+                  displayQuantity >= maxQuantity
                     ? 'bg-[#F9F8FC]/5 opacity-50 cursor-not-allowed' 
                     : 'bg-[#F9F8FC]/5 hover:bg-[#F9F8FC]/10 active:bg-[#F9F8FC]/15 cursor-pointer'
                 }`}
@@ -294,7 +303,7 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
           }`}
           type="button"
         >
-          {isSelling ? 'Продажа...' : isWithdrawing ? 'Вывод...' : (activeTab === 'sell' ? `Продать • ${formatPrice((selectedItem?.item.price || 0) * selectedQuantity)} АР` : `Вывести ${selectedQuantity} шт.`)}
+          {isSelling ? 'Продажа...' : isWithdrawing ? 'Вывод...' : (activeTab === 'sell' ? `Продать • ${formatPrice((selectedItem?.item.price || 0) * displayQuantity)} АР` : `Вывести ${displayQuantity} шт.`)}
         </button>
       </div>
     </Modal>
