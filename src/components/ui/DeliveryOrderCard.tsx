@@ -32,7 +32,7 @@ function getStatusStyles(status: DeliveryStatus): { text: string; color: string;
       };
     case DeliveryStatus.ACCEPTED:
       return {
-        text: 'Заказ принят',
+        text: 'Ожидает принятия курьером',
         color: 'text-[#5C5ADC]',
         bgColor: 'bg-[rgba(92,90,220,0.10)]'
       };
@@ -51,8 +51,8 @@ function getStatusStyles(status: DeliveryStatus): { text: string; color: string;
     case DeliveryStatus.CONFIRMED:
       return {
         text: 'Получен',
-        color: 'text-[#11AB47]',
-        bgColor: 'bg-[rgba(17,171,71,0.10)]'
+        color: 'text-[#F9F8FC]/50',
+        bgColor: 'bg-[rgba(249,248,252,0.05)]'
       };
     case DeliveryStatus.CANCELLED:
       return {

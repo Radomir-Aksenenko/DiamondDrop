@@ -275,21 +275,20 @@ export default function DeliveryTab(): React.JSX.Element {
 
   return (
     <>
-      <div className='flex items-start gap-[8px] flex-[1_0_0] self-stretch mb-8'>
+      <div className='flex items-start gap-[8px] flex-[1_0_0] self-stretch mb-8' style={{ height: '600px', maxHeight: '70vh' }}>
         {/* Колонка текущих заказов */}
-        <div className='flex flex-col items-start gap-3 flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)]'>
+        <div className='flex flex-col items-start gap-3 flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)]' style={{ minHeight: '500px', height: '100%' }}>
           <div className='flex px-4 pb-3 pt-4 justify-between items-center self-stretch border-b border-[rgba(249,248,252,0.05)]'>
             <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold leading-normal'>Текущие заказы</p>
             <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold leading-normal opacity-30'>{currentOrdersCount} {pluralizeItems(currentOrdersCount)}</p>
           </div>
           <div 
-            className={`flex flex-col items-start px-3 gap-2 flex-[1_0_0] self-stretch ${
-              currentOrders.length > 2 ? 'overflow-y-auto pr-2' : ''
-            }`}
-            style={currentOrders.length > 2 ? {
+            className='flex flex-col items-start px-3 gap-2 flex-[1_0_0] self-stretch overflow-y-auto pr-2'
+            style={{
               scrollbarWidth: 'thin',
-              scrollbarColor: 'rgba(249, 248, 252, 0.2) transparent'
-            } : {}}
+              scrollbarColor: 'rgba(249, 248, 252, 0.2) transparent',
+              minHeight: '400px'
+            }}
           >
             <style jsx>{`
               div::-webkit-scrollbar {
@@ -330,19 +329,18 @@ export default function DeliveryTab(): React.JSX.Element {
         </div>
         
         {/* Колонка истории заказов */}
-        <div className='flex flex-col items-start gap-3 flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)]'>
+        <div className='flex flex-col items-start gap-3 flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)]' style={{ minHeight: '500px', height: '100%' }}>
           <div className='flex px-4 pb-3 pt-4 justify-between items-center self-stretch border-b border-[rgba(249,248,252,0.05)]'>
             <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold leading-normal'>История заказов</p>
             <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold leading-normal opacity-30'>{historyOrdersCount} {pluralizeItems(historyOrdersCount)}</p>
           </div>
           <div 
-            className={`flex flex-col items-start px-3 gap-2 flex-[1_0_0] self-stretch ${
-              historyOrders.length > 2 ? 'overflow-y-auto pr-2' : ''
-            }`}
-            style={historyOrders.length > 2 ? {
+            className='flex flex-col items-start px-3 gap-2 flex-[1_0_0] self-stretch overflow-y-auto pr-2'
+            style={{
               scrollbarWidth: 'thin',
-              scrollbarColor: 'rgba(249, 248, 252, 0.2) transparent'
-            } : {}}
+              scrollbarColor: 'rgba(249, 248, 252, 0.2) transparent',
+              minHeight: '400px'
+            }}
           >
             <style jsx>{`
               div::-webkit-scrollbar {
