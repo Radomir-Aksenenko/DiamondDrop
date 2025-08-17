@@ -44,7 +44,7 @@ export default function useBannersAPI() {
         // Если токен не найден, устанавливаем один баннер
         setBanners([{
           id: 'default',
-          imageUrl: '/Frame116.png',
+          imageUrl: '/Frame 116.png',
           url: '/news/1'
         }]);
         setLoading(false);
@@ -73,7 +73,7 @@ export default function useBannersAPI() {
       // Устанавливаем дефолтный баннер при ошибке
       setBanners([{
         id: 'default',
-        imageUrl: '/Frame116.svg',
+        imageUrl: '/Frame 116.png',
         url: '/news/1'
       }]);
     } finally {

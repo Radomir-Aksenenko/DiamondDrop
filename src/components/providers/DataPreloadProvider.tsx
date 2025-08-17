@@ -46,8 +46,8 @@ export const usePreloadedData = () => {
 
 // Моковые данные для разработки
 const mockBanners: APIBanner[] = [
-  { id: '1', imageUrl: '/Frame116.png', url: '/news/1' },
-  { id: '2', imageUrl: '/image27.png', url: '/news/2' }
+  { id: '1', imageUrl: '/Frame 116.png', url: '/news/1' },
+  { id: '2', imageUrl: '/image 27.png', url: '/news/2' }
 ];
 
 const mockUser: APIUser = {
@@ -127,7 +127,7 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
         // Если токен не найден, возвращаем дефолтный баннер
         return [{
           id: 'default',
-          imageUrl: '/Frame116.svg',
+          imageUrl: '/Frame 116.png',
           url: '/news/1'
         }];
       }
@@ -150,7 +150,7 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
       // Возвращаем дефолтный баннер при ошибке
       return [{
         id: 'default',
-        imageUrl: '/Frame116.svg',
+        imageUrl: '/Frame 116.png',
         url: '/news/1'
       }];
     }

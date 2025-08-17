@@ -19,7 +19,6 @@ export const API_ENDPOINTS = {
     me: `${API_BASE_URL}/users/me`,
     inventory: `${API_BASE_URL}/users/me/inventory`,
   },
-  orders: `${API_BASE_URL}/orders`,
 
 } as const;
 

@@ -12,7 +12,7 @@ import type { Order } from '@/hooks/useOrdersAPI';
 
 export default function DeliveryTab(): React.JSX.Element {
   // Хук для работы с API заказов
-  const { orders, loading, hasMore, loadInitial, loadMore, isInitialized, confirmOrder } = useOrdersAPI();
+  const { orders, loading, hasMore, loadInitial, loadMore, isInitialized } = useOrdersAPI();
   const observerRef = useRef<HTMLDivElement>(null);
   
   // Состояние для модальных окон
@@ -116,47 +116,16 @@ export default function DeliveryTab(): React.JSX.Element {
   const deliveryOrders = orders.map(convertToDeliveryOrder);
   
   // Разделяем заказы на текущие и историю
-  const currentOrdersUnsorted = deliveryOrders.filter(order => 
+  const currentOrders = deliveryOrders.filter(order => 
     order.status === DeliveryStatus.CREATED || 
     order.status === DeliveryStatus.ACCEPTED || 
     order.status === DeliveryStatus.IN_DELIVERY || 
     order.status === DeliveryStatus.DELIVERED
   );
   
-  const historyOrdersUnsorted = deliveryOrders.filter(order => 
+  const historyOrders = deliveryOrders.filter(order => 
     order.status === DeliveryStatus.CONFIRMED || 
-    order.status === DeliveryStatus.CANCELLED || 
-    order.status === DeliveryStatus.UNKNOWN
-  );
-
-  // Функция для определения приоритета активных заказов
-  const getCurrentOrderPriority = (status: DeliveryStatus): number => {
-    switch (status) {
-      case DeliveryStatus.DELIVERED: return 1; // Доставлен в филиал - первый
-      case DeliveryStatus.IN_DELIVERY: return 2; // Едет с курьером - второй
-      case DeliveryStatus.ACCEPTED: return 3; // Принят курьером - третий
-      case DeliveryStatus.CREATED: return 4; // Ожидает принятия - последний
-      default: return 5;
-    }
-  };
-
-  // Функция для определения приоритета истории заказов
-  const getHistoryOrderPriority = (status: DeliveryStatus): number => {
-    switch (status) {
-      case DeliveryStatus.CONFIRMED: return 1; // Получен - первый
-      case DeliveryStatus.CANCELLED: return 2; // Отменен - второй
-      case DeliveryStatus.UNKNOWN: return 3; // Ошибка - третий
-      default: return 4;
-    }
-  };
-
-  // Сортируем заказы по приоритету
-  const currentOrders = currentOrdersUnsorted.sort((a, b) => 
-    getCurrentOrderPriority(a.status) - getCurrentOrderPriority(b.status)
-  );
-  
-  const historyOrders = historyOrdersUnsorted.sort((a, b) => 
-    getHistoryOrderPriority(a.status) - getHistoryOrderPriority(b.status)
+    order.status === DeliveryStatus.CANCELLED
   );
 
   // Подсчёт общего количества предметов
@@ -312,10 +281,9 @@ export default function DeliveryTab(): React.JSX.Element {
               Отменить
             </button>
             <button 
-              onClick={async () => {
-                if (selectedOrderId) {
-                  await confirmOrder(selectedOrderId);
-                }
+              onClick={() => {
+                // Здесь будет логика подтверждения
+                console.log('Подтверждение получения заказа:', selectedOrderId);
                 handleCloseConfirmModal();
               }}
               className='bg-[#5C5ADC] hover:bg-[#4A48B0] transition-colors py-2.5 px-4 rounded-lg text-[#F9F8FC] font-bold cursor-pointer outline-none focus:outline-none active:outline-none focus:ring-0 active:ring-0'
