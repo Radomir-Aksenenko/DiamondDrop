@@ -6,38 +6,52 @@ import { CaseItem } from '@/hooks/useCasesAPI';
 
 // Типы статусов доставки
 export enum DeliveryStatus {
+  CREATED = 'created',
+  ACCEPTED = 'accepted',
+  IN_DELIVERY = 'in_delivery',
   DELIVERED = 'delivered',
-  IN_TRANSIT = 'in_transit',
-  WAITING_COURIER = 'waiting_courier',
-  DONE = 'done'
+  CONFIRMED = 'confirmed',
+  CANCELLED = 'cancelled'
 }
 
 // Функция для получения стилей статуса
 function getStatusStyles(status: DeliveryStatus): { text: string; color: string; bgColor: string } {
   switch (status) {
+    case DeliveryStatus.CREATED:
+      return {
+        text: 'Заказ создан',
+        color: 'text-[#F9F8FC]/50',
+        bgColor: 'bg-[rgba(249,248,252,0.05)]'
+      };
+    case DeliveryStatus.ACCEPTED:
+      return {
+        text: 'Заказ принят',
+        color: 'text-[#5C5ADC]',
+        bgColor: 'bg-[rgba(92,90,220,0.10)]'
+      };
+    case DeliveryStatus.IN_DELIVERY:
+      return {
+        text: 'Едет с курьером',
+        color: 'text-[#5C5ADC]',
+        bgColor: 'bg-[rgba(92,90,220,0.10)]'
+      };
     case DeliveryStatus.DELIVERED:
       return {
         text: 'Доставлен в филиал',
         color: 'text-[#11AB47]',
         bgColor: 'bg-[rgba(17,171,71,0.10)]'
       };
-    case DeliveryStatus.IN_TRANSIT:
+    case DeliveryStatus.CONFIRMED:
       return {
-        text: 'Едет с курьером',
-        color: 'text-[#5C5ADC]',
-        bgColor: 'bg-[rgba(92,90,220,0.10)]'
+        text: 'Получен',
+        color: 'text-[#11AB47]',
+        bgColor: 'bg-[rgba(17,171,71,0.10)]'
       };
-    case DeliveryStatus.WAITING_COURIER:
+    case DeliveryStatus.CANCELLED:
       return {
-        text: 'Ожидает принятия курьером',
-        color: 'text-[#F9F8FC]/50 text-16 font-bold overflow-hidden',
-        bgColor: 'bg-[rgba(249,248,252,0.05)]'
-      };
-    case DeliveryStatus.DONE:
-      return {
-        text: 'Доставлен в 15:30 · 42.04.2442',
-        color: 'text-[#F9F8FC]/50 text-16 font-bold overflow-hidden',
-        bgColor: 'bg-[rgba(249,248,252,0.05)]'
+        text: 'Отменен',
+        color: 'text-[#E74A4A]',
+        bgColor: 'bg-[rgba(231,74,74,0.10)]'
       };
     default:
       return {
