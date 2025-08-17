@@ -43,7 +43,7 @@ export interface Order {
     amount: number;
   };
   price: number;
-  status: 'Created' | 'InProgress' | 'Delivered' | 'Done' | 'Cancelled';
+  status: 'Unknown' | 'Created' | 'Accepted' | 'InDelivery' | 'Delivered' | 'Confirmed' | 'Cancelled';
   createdAt: string;
 }
 
@@ -142,7 +142,7 @@ export const useOrdersAPI = () => {
             amount: 1
           },
           price: Math.random() * 100,
-            status: (['Created', 'InProgress', 'Delivered', 'Done'] as const)[Math.floor(Math.random() * 4)],
+            status: (['Unknown', 'Created', 'Accepted', 'InDelivery', 'Delivered', 'Confirmed', 'Cancelled'] as const)[Math.floor(Math.random() * 7)],
             createdAt: new Date().toISOString()
         }));
 

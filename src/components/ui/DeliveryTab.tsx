@@ -12,7 +12,7 @@ import type { Order } from '@/hooks/useOrdersAPI';
 
 export default function DeliveryTab(): React.JSX.Element {
   // Хук для работы с API заказов
-  const { orders, loading, error, hasMore, loadInitial, loadMore, isInitialized } = useOrdersAPI();
+  const { orders, loading, hasMore, loadInitial, loadMore, isInitialized } = useOrdersAPI();
   const observerRef = useRef<HTMLDivElement>(null);
   
   // Состояние для модальных окон
@@ -67,13 +67,14 @@ export default function DeliveryTab(): React.JSX.Element {
       { threshold: 0.1 }
     );
 
-    if (observerRef.current) {
-      observer.observe(observerRef.current);
+    const currentRef = observerRef.current;
+    if (currentRef) {
+      observer.observe(currentRef);
     }
 
     return () => {
-      if (observerRef.current) {
-        observer.unobserve(observerRef.current);
+      if (currentRef) {
+        observer.unobserve(currentRef);
       }
     };
   }, [hasMore, loading, loadMore]);
@@ -82,10 +83,12 @@ export default function DeliveryTab(): React.JSX.Element {
   const convertToDeliveryOrder = useCallback((order: Order): DeliveryOrder => {
     return {
       id: order.id,
-      status: order.status === 'Delivered' ? DeliveryStatus.DELIVERED : 
-              order.status === 'InProgress' ? DeliveryStatus.IN_DELIVERY :
-              order.status === 'Done' ? DeliveryStatus.CONFIRMED :
+      status: order.status === 'Unknown' ? DeliveryStatus.CREATED :
               order.status === 'Created' ? DeliveryStatus.CREATED :
+              order.status === 'Accepted' ? DeliveryStatus.ACCEPTED :
+              order.status === 'InDelivery' ? DeliveryStatus.IN_DELIVERY :
+              order.status === 'Delivered' ? DeliveryStatus.DELIVERED :
+              order.status === 'Confirmed' ? DeliveryStatus.CONFIRMED :
               order.status === 'Cancelled' ? DeliveryStatus.CANCELLED :
               DeliveryStatus.CREATED,
       item: {

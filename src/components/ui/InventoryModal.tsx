@@ -62,7 +62,7 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
       clearError(); // Очищаем ошибки продажи
       clearWithdrawError(); // Очищаем ошибки вывода
     }
-  }, [selectedItem?.item.id]);
+  }, [selectedItem?.item.id, clearError, clearWithdrawError]);
 
   // Функция для форматирования цены (убирает .0 если десятые равны нулю)
   const formatPrice = (price: number): string => {
