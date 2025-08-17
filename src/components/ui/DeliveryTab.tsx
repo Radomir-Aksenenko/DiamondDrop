@@ -116,16 +116,47 @@ export default function DeliveryTab(): React.JSX.Element {
   const deliveryOrders = orders.map(convertToDeliveryOrder);
   
   // Разделяем заказы на текущие и историю
-  const currentOrders = deliveryOrders.filter(order => 
+  const currentOrdersUnsorted = deliveryOrders.filter(order => 
     order.status === DeliveryStatus.CREATED || 
     order.status === DeliveryStatus.ACCEPTED || 
     order.status === DeliveryStatus.IN_DELIVERY || 
     order.status === DeliveryStatus.DELIVERED
   );
   
-  const historyOrders = deliveryOrders.filter(order => 
+  const historyOrdersUnsorted = deliveryOrders.filter(order => 
     order.status === DeliveryStatus.CONFIRMED || 
-    order.status === DeliveryStatus.CANCELLED
+    order.status === DeliveryStatus.CANCELLED || 
+    order.status === DeliveryStatus.UNKNOWN
+  );
+
+  // Функция для определения приоритета активных заказов
+  const getCurrentOrderPriority = (status: DeliveryStatus): number => {
+    switch (status) {
+      case DeliveryStatus.DELIVERED: return 1; // Доставлен в филиал - первый
+      case DeliveryStatus.IN_DELIVERY: return 2; // Едет с курьером - второй
+      case DeliveryStatus.ACCEPTED: return 3; // Принят курьером - третий
+      case DeliveryStatus.CREATED: return 4; // Ожидает принятия - последний
+      default: return 5;
+    }
+  };
+
+  // Функция для определения приоритета истории заказов
+  const getHistoryOrderPriority = (status: DeliveryStatus): number => {
+    switch (status) {
+      case DeliveryStatus.CONFIRMED: return 1; // Получен - первый
+      case DeliveryStatus.CANCELLED: return 2; // Отменен - второй
+      case DeliveryStatus.UNKNOWN: return 3; // Ошибка - третий
+      default: return 4;
+    }
+  };
+
+  // Сортируем заказы по приоритету
+  const currentOrders = currentOrdersUnsorted.sort((a, b) => 
+    getCurrentOrderPriority(a.status) - getCurrentOrderPriority(b.status)
+  );
+  
+  const historyOrders = historyOrdersUnsorted.sort((a, b) => 
+    getHistoryOrderPriority(a.status) - getHistoryOrderPriority(b.status)
   );
 
   // Подсчёт общего количества предметов
