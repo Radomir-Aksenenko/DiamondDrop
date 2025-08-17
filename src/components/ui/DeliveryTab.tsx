@@ -10,6 +10,9 @@ import { usePluralize } from '@/hooks/usePluralize';
 import DeliveryLoader, { DeliveryCircleLoader } from './DeliveryLoader';
 import type { Order } from '@/hooks/useOrdersAPI';
 
+// Настраиваемый параметр высоты блоков доставки
+const DELIVERY_BLOCKS_HEIGHT = 300; // Измените это значение для изменения высоты блоков
+
 export default function DeliveryTab(): React.JSX.Element {
   // Хук для работы с API заказов
   const { orders, loading, hasMore, loadInitial, loadMore, isInitialized } = useOrdersAPI();
@@ -275,9 +278,9 @@ export default function DeliveryTab(): React.JSX.Element {
 
   return (
     <>
-      <div className='flex items-start gap-[8px] flex-[1_0_0] self-stretch mb-8' style={{ height: '600px', maxHeight: '70vh' }}>
+      <div className='flex items-start gap-[8px] flex-[1_0_0] self-stretch mb-8' style={{ height: `${DELIVERY_BLOCKS_HEIGHT}px`, maxHeight: '70vh' }}>
         {/* Колонка текущих заказов */}
-        <div className='flex flex-col items-start gap-3 flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)]' style={{ minHeight: '500px', height: '100%' }}>
+        <div className='flex flex-col items-start gap-3 flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)]' style={{ minHeight: `${DELIVERY_BLOCKS_HEIGHT - 100}px`, height: '100%' }}>
           <div className='flex px-4 pb-3 pt-4 justify-between items-center self-stretch border-b border-[rgba(249,248,252,0.05)]'>
             <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold leading-normal'>Текущие заказы</p>
             <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold leading-normal opacity-30'>{currentOrdersCount} {pluralizeItems(currentOrdersCount)}</p>
@@ -287,7 +290,7 @@ export default function DeliveryTab(): React.JSX.Element {
             style={{
               scrollbarWidth: 'thin',
               scrollbarColor: 'rgba(249, 248, 252, 0.2) transparent',
-              minHeight: '400px'
+              minHeight: `${DELIVERY_BLOCKS_HEIGHT - 200}px`
             }}
           >
             <style jsx>{`
@@ -329,7 +332,7 @@ export default function DeliveryTab(): React.JSX.Element {
         </div>
         
         {/* Колонка истории заказов */}
-        <div className='flex flex-col items-start gap-3 flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)]' style={{ minHeight: '500px', height: '100%' }}>
+        <div className='flex flex-col items-start gap-3 flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)]' style={{ minHeight: `${DELIVERY_BLOCKS_HEIGHT - 100}px`, height: '100%' }}>
           <div className='flex px-4 pb-3 pt-4 justify-between items-center self-stretch border-b border-[rgba(249,248,252,0.05)]'>
             <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold leading-normal'>История заказов</p>
             <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold leading-normal opacity-30'>{historyOrdersCount} {pluralizeItems(historyOrdersCount)}</p>
@@ -339,7 +342,7 @@ export default function DeliveryTab(): React.JSX.Element {
             style={{
               scrollbarWidth: 'thin',
               scrollbarColor: 'rgba(249, 248, 252, 0.2) transparent',
-              minHeight: '400px'
+              minHeight: `${DELIVERY_BLOCKS_HEIGHT - 200}px`
             }}
           >
             <style jsx>{`
