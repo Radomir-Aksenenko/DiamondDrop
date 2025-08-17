@@ -11,7 +11,7 @@ import DeliveryLoader, { DeliveryCircleLoader } from './DeliveryLoader';
 import type { Order } from '@/hooks/useOrdersAPI';
 
 // Настраиваемый параметр высоты блоков доставки
-const DELIVERY_BLOCKS_HEIGHT = 300; // Измените это значение для изменения высоты блоков
+const DELIVERY_BLOCKS_HEIGHT = 400; // Измените это значение для изменения высоты блоков
 
 export default function DeliveryTab(): React.JSX.Element {
   // Хук для работы с API заказов
