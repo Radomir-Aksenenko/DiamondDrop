@@ -50,7 +50,7 @@ function getStatusStyles(status: DeliveryStatus): { text: string; color: string;
       };
     case DeliveryStatus.CONFIRMED:
       return {
-        text: 'Доставлен в время • дата',
+        text: 'Получен',
         color: 'text-[#9CA3AF]',
         bgColor: 'bg-[rgba(156,163,175,0.10)]'
       };

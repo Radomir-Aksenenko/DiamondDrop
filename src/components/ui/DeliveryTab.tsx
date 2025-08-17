@@ -115,15 +115,24 @@ export default function DeliveryTab(): React.JSX.Element {
   // Преобразуем данные из API и разделяем на текущие и историю
   const deliveryOrders = orders.map(convertToDeliveryOrder);
   
-  // Функция для определения приоритета статуса (меньше число = выше приоритет)
-  const getStatusPriority = (status: DeliveryStatus): number => {
+  // Функция для определения приоритета статуса текущих заказов (меньше число = выше приоритет)
+  const getCurrentStatusPriority = (status: DeliveryStatus): number => {
     switch (status) {
-      case DeliveryStatus.CONFIRMED: return 1; // Получен - самый высокий приоритет
-      case DeliveryStatus.DELIVERED: return 2; // Доставлен в филиал - выше активных заказов
-      case DeliveryStatus.IN_DELIVERY: return 3; // Едет с курьером - после доставленных
-      case DeliveryStatus.ACCEPTED: return 4; // Принят курьером - после едущих
-      case DeliveryStatus.CREATED: return 5; // Ожидает принятия - самый низкий приоритет
-      default: return 6;
+      case DeliveryStatus.DELIVERED: return 1; // Доставлен в филиал - выше активных заказов
+      case DeliveryStatus.IN_DELIVERY: return 2; // Едет с курьером - после доставленных
+      case DeliveryStatus.ACCEPTED: return 3; // Принят курьером - после едущих
+      case DeliveryStatus.CREATED: return 4; // Ожидает принятия - самый низкий приоритет
+      default: return 5;
+    }
+  };
+
+  // Функция для определения приоритета статуса истории заказов (меньше число = выше приоритет)
+  const getHistoryStatusPriority = (status: DeliveryStatus): number => {
+    switch (status) {
+      case DeliveryStatus.CONFIRMED: return 1; // Получен - выше ошибки
+      case DeliveryStatus.CANCELLED: return 2; // Отменен
+      case DeliveryStatus.UNKNOWN: return 3; // Ошибка - ниже получен
+      default: return 4;
     }
   };
 
@@ -133,14 +142,17 @@ export default function DeliveryTab(): React.JSX.Element {
       order.status === DeliveryStatus.CREATED || 
       order.status === DeliveryStatus.ACCEPTED || 
       order.status === DeliveryStatus.IN_DELIVERY || 
-      order.status === DeliveryStatus.DELIVERED ||
-      order.status === DeliveryStatus.CONFIRMED
+      order.status === DeliveryStatus.DELIVERED
     )
-    .sort((a, b) => getStatusPriority(a.status) - getStatusPriority(b.status));
+    .sort((a, b) => getCurrentStatusPriority(a.status) - getCurrentStatusPriority(b.status));
   
-  const historyOrders = deliveryOrders.filter(order => 
-    order.status === DeliveryStatus.CANCELLED
-  );
+  const historyOrders = deliveryOrders
+    .filter(order => 
+      order.status === DeliveryStatus.CONFIRMED ||
+      order.status === DeliveryStatus.CANCELLED ||
+      order.status === DeliveryStatus.UNKNOWN
+    )
+    .sort((a, b) => getHistoryStatusPriority(a.status) - getHistoryStatusPriority(b.status));
 
   // Подсчёт общего количества предметов
   const currentOrdersCount = currentOrders.reduce((total, order) => total + order.amount, 0);
