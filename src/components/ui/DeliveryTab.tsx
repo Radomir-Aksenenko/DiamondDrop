@@ -163,9 +163,9 @@ export default function DeliveryTab(): React.JSX.Element {
           </div>
           <div 
             className={`flex flex-col items-start px-3 gap-2 flex-[1_0_0] self-stretch ${
-              currentOrders.length > 3 ? 'overflow-y-auto pr-2' : ''
+              currentOrders.length > 2 ? 'overflow-y-auto pr-2' : ''
             }`}
-            style={currentOrders.length > 3 ? {
+            style={currentOrders.length > 2 ? {
               scrollbarWidth: 'thin',
               scrollbarColor: 'rgba(249, 248, 252, 0.2) transparent'
             } : {}}
@@ -212,9 +212,9 @@ export default function DeliveryTab(): React.JSX.Element {
           </div>
           <div 
             className={`flex flex-col items-start px-3 gap-2 flex-[1_0_0] self-stretch ${
-              historyOrders.length > 3 ? 'overflow-y-auto pr-2' : ''
+              historyOrders.length > 2 ? 'overflow-y-auto pr-2' : ''
             }`}
-            style={historyOrders.length > 3 ? {
+            style={historyOrders.length > 2 ? {
               scrollbarWidth: 'thin',
               scrollbarColor: 'rgba(249, 248, 252, 0.2) transparent'
             } : {}}
