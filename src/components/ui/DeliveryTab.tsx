@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { CaseItem } from '@/hooks/useCasesAPI';
 import Modal from './Modal';
 import { DeliveryOrderCard, DeliveryOrder, DeliveryStatus } from './DeliveryOrderCard';
@@ -52,11 +52,7 @@ export default function DeliveryTab(): React.JSX.Element {
 
   // Конфигурация группировки и сортировки по блокам (легко изменяемая)
   type BlockKey = 'active' | 'history';
-  const deliveryBlockConfig: Record<BlockKey, {
-    statuses: DeliveryStatus[]; // какие статусы включать в блок
-    priority: Partial<Record<DeliveryStatus, number>>; // приоритет сортировки по статусам (меньше = выше)
-    secondarySort?: 'createdAtDesc' | 'createdAtAsc'; // вторичная сортировка внутри одного статуса
-  }> = {
+  const deliveryBlockConfig = useMemo(() => ({
     active: {
       // Можно легко переставлять порядок статусов для активного блока
       statuses: [
@@ -70,8 +66,8 @@ export default function DeliveryTab(): React.JSX.Element {
         [DeliveryStatus.IN_DELIVERY]: 1,
         [DeliveryStatus.ACCEPTED]: 2,
         [DeliveryStatus.CREATED]: 3,
-      },
-      secondarySort: 'createdAtDesc',
+      } as Record<DeliveryStatus, number>,
+      secondarySort: 'createdAtAsc' as const,
     },
     history: {
       statuses: [
@@ -83,11 +79,10 @@ export default function DeliveryTab(): React.JSX.Element {
         [DeliveryStatus.CONFIRMED]: 0,
         [DeliveryStatus.CANCELLED]: 1,
         [DeliveryStatus.UNKNOWN]: 2,
-
-      },
-      secondarySort: 'createdAtDesc',
+      } as Record<DeliveryStatus, number>,
+      secondarySort: 'createdAtDesc' as const,
     },
-  };
+  }), []);
   
   // Функции для управления модальным окном описания предмета
   const handleOpenItemDescriptionModal = useCallback((item: CaseItem) => {

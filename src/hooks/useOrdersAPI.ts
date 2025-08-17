@@ -101,32 +101,33 @@ export const formatCoordinates = (coordinates: OrderCoordinate[]): string => {
 };
 
 // Функция валидации заказа
-const validateOrder = (order: any): order is Order => {
-  if (!order || typeof order !== 'object') {
+const validateOrder = (order: unknown): order is Order => {
+  const o = order as Partial<Order> | null | undefined;
+  if (!o || typeof o !== 'object') {
     console.warn('validateOrder: заказ не является объектом', order);
     return false;
   }
-  
-  if (!order.id || typeof order.id !== 'string') {
-    console.warn('validateOrder: некорректный ID заказа', order.id);
+
+  if (!('id' in o) || typeof o.id !== 'string') {
+    console.warn('validateOrder: некорректный ID заказа', o.id);
     return false;
   }
-  
-  if (!order.branch || typeof order.branch !== 'object') {
-    console.warn('validateOrder: некорректный филиал', order.branch);
+
+  if (!('branch' in o) || typeof o.branch !== 'object' || !o.branch) {
+    console.warn('validateOrder: некорректный филиал', o.branch);
     return false;
   }
-  
-  if (!order.item || typeof order.item !== 'object' || !order.item.item) {
-    console.warn('validateOrder: некорректный предмет', order.item);
+
+  if (!('item' in o) || typeof o.item !== 'object' || !o.item || !('item' in o.item)) {
+    console.warn('validateOrder: некорректный предмет', o.item);
     return false;
   }
-  
-  if (!order.status || typeof order.status !== 'string') {
-    console.warn('validateOrder: некорректный статус', order.status);
+
+  if (!('status' in o) || typeof o.status !== 'string') {
+    console.warn('validateOrder: некорректный статус', o.status);
     return false;
   }
-  
+
   return true;
 };
 
