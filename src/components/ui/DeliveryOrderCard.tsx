@@ -33,8 +33,8 @@ function getStatusStyles(status: DeliveryStatus): { text: string; color: string;
     case DeliveryStatus.ACCEPTED:
       return {
         text: 'Принят курьером',
-        color: 'text-[#5C5ADC]',
-        bgColor: 'bg-[rgba(92,90,220,0.10)]'
+        color: 'text-[#9CA3AF]',
+        bgColor: 'bg-[rgba(156,163,175,0.10)]'
       };
     case DeliveryStatus.IN_DELIVERY:
       return {

@@ -125,7 +125,8 @@ export default function DeliveryTab(): React.JSX.Element {
   
   const historyOrders = deliveryOrders.filter(order => 
     order.status === DeliveryStatus.CONFIRMED || 
-    order.status === DeliveryStatus.CANCELLED
+    order.status === DeliveryStatus.CANCELLED || 
+    order.status === DeliveryStatus.UNKNOWN
   );
 
   // Подсчёт общего количества предметов
