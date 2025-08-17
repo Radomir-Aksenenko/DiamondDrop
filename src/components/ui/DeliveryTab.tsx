@@ -291,7 +291,7 @@ export default function DeliveryTab(): React.JSX.Element {
               scrollbarWidth: 'thin',
               scrollbarColor: 'rgba(249, 248, 252, 0.2) transparent',
               minHeight: `${DELIVERY_BLOCKS_HEIGHT - 200}px`,
-              paddingBottom: '20px'
+              paddingBottom: '10px'
             }}
           >
             <style jsx>{`
@@ -341,11 +341,11 @@ export default function DeliveryTab(): React.JSX.Element {
           <div 
             className='flex flex-col items-start px-3 gap-2 flex-[1_0_0] self-stretch overflow-y-auto pr-2'
             style={{
-               scrollbarWidth: 'thin',
-               scrollbarColor: 'rgba(249, 248, 252, 0.2) transparent',
-               minHeight: `${DELIVERY_BLOCKS_HEIGHT - 200}px`,
-               paddingBottom: '20px'
-             }}
+                scrollbarWidth: 'thin',
+                scrollbarColor: 'rgba(249, 248, 252, 0.2) transparent',
+                minHeight: `${DELIVERY_BLOCKS_HEIGHT - 200}px`,
+                paddingBottom: '10px'
+              }}
           >
             <style jsx>{`
               div::-webkit-scrollbar {
