@@ -140,62 +140,117 @@ export default function DeliveryTab(): React.JSX.Element {
     };
   }, [hasMore, loading, loadMore]);
 
-  // Функция для преобразования данных API в формат DeliveryOrder
+  // Безопасное преобразование данных API в формат DeliveryOrder
   const convertToDeliveryOrder = useCallback((order: Order): DeliveryOrder => {
-    const mappedStatus = mapApiStatusToDeliveryStatus(order.status);
-    return {
-      id: order.id,
-      status: mappedStatus,
-      item: {
-        id: order.item.item.id,
-        name: order.item.item.name,
-        description: order.item.item.description || '',
-        rarity: order.item.item.rarity,
-        price: order.item.item.price,
-        amount: order.item.item.amount,
-        imageUrl: order.item.item.imageUrl,
-        percentChance: order.item.item.percentChance || 0,
-        isWithdrawable: order.item.item.isWithdrawable || false
-      } as CaseItem,
-      amount: order.item.amount,
-      branch: {
-        name: order.branch.name,
-        coordinates: formatCoordinates(order.branch.coordinates),
-        cell: order.branch.cell.name
-      },
-      showConfirmButton: order.status === 'Delivered'
-    };
+    try {
+      const mappedStatus = mapApiStatusToDeliveryStatus(order?.status ?? 'Unknown');
+      const apiItem = order?.item?.item ?? {
+        id: 'unknown',
+        name: 'Неизвестный предмет',
+        description: '',
+        imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/barrier/icon',
+        amount: 1,
+        price: 0,
+        percentChance: 0,
+        rarity: 'Common',
+        isWithdrawable: false
+      } as CaseItem;
+
+      const safeCaseItem: CaseItem = {
+        id: apiItem.id || 'unknown',
+        name: apiItem.name || 'Неизвестный предмет',
+        description: apiItem.description || '',
+        rarity: (apiItem.rarity as CaseItem['rarity']) || 'Common',
+        price: typeof apiItem.price === 'number' ? apiItem.price : 0,
+        amount: typeof apiItem.amount === 'number' ? apiItem.amount : 1,
+        imageUrl: apiItem.imageUrl || 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/barrier/icon',
+        percentChance: typeof apiItem.percentChance === 'number' ? apiItem.percentChance : 0,
+        isWithdrawable: Boolean(apiItem.isWithdrawable)
+      };
+
+      const branchName = order?.branch?.name || 'Неизвестный филиал';
+      const coordinates = formatCoordinates(order?.branch?.coordinates || []);
+      const cell = order?.branch?.cell?.name || 'Пока неизвестно';
+
+      return {
+        id: order?.id || `order-${Math.random().toString(36).slice(2)}`,
+        status: mappedStatus,
+        item: safeCaseItem,
+        amount: typeof order?.item?.amount === 'number' ? order.item.amount : 1,
+        branch: {
+          name: branchName,
+          coordinates,
+          cell
+        },
+        showConfirmButton: order?.status === 'Delivered'
+      };
+    } catch (err) {
+      console.error('DeliveryTab: Ошибка преобразования заказа', order, err);
+      // Фоллбек карточка, чтобы UI не ломался
+      return {
+        id: `fallback-${Math.random().toString(36).slice(2)}`,
+        status: DeliveryStatus.UNKNOWN,
+        item: {
+          id: 'unknown',
+          name: 'Неизвестный предмет',
+          description: '',
+          rarity: 'Common',
+          price: 0,
+          amount: 1,
+          imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/barrier/icon',
+          percentChance: 0,
+          isWithdrawable: false
+        },
+        amount: 1,
+        branch: {
+          name: 'Неизвестный филиал',
+          coordinates: 'неизвестно',
+          cell: 'Пока неизвестно'
+        },
+        showConfirmButton: false
+      };
+    }
   }, [mapApiStatusToDeliveryStatus]);
 
   // Универсальная функция группировки и сортировки заказов по указанному блоку
   const groupAndSortOrders = useCallback((srcOrders: Order[], block: BlockKey): DeliveryOrder[] => {
-    const cfg = deliveryBlockConfig[block];
-    const withStatus = srcOrders
-      .map((o) => ({ api: o, status: mapApiStatusToDeliveryStatus(o.status) }))
-      .filter(({ status }) => cfg.statuses.includes(status));
-
-    withStatus.sort((a, b) => {
-      const pa = cfg.priority[a.status] ?? 999;
-      const pb = cfg.priority[b.status] ?? 999;
-      if (pa !== pb) return pa - pb;
-      // Вторичная сортировка по дате создания
-      if (cfg.secondarySort === 'createdAtAsc') {
-        return new Date(a.api.createdAt).getTime() - new Date(b.api.createdAt).getTime();
-      }
-      // По умолчанию убывание (сначала новые)
-      return new Date(b.api.createdAt).getTime() - new Date(a.api.createdAt).getTime();
-    });
-
-    return withStatus.map(({ api }) => convertToDeliveryOrder(api));
+    try {
+      const cfg = deliveryBlockConfig[block];
+      const withStatus = (srcOrders || [])
+        .map((o) => ({ api: o, status: mapApiStatusToDeliveryStatus(o?.status ?? 'Unknown') }))
+        .filter(({ status }) => cfg.statuses.includes(status));
+  
+      withStatus.sort((a, b) => {
+        const pa = cfg.priority[a.status] ?? 999;
+        const pb = cfg.priority[b.status] ?? 999;
+        if (pa !== pb) return pa - pb;
+        // Вторичная сортировка по дате создания
+        if (cfg.secondarySort === 'createdAtAsc') {
+          return new Date(a.api.createdAt).getTime() - new Date(b.api.createdAt).getTime();
+        }
+        // По умолчанию убывание (сначала новые)
+        return new Date(b.api.createdAt).getTime() - new Date(a.api.createdAt).getTime();
+      });
+  
+      const result = withStatus.map(({ api }) => convertToDeliveryOrder(api));
+      return result;
+    } catch (err) {
+      console.error('DeliveryTab: Ошибка группировки/сортировки заказов', err);
+      return [];
+    }
   }, [convertToDeliveryOrder, deliveryBlockConfig, mapApiStatusToDeliveryStatus]);
 
   // Получаем заказы для каждого блока с учетом конфигурации
   const currentOrders = groupAndSortOrders(orders, 'active');
   const historyOrders = groupAndSortOrders(orders, 'history');
 
+  useEffect(() => {
+    console.log('[DeliveryTab] totals:', { total: orders.length, current: currentOrders.length, history: historyOrders.length });
+  }, [orders, currentOrders, historyOrders]);
+
   // Подсчёт общего количества предметов
-  const currentOrdersCount = currentOrders.reduce((total, order) => total + order.amount, 0);
-  const historyOrdersCount = historyOrders.reduce((total, order) => total + order.amount, 0);
+  const currentOrdersCount = currentOrders.reduce((total, order) => total + (order?.amount ?? 0), 0);
+  const historyOrdersCount = historyOrders.reduce((total, order) => total + (order?.amount ?? 0), 0);
 
   // Обработчики событий
   const handleConfirmDelivery = (orderId: string) => {
@@ -258,10 +313,14 @@ export default function DeliveryTab(): React.JSX.Element {
             `}</style>
             {loading && currentOrders.length === 0 ? (
               <DeliveryLoader count={3} />
+            ) : currentOrders.length === 0 ? (
+              <div className='flex items-center justify-center w-full py-6'>
+                <p className='text-[#F9F8FC]/40 font-["Actay_Wide"] text-sm'>Пока нет текущих заказов</p>
+              </div>
             ) : (
               currentOrders.map((order) => (
                 <DeliveryOrderCard 
-                    key={order.id}
+                    key={`active-${order.id}`}
                     order={order}
                     onConfirmDelivery={handleConfirmDelivery}
                     onBranchClick={handleBranchClick}
@@ -307,10 +366,14 @@ export default function DeliveryTab(): React.JSX.Element {
             `}</style>
             {loading && historyOrders.length === 0 ? (
               <DeliveryLoader count={3} />
+            ) : historyOrders.length === 0 ? (
+              <div className='flex items-center justify-center w-full py-6'>
+                <p className='text-[#F9F8FC]/40 font-["Actay_Wide"] text-sm'>Пока нет истории заказов</p>
+              </div>
             ) : (
               historyOrders.map((order) => (
                 <DeliveryOrderCard 
-                    key={order.id}
+                    key={`history-${order.id}`}
                     order={order}
                     onConfirmDelivery={handleConfirmDelivery}
                     onBranchClick={handleBranchClick}
