@@ -1,12 +1,19 @@
 'use client';
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { CaseItem } from '@/hooks/useCasesAPI';
 import Modal from './Modal';
 import { DeliveryOrderCard, DeliveryOrder, DeliveryStatus } from './DeliveryOrderCard';
 import ItemDescriptionModal from './ItemDescriptionModal';
+import { useOrdersAPI, formatCoordinates } from '@/hooks/useOrdersAPI';
+import { usePluralize } from '@/hooks/usePluralize';
+import type { Order } from '@/hooks/useOrdersAPI';
 
 export default function DeliveryTab(): React.JSX.Element {
+  // Хук для работы с API заказов
+  const { orders, loading, error, hasMore, loadInitial, loadMore, isInitialized } = useOrdersAPI();
+  const observerRef = useRef<HTMLDivElement>(null);
+  
   // Состояние для модальных окон
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [isBranchModalOpen, setIsBranchModalOpen] = useState(false);
@@ -16,6 +23,9 @@ export default function DeliveryTab(): React.JSX.Element {
   // Состояние для модального окна описания предмета
   const [isItemDescriptionModalOpen, setIsItemDescriptionModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<CaseItem | null>(null);
+  
+  // Хук для склонения слов
+  const { pluralizeItems } = usePluralize();
   
   // Функции для управления модальным окном описания предмета
   const handleOpenItemDescriptionModal = useCallback((item: CaseItem) => {
@@ -38,123 +48,78 @@ export default function DeliveryTab(): React.JSX.Element {
     }
   }, [isItemDescriptionModalOpen, selectedItem]);
 
-  // Данные текущих заказов
-  const currentOrders: DeliveryOrder[] = [
-    {
-      id: '1',
-      status: DeliveryStatus.DELIVERED,
-      item: {
-        id: '1',
-        name: 'AK-47 | Redline',
-        description: 'Автомат Калашникова с красными полосами',
-        rarity: 'Legendary',
-        price: 150.5,
-        amount: 1,
-        imageUrl: '',
-        percentChance: 2.5,
-        isWithdrawable: true
-      } as CaseItem,
-      amount: 1,
-      branch: {
-        name: '«Торговый центр Омега»',
-        coordinates: 'зв 90',
-        cell: 'A3'
-      },
-      showConfirmButton: false
-    },
-    {
-      id: '2',
-      status: DeliveryStatus.IN_TRANSIT,
-      item: {
-        id: '2',
-        name: 'AWP | Dragon Lore',
-        description: 'Легендарная снайперская винтовка с уникальным дизайном',
-        rarity: 'Legendary',
-        price: 2500.0,
-        amount: 1,
-        imageUrl: '',
-        percentChance: 0.5,
-        isWithdrawable: true
-      } as CaseItem,
-      amount: 1,
-      branch: {
-        name: '«Пункт выдачи Гамма»',
-        coordinates: 'кв 45',
-        cell: 'Пока неизвестно'
-      },
-      showConfirmButton: true
+  // Загрузка данных при монтировании компонента
+  useEffect(() => {
+    if (!isInitialized) {
+      loadInitial();
     }
-  ];
+  }, [isInitialized, loadInitial]);
 
-  // Данные истории заказов (только доставленные)
-  const historyOrders: DeliveryOrder[] = [
-    {
-      id: '4',
-      status: DeliveryStatus.DONE,
-      item: {
-        id: '4',
-        name: 'M4A4 | Howl',
-        description: 'Редкая штурмовая винтовка с запрещенным дизайном',
-        rarity: 'Legendary',
-        price: 3200.0,
-        amount: 1,
-        imageUrl: '',
-        percentChance: 0.1,
-        isWithdrawable: true
-      } as CaseItem,
-      amount: 1,
-      branch: {
-        name: '«Склад Дельта»',
-        coordinates: 'св 75',
-        cell: 'D1'
+  // Настройка Intersection Observer для бесконечной прокрутки
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading) {
+          loadMore();
+        }
       },
-      showConfirmButton: true
-    },
-    {
-      id: '5',
-      status: DeliveryStatus.DONE,
-      item: {
-        id: '5',
-        name: 'Glock-18 | Fade',
-        description: 'Пистолет с градиентной окраской',
-        rarity: 'Epic',
-        price: 180.0,
-        amount: 1,
-        imageUrl: '',
-        percentChance: 5.2,
-        isWithdrawable: true
-      } as CaseItem,
-      amount: 1,
-      branch: {
-        name: '«Центр Альфа»',
-        coordinates: 'жв 128',
-        cell: 'B7'
-      },
-      showConfirmButton: false
-    },
-    {
-      id: '6',
-      status: DeliveryStatus.DONE,
-      item: {
-        id: '6',
-        name: 'Karambit | Tiger Tooth',
-        description: 'Нож-керамбит с тигровым узором',
-        rarity: 'Legendary',
-        price: 1850.0,
-        amount: 1,
-        imageUrl: '',
-        percentChance: 0.8,
-        isWithdrawable: true
-      } as CaseItem,
-      amount: 1,
-      branch: {
-        name: '«Терминал Бета»',
-        coordinates: 'кв 200',
-        cell: 'E5'
-      },
-      showConfirmButton: false
+      { threshold: 0.1 }
+    );
+
+    if (observerRef.current) {
+      observer.observe(observerRef.current);
     }
-  ];
+
+    return () => {
+      if (observerRef.current) {
+        observer.unobserve(observerRef.current);
+      }
+    };
+  }, [hasMore, loading, loadMore]);
+
+  // Функция для преобразования данных API в формат DeliveryOrder
+  const convertToDeliveryOrder = useCallback((order: Order): DeliveryOrder => {
+    return {
+      id: order.id,
+      status: order.status === 'Delivered' ? DeliveryStatus.DELIVERED : 
+              order.status === 'InProgress' ? DeliveryStatus.IN_TRANSIT :
+              order.status === 'Done' ? DeliveryStatus.DONE :
+              order.status === 'Created' ? DeliveryStatus.WAITING_COURIER :
+              DeliveryStatus.WAITING_COURIER,
+      item: {
+        id: order.item.item.id,
+        name: order.item.item.name,
+        description: order.item.item.description || '',
+        rarity: order.item.item.rarity,
+        price: order.item.item.price,
+        amount: order.item.item.amount,
+        imageUrl: order.item.item.imageUrl,
+        percentChance: order.item.item.percentChance || 0,
+        isWithdrawable: order.item.item.isWithdrawable || false
+      } as CaseItem,
+      amount: order.item.amount,
+      branch: {
+        name: order.branch.name,
+        coordinates: formatCoordinates(order.branch.coordinates),
+        cell: order.branch.cell.name
+      },
+      showConfirmButton: order.status === 'Delivered'
+    };
+  }, []);
+
+  // Преобразуем данные из API и разделяем на текущие и историю
+  const deliveryOrders = orders.map(convertToDeliveryOrder);
+  
+  // Разделяем заказы на текущие и историю
+  const currentOrders = deliveryOrders.filter(order => 
+    order.status === DeliveryStatus.DELIVERED || 
+    order.status === DeliveryStatus.IN_TRANSIT || 
+    order.status === DeliveryStatus.WAITING_COURIER
+  );
+  
+  const historyOrders = deliveryOrders.filter(order => 
+    order.status === DeliveryStatus.DONE
+  );
 
   // Подсчёт общего количества предметов
   const currentOrdersCount = currentOrders.reduce((total, order) => total + order.amount, 0);
@@ -193,7 +158,7 @@ export default function DeliveryTab(): React.JSX.Element {
         <div className='flex flex-col items-start gap-3 flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)]'>
           <div className='flex px-4 pb-3 pt-4 justify-between items-center self-stretch border-b border-[rgba(249,248,252,0.05)]'>
             <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold leading-normal'>Текущие заказы</p>
-            <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold leading-normal opacity-30'>{currentOrdersCount} {currentOrdersCount === 1 ? 'предмет' : currentOrdersCount >= 2 && currentOrdersCount <= 4 ? 'предмета' : 'предметов'}</p>
+            <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold leading-normal opacity-30'>{currentOrdersCount} {pluralizeItems(currentOrdersCount)}</p>
           </div>
           <div 
             className={`flex flex-col items-start px-3 gap-2 flex-[1_0_0] self-stretch ${
@@ -235,7 +200,7 @@ export default function DeliveryTab(): React.JSX.Element {
         <div className='flex flex-col items-start gap-3 flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)]'>
           <div className='flex px-4 pb-3 pt-4 justify-between items-center self-stretch border-b border-[rgba(249,248,252,0.05)]'>
             <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold leading-normal'>История заказов</p>
-            <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold leading-normal opacity-30'>{historyOrdersCount} {historyOrdersCount === 1 ? 'предмет' : historyOrdersCount >= 2 && historyOrdersCount <= 4 ? 'предмета' : 'предметов'}</p>
+            <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold leading-normal opacity-30'>{historyOrdersCount} {pluralizeItems(historyOrdersCount)}</p>
           </div>
           <div 
             className={`flex flex-col items-start px-3 gap-2 flex-[1_0_0] self-stretch ${
@@ -270,6 +235,8 @@ export default function DeliveryTab(): React.JSX.Element {
                   onItemClick={handleOpenItemDescriptionModal}
                 />
             ))}
+            {/* Элемент для Intersection Observer */}
+            <div ref={observerRef} className="h-4" />
           </div>
         </div>
       </div>
