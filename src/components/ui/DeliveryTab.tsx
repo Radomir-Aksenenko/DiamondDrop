@@ -115,16 +115,30 @@ export default function DeliveryTab(): React.JSX.Element {
   // Преобразуем данные из API и разделяем на текущие и историю
   const deliveryOrders = orders.map(convertToDeliveryOrder);
   
+  // Функция для определения приоритета статуса (меньше число = выше приоритет)
+  const getStatusPriority = (status: DeliveryStatus): number => {
+    switch (status) {
+      case DeliveryStatus.CONFIRMED: return 1; // Получен - самый высокий приоритет
+      case DeliveryStatus.DELIVERED: return 2; // Доставлен в филиал - выше активных заказов
+      case DeliveryStatus.IN_DELIVERY: return 3; // Едет с курьером - после доставленных
+      case DeliveryStatus.ACCEPTED: return 4; // Принят курьером - после едущих
+      case DeliveryStatus.CREATED: return 5; // Ожидает принятия - самый низкий приоритет
+      default: return 6;
+    }
+  };
+
   // Разделяем заказы на текущие и историю
-  const currentOrders = deliveryOrders.filter(order => 
-    order.status === DeliveryStatus.CREATED || 
-    order.status === DeliveryStatus.ACCEPTED || 
-    order.status === DeliveryStatus.IN_DELIVERY || 
-    order.status === DeliveryStatus.DELIVERED
-  );
+  const currentOrders = deliveryOrders
+    .filter(order => 
+      order.status === DeliveryStatus.CREATED || 
+      order.status === DeliveryStatus.ACCEPTED || 
+      order.status === DeliveryStatus.IN_DELIVERY || 
+      order.status === DeliveryStatus.DELIVERED ||
+      order.status === DeliveryStatus.CONFIRMED
+    )
+    .sort((a, b) => getStatusPriority(a.status) - getStatusPriority(b.status));
   
   const historyOrders = deliveryOrders.filter(order => 
-    order.status === DeliveryStatus.CONFIRMED || 
     order.status === DeliveryStatus.CANCELLED
   );
 
