@@ -7,6 +7,7 @@ import { DeliveryOrderCard, DeliveryOrder, DeliveryStatus } from './DeliveryOrde
 import ItemDescriptionModal from './ItemDescriptionModal';
 import { useOrdersAPI, formatCoordinates } from '@/hooks/useOrdersAPI';
 import { usePluralize } from '@/hooks/usePluralize';
+import DeliveryLoader, { DeliveryCircleLoader } from './DeliveryLoader';
 import type { Order } from '@/hooks/useOrdersAPI';
 
 export default function DeliveryTab(): React.JSX.Element {
@@ -162,9 +163,9 @@ export default function DeliveryTab(): React.JSX.Element {
           </div>
           <div 
             className={`flex flex-col items-start px-3 gap-2 flex-[1_0_0] self-stretch ${
-              currentOrders.length > 2 ? 'overflow-y-auto pr-2' : ''
+              currentOrders.length > 3 ? 'overflow-y-auto pr-2' : ''
             }`}
-            style={currentOrders.length > 2 ? {
+            style={currentOrders.length > 3 ? {
               scrollbarWidth: 'thin',
               scrollbarColor: 'rgba(249, 248, 252, 0.2) transparent'
             } : {}}
@@ -184,15 +185,22 @@ export default function DeliveryTab(): React.JSX.Element {
                 background: rgba(249, 248, 252, 0.3);
               }
             `}</style>
-            {currentOrders.map((order) => (
-              <DeliveryOrderCard 
-                  key={order.id}
-                  order={order}
-                  onConfirmDelivery={handleConfirmDelivery}
-                  onBranchClick={handleBranchClick}
-                  onItemClick={handleOpenItemDescriptionModal}
-                />
-            ))}
+            {loading && currentOrders.length === 0 ? (
+              <DeliveryLoader count={3} />
+            ) : (
+              currentOrders.map((order) => (
+                <DeliveryOrderCard 
+                    key={order.id}
+                    order={order}
+                    onConfirmDelivery={handleConfirmDelivery}
+                    onBranchClick={handleBranchClick}
+                    onItemClick={handleOpenItemDescriptionModal}
+                  />
+              ))
+            )}
+            {loading && currentOrders.length > 0 && (
+              <DeliveryCircleLoader />
+            )}
           </div>
         </div>
         
@@ -204,9 +212,9 @@ export default function DeliveryTab(): React.JSX.Element {
           </div>
           <div 
             className={`flex flex-col items-start px-3 gap-2 flex-[1_0_0] self-stretch ${
-              historyOrders.length > 2 ? 'overflow-y-auto pr-2' : ''
+              historyOrders.length > 3 ? 'overflow-y-auto pr-2' : ''
             }`}
-            style={historyOrders.length > 2 ? {
+            style={historyOrders.length > 3 ? {
               scrollbarWidth: 'thin',
               scrollbarColor: 'rgba(249, 248, 252, 0.2) transparent'
             } : {}}
@@ -226,15 +234,22 @@ export default function DeliveryTab(): React.JSX.Element {
                 background: rgba(249, 248, 252, 0.3);
               }
             `}</style>
-            {historyOrders.map((order) => (
-              <DeliveryOrderCard 
-                  key={order.id}
-                  order={order}
-                  onConfirmDelivery={handleConfirmDelivery}
-                  onBranchClick={handleBranchClick}
-                  onItemClick={handleOpenItemDescriptionModal}
-                />
-            ))}
+            {loading && historyOrders.length === 0 ? (
+              <DeliveryLoader count={3} />
+            ) : (
+              historyOrders.map((order) => (
+                <DeliveryOrderCard 
+                    key={order.id}
+                    order={order}
+                    onConfirmDelivery={handleConfirmDelivery}
+                    onBranchClick={handleBranchClick}
+                    onItemClick={handleOpenItemDescriptionModal}
+                  />
+              ))
+            )}
+            {loading && historyOrders.length > 0 && (
+              <DeliveryCircleLoader />
+            )}
             {/* Элемент для Intersection Observer */}
             <div ref={observerRef} className="h-4" />
           </div>
