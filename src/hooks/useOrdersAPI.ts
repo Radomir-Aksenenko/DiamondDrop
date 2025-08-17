@@ -104,6 +104,7 @@ export const useOrdersAPI = () => {
         await new Promise(resolve => setTimeout(resolve, 500));
         
         // Моковые данные для разработки
+        const statuses = ['Unknown', 'Created', 'Accepted', 'InDelivery', 'Delivered', 'Confirmed', 'Cancelled'] as const;
         const mockOrders: Order[] = Array.from({ length: pageSize }, (_, index) => ({
           id: `mock-${page}-${index + 1}`,
           branch: {
@@ -142,8 +143,9 @@ export const useOrdersAPI = () => {
             amount: 1
           },
           price: Math.random() * 100,
-            status: (['Unknown', 'Created', 'Accepted', 'InDelivery', 'Delivered', 'Confirmed', 'Cancelled'] as const)[Math.floor(Math.random() * 7)],
-            createdAt: new Date().toISOString()
+          // Гарантируем разнообразие статусов - циклически распределяем их
+          status: statuses[index % statuses.length],
+          createdAt: new Date().toISOString()
         }));
 
         // Имитируем окончание данных после 5 страниц
