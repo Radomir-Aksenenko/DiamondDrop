@@ -26,15 +26,15 @@ function getStatusStyles(status: DeliveryStatus): { text: string; color: string;
       };
     case DeliveryStatus.CREATED:
       return {
-        text: 'Заказ создан',
+        text: 'Ожидает принятия курьером',
         color: 'text-[#F9F8FC]/50',
         bgColor: 'bg-[rgba(249,248,252,0.05)]'
       };
     case DeliveryStatus.ACCEPTED:
       return {
-        text: 'Ожидает принятия курьером',
-        color: 'text-[#5C5ADC]',
-        bgColor: 'bg-[rgba(92,90,220,0.10)]'
+        text: 'Заказ принят',
+        color: 'text-[#F9F8FC]/50',
+        bgColor: 'bg-[rgba(249,248,252,0.05)]'
       };
     case DeliveryStatus.IN_DELIVERY:
       return {
