@@ -83,10 +83,11 @@ export default function DeliveryTab(): React.JSX.Element {
     return {
       id: order.id,
       status: order.status === 'Delivered' ? DeliveryStatus.DELIVERED : 
-              order.status === 'InProgress' ? DeliveryStatus.IN_TRANSIT :
-              order.status === 'Done' ? DeliveryStatus.DONE :
-              order.status === 'Created' ? DeliveryStatus.WAITING_COURIER :
-              DeliveryStatus.WAITING_COURIER,
+              order.status === 'InProgress' ? DeliveryStatus.IN_DELIVERY :
+              order.status === 'Done' ? DeliveryStatus.CONFIRMED :
+              order.status === 'Created' ? DeliveryStatus.CREATED :
+              order.status === 'Cancelled' ? DeliveryStatus.CANCELLED :
+              DeliveryStatus.CREATED,
       item: {
         id: order.item.item.id,
         name: order.item.item.name,
@@ -113,13 +114,15 @@ export default function DeliveryTab(): React.JSX.Element {
   
   // Разделяем заказы на текущие и историю
   const currentOrders = deliveryOrders.filter(order => 
-    order.status === DeliveryStatus.DELIVERED || 
-    order.status === DeliveryStatus.IN_TRANSIT || 
-    order.status === DeliveryStatus.WAITING_COURIER
+    order.status === DeliveryStatus.CREATED || 
+    order.status === DeliveryStatus.ACCEPTED || 
+    order.status === DeliveryStatus.IN_DELIVERY || 
+    order.status === DeliveryStatus.DELIVERED
   );
   
   const historyOrders = deliveryOrders.filter(order => 
-    order.status === DeliveryStatus.DONE
+    order.status === DeliveryStatus.CONFIRMED || 
+    order.status === DeliveryStatus.CANCELLED
   );
 
   // Подсчёт общего количества предметов
