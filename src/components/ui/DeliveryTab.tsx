@@ -12,7 +12,7 @@ import type { Order } from '@/hooks/useOrdersAPI';
 
 export default function DeliveryTab(): React.JSX.Element {
   // Хук для работы с API заказов
-  const { orders, loading, hasMore, loadInitial, loadMore, isInitialized } = useOrdersAPI();
+  const { orders, loading, hasMore, loadInitial, loadMore, isInitialized, confirmOrder } = useOrdersAPI();
   const observerRef = useRef<HTMLDivElement>(null);
   
   // Состояние для модальных окон
@@ -312,9 +312,10 @@ export default function DeliveryTab(): React.JSX.Element {
               Отменить
             </button>
             <button 
-              onClick={() => {
-                // Здесь будет логика подтверждения
-                console.log('Подтверждение получения заказа:', selectedOrderId);
+              onClick={async () => {
+                if (selectedOrderId) {
+                  await confirmOrder(selectedOrderId);
+                }
                 handleCloseConfirmModal();
               }}
               className='bg-[#5C5ADC] hover:bg-[#4A48B0] transition-colors py-2.5 px-4 rounded-lg text-[#F9F8FC] font-bold cursor-pointer outline-none focus:outline-none active:outline-none focus:ring-0 active:ring-0'

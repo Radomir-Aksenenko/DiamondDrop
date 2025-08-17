@@ -1,7 +1,8 @@
-'use client';
+"use client";
 
 import { useState, useCallback } from 'react';
 import { getAuthToken } from '@/lib/auth';
+import { API_ENDPOINTS, isDevelopment } from '@/lib/config';
 
 // Типы для API заказов
 export interface OrderCoordinate {
@@ -99,12 +100,12 @@ export const useOrdersAPI = () => {
 
     try {
       // В dev режиме используем моковые данные
-      if (process.env.NODE_ENV === 'development') {
+      if (isDevelopment) {
         // Имитируем задержку API
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 300));
         
         // Моковые данные для разработки
-        const statuses = ['Unknown', 'Created', 'Accepted', 'InDelivery', 'Delivered', 'Confirmed', 'Cancelled'] as const;
+        const statuses = ['Unknown', 'Created', 'Accepted', 'InDelivery', 'Delivered', 'Confirmed', 'Cancelled'] as ReadonlyArray<Order['status']>;
         const mockOrders: Order[] = Array.from({ length: pageSize }, (_, index) => ({
           id: `mock-${page}-${index + 1}`,
           branch: {
@@ -144,7 +145,7 @@ export const useOrdersAPI = () => {
           },
           price: Math.random() * 100,
           // Гарантируем разнообразие статусов - циклически распределяем их
-          status: statuses[index % statuses.length],
+          status: statuses[(index + (page - 1) * pageSize) % statuses.length],
           createdAt: new Date().toISOString()
         }));
 
@@ -169,16 +170,14 @@ export const useOrdersAPI = () => {
         throw new Error('Токен авторизации не найден');
       }
 
-      const response = await fetch(
-        `https://battle-api.chasman.engineer/api/v1/orders?page=${page}&pageSize=${pageSize}`,
-        {
-          method: 'GET',
-          headers: {
-            'accept': '*/*',
-            'Authorization': token,
-          },
-        }
-      );
+      const url = `${API_ENDPOINTS.orders}?page=${page}&pageSize=${pageSize}`;
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'accept': '*/*',
+          'Authorization': token,
+        },
+      });
 
       if (!response.ok) {
         throw new Error(`Ошибка загрузки заказов: ${response.status}`);
@@ -240,6 +239,55 @@ export const useOrdersAPI = () => {
     }
   }, [fetchOrders]);
 
+  // Подтверждение получения заказа
+  const confirmOrder = useCallback(async (orderId: string): Promise<boolean> => {
+    try {
+      if (isDevelopment) {
+        // Локально обновляем статус без обращения к API
+        setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'Confirmed' } : o));
+        return true;
+      }
+
+      const token = getAuthToken();
+      if (!token) throw new Error('Токен авторизации не найден');
+
+      // Пытаемся вызвать специализированный эндпоинт подтверждения
+      const confirmUrl = `${API_ENDPOINTS.orders}/${orderId}/confirm`;
+      let response = await fetch(confirmUrl, {
+        method: 'POST',
+        headers: {
+          'accept': '*/*',
+          'Authorization': token,
+        },
+      });
+
+      if (!response.ok) {
+        // Fallback: пробуем PATCH статус напрямую
+        const patchUrl = `${API_ENDPOINTS.orders}/${orderId}`;
+        response = await fetch(patchUrl, {
+          method: 'PATCH',
+          headers: {
+            'accept': '*/*',
+            'Authorization': token,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ status: 'Confirmed' }),
+        });
+      }
+
+      if (!response.ok) {
+        throw new Error(`Ошибка подтверждения заказа: ${response.status}`);
+      }
+
+      // Оптимистично обновляем локальное состояние
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'Confirmed' } : o));
+      return true;
+    } catch (err) {
+      console.error('Не удалось подтвердить заказ', err);
+      return false;
+    }
+  }, []);
+
   return {
     orders,
     loading,
@@ -249,6 +297,7 @@ export const useOrdersAPI = () => {
     loadMore,
     refresh,
     softRefresh,
-    isInitialized
+    isInitialized,
+    confirmOrder,
   };
 };
