@@ -41,7 +41,22 @@ export default function Header() {
   
 
 
-  const openUpgradeModal = () => setIsUpgradeModalOpen(true);
+  // Список привилегированных пользователей для доступа к странице upgrade
+  const PRIVILEGED_USERS = ['megatntmega', 'fupir', 'rafael1209'];
+  
+  // Проверяем, является ли пользователь привилегированным
+  const isPrivilegedUser = userName && PRIVILEGED_USERS.includes(userName);
+
+  const handleUpgradeClick = () => {
+    if (isPrivilegedUser) {
+      // Для привилегированных пользователей - переход на страницу
+      router.push('/upgrade');
+    } else {
+      // Для остальных - показываем модалку
+      setIsUpgradeModalOpen(true);
+    }
+  };
+
   const closeUpgradeModal = () => setIsUpgradeModalOpen(false);
 
   const handleOpenInventory = () => {
@@ -73,7 +88,7 @@ export default function Header() {
             </div>
         <nav className="flex items-center gap-2">
           <NavButton icon="Case" href="/" label="Кейсы" />
-          <NavButton icon="Update" onClick={openUpgradeModal} label="Апгрейд" />
+          <NavButton icon="Update" onClick={handleUpgradeClick} label="Апгрейд" />
           <NavButton icon="About" href="/about" label="О проекте" />
         </nav>
         <div className='flex items-center gap-2'>
