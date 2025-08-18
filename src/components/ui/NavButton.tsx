@@ -14,6 +14,7 @@ interface NavButtonProps {
   href?: string; // Путь для навигации (опциональный)
   label?: string; // Опциональная подпись (если нужна)
   onClick?: () => void; // Опциональный обработчик клика
+  activeOnPath?: string; // Путь для определения активного состояния при использовании onClick
 }
 
 /**
@@ -23,9 +24,9 @@ interface NavButtonProps {
  * @param label - Опциональная подпись
  * @param onClick - Опциональный обработчик клика
  */
-export default function NavButton({ icon, href, label, onClick }: NavButtonProps) {
+export default function NavButton({ icon, href, label, onClick, activeOnPath }: NavButtonProps) {
   const pathname = usePathname();
-  const isActive = href ? pathname === href : false;
+  const isActive = href ? pathname === href : (activeOnPath ? pathname === activeOnPath : false);
   
   // Функция для выбора нужного SVG-компонента
   const getIconComponent = () => {

@@ -20,7 +20,7 @@ export default function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
         {/* Креативный текст */}
         <div className="space-y-4">
           <div className="bg-[#151519] p-4 rounded-lg">
-            <p className="text-[#F9F8FC] text-base">
+            <p className="text-[#F9F8FC]/50 text-base">
               Мы усердно работаем над этой функцией, 
               попивая кофе и споря о том, какой цвет кнопки лучше. 
               Скоро здесь будет что-то невероятное!

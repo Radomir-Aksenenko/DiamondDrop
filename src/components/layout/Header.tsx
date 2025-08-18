@@ -88,7 +88,7 @@ export default function Header() {
             </div>
         <nav className="flex items-center gap-2">
           <NavButton icon="Case" href="/" label="Кейсы" />
-          <NavButton icon="Update" onClick={handleUpgradeClick} label="Апгрейд" />
+          <NavButton icon="Update" onClick={handleUpgradeClick} label="Апгрейд" activeOnPath="/upgrade" />
           <NavButton icon="About" href="/about" label="О проекте" />
         </nav>
         <div className='flex items-center gap-2'>
