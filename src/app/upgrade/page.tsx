@@ -65,11 +65,16 @@ export default function UpgradePage() {
           </div>
         </div>
         <div className='flex pt-3 flex-col justify-between items-center flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)]'>
-
+          
         </div>
       </div>
       <div className='flex items-center gap-2 flex-1 self-stretch'>
+        <div className='flex flex-col items-center gap-3 flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)]'>
 
+        </div>
+        <div className='flex flex-col items-center gap-3 flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)]'>
+
+        </div>
       </div>
     </div>
   );
