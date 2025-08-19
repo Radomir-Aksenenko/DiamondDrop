@@ -9,6 +9,7 @@ import { getAuthToken } from '@/lib/auth';
 interface ItemWithdrawRequest {
   itemId: string;
   amount: number;
+  branchId: string;
 }
 
 /**
@@ -29,8 +30,9 @@ export default function useItemWithdrawAPI() {
    * Создает запрос на вывод предмета
    * @param itemId - ID предмета для вывода
    * @param amount - количество предметов для вывода
+   * @param branchId - ID филиала для вывода
    */
-  const withdrawItem = useCallback(async (itemId: string, amount: number): Promise<boolean> => {
+  const withdrawItem = useCallback(async (itemId: string, amount: number, branchId: string): Promise<boolean> => {
     setIsLoading(true);
     setError(null);
 
@@ -42,10 +44,11 @@ export default function useItemWithdrawAPI() {
 
       const requestBody: ItemWithdrawRequest = {
         itemId,
-        amount
+        amount,
+        branchId
       };
 
-      console.log('[ItemWithdrawAPI] Отправка запроса на вывод предмета:', { itemId, amount });
+      console.log('[ItemWithdrawAPI] Отправка запроса на вывод предмета:', { itemId, amount, branchId });
 
       // Создаем запрос на вывод предмета
       const response = await fetch(

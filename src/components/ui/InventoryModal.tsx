@@ -8,6 +8,7 @@ import { CaseItem } from '@/hooks/useCasesAPI';
 import { useSellAPI } from '@/hooks/useSellAPI';
 import { useBalanceUpdater } from '@/hooks/useBalanceUpdater';
 import useItemWithdrawAPI from '@/hooks/useItemWithdrawAPI';
+import useBranchesAPI, { BranchForDisplay } from '@/hooks/useBranchesAPI';
 
 interface InventoryModalProps {
   isOpen: boolean;
@@ -32,6 +33,13 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
   const [displayQuantity, setDisplayQuantity] = useState(1);
   const [isMaxSelected, setIsMaxSelected] = useState(false);
   
+  // Состояние для выпадающего списка филиалов
+  const [isBranchDropdownOpen, setIsBranchDropdownOpen] = useState(false);
+  const [selectedBranch, setSelectedBranch] = useState<BranchForDisplay | null>(null);
+  
+  // Получаем данные филиалов из API
+  const { branchesForDisplay: branches, loading: branchesLoading, error: branchesError, refetch: refetchBranches } = useBranchesAPI();
+  
   // Хук для продажи предметов
   const { sellItem, isLoading: isSelling, error: sellError, clearError } = useSellAPI();
   // Хук для вывода предметов
@@ -54,6 +62,9 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
       previousItemIdRef.current = itemId;
       clearError();
       clearWithdrawError();
+      // Сбрасываем состояние выпадающего списка
+      setIsBranchDropdownOpen(false);
+      setSelectedBranch(null);
     }
   }, [isOpen, itemId, clearError, clearWithdrawError]);
 
@@ -65,8 +76,17 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
       } else {
         setActiveTab(initialTab);
       }
+      // Сбрасываем состояние выпадающего списка при смене вкладки
+      setIsBranchDropdownOpen(false);
+      // Загружаем филиалы при открытии модального окна
+      refetchBranches();
     }
   }, [isOpen, initialTab, selectedItem]);
+
+  // Сброс состояния выпадающего списка при смене вкладки
+  useEffect(() => {
+    setIsBranchDropdownOpen(false);
+  }, [activeTab]);
 
   // Функция для форматирования цены (убирает .0 если десятые равны нулю)
   const formatPrice = (price: number): string => {
@@ -107,8 +127,13 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
       return;
     }
 
+    if (!selectedBranch) {
+      console.error('[InventoryModal] No branch selected for withdrawal');
+      return;
+    }
+
     try {
-      const success = await withdrawItem(selectedItem.item.id, quantityRef.current);
+      const success = await withdrawItem(selectedItem.item.id, quantityRef.current, selectedBranch.id);
       
       if (success) {
         // Вызываем колбэк для обновления инвентаря
@@ -229,7 +254,7 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
                 className={`flex w-9 p-2.5 px-2 py-1.5 flex-col items-center justify-center gap-2.5 rounded-md transition-colors ${
                   displayQuantity <= 1
                     ? 'bg-[#F9F8FC]/5 opacity-50 cursor-not-allowed' 
-                    : 'bg-[#F9F8FC]/5 hover:bg-[#F9F8FC]/10 active:bg-[#F9F8FC]/15 cursor-pointer'
+                    : 'bg-[#F9F8FC]/5 hover:bg-[#2A2A30] active:bg-[#F9F8FC]/15 cursor-pointer'
                 }`}
                 type="button"
               >
@@ -244,7 +269,7 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
                 className={`flex w-9 p-2.5 px-2 py-1.5 flex-col items-center justify-center gap-2.5 rounded-md transition-colors ${
                   displayQuantity >= maxQuantity
                     ? 'bg-[#F9F8FC]/5 opacity-50 cursor-not-allowed' 
-                    : 'bg-[#F9F8FC]/5 hover:bg-[#F9F8FC]/10 active:bg-[#F9F8FC]/15 cursor-pointer'
+                    : 'bg-[#F9F8FC]/5 hover:bg-[#2A2A30] active:bg-[#F9F8FC]/15 cursor-pointer'
                 }`}
                 type="button"
               >
@@ -256,7 +281,7 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
               className={`text-[#F9F8FC] text-center text-16 font-bold px-3 py-1.5 rounded-md transition-all ${
                 isMaxSelected 
                   ? 'bg-[#6563EE]/10 border border-[#5C5ADC] cursor-pointer' 
-                  : 'bg-[#F9F8FC]/5 hover:bg-[#6563EE]/10 border border-transparent hover:border-[#5C5ADC] cursor-pointer'
+                  : 'bg-[#F9F8FC]/5 hover:bg-[#2A2A30] border border-transparent hover:border-[#5C5ADC] cursor-pointer'
               }`}
               type="button"
             >
@@ -284,11 +309,100 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
         </div>
       )}
       
+      {/* Блок выбора филиала - только для вкладки вывода */}
+      {activeTab === 'withdraw' && (
+        <div className='flex w-full mt-2 flex-col items-start gap-1'>
+          <button 
+            onClick={() => setIsBranchDropdownOpen(!isBranchDropdownOpen)}
+            className='flex px-4 py-3 justify-between items-center self-stretch rounded-xl bg-[#F9F8FC]/5 hover:bg-[#2A2A30] transition-colors cursor-pointer'
+            type="button"
+          >
+            <div className='flex justify-between items-center w-full'>
+              <p className='text-[#FFF]/50 font-["Actay_Wide"] text-16 font-bold'>
+                {selectedBranch?.name || 'Выберите филиал'}
+              </p>
+              {selectedBranch && (
+                <div className='mr-2'>
+                  {selectedBranch.coordinates.split(' ')[0].toLowerCase().startsWith('зв') && (
+                    <span className='text-[#289547] text-base font-[515] leading-normal tabular-nums lining-nums font-["Actay_Wide"] font-bold'>{selectedBranch.coordinates}</span>
+                  )}
+                  {selectedBranch.coordinates.split(' ')[0].toLowerCase().startsWith('жв') && (
+                    <span className='text-[#D9C332] text-base font-[515] leading-normal tabular-nums lining-nums font-["Actay_Wide"] font-bold'>{selectedBranch.coordinates}</span>
+                  )}
+                  {selectedBranch.coordinates.split(' ')[0].toLowerCase().startsWith('кв') && (
+                    <span className='text-[#E74A4A] text-base font-[515] leading-normal tabular-nums lining-nums font-["Actay_Wide"] font-bold'>{selectedBranch.coordinates}</span>
+                  )}
+                  {selectedBranch.coordinates.split(' ')[0].toLowerCase().startsWith('св') && (
+                    <span className='text-[#668CE0] text-base font-[515] leading-normal tabular-nums lining-nums font-["Actay_Wide"] font-bold'>{selectedBranch.coordinates}</span>
+                  )}
+                </div>
+              )}
+            </div>
+            <img 
+              src="/Arrow - Down 2.svg" 
+              alt="Развернуть" 
+              width={12} 
+              height={10} 
+              className={`w-[12px] h-[10px] transition-transform duration-200 ${
+                isBranchDropdownOpen ? 'rotate-180' : ''
+              }`}
+            />
+          </button>
+          
+          {/* Выпадающий список филиалов */}
+          {isBranchDropdownOpen && (
+            <div className='flex p-1 flex-col items-start gap-1 self-stretch rounded-xl bg-[#F9F8FC]/5 animate-in slide-in-from-top-2 duration-200'>
+              {branchesLoading ? (
+                <div className='flex justify-center items-center px-3 py-2 w-full'>
+                  <p className='text-[#F9F8FC] opacity-50 font-["Actay_Wide"] text-16 font-bold'>Загрузка филиалов...</p>
+                </div>
+              ) : branchesError ? (
+                <div className='flex justify-center items-center px-3 py-2 w-full'>
+                  <p className='text-[#E74A4A] opacity-50 font-["Actay_Wide"] text-16 font-bold'>Ошибка загрузки филиалов</p>
+                </div>
+              ) : branches.length === 0 ? (
+                <div className='flex justify-center items-center px-3 py-2 w-full'>
+                  <p className='text-[#F9F8FC] opacity-50 font-["Actay_Wide"] text-16 font-bold'>Филиалы не найдены</p>
+                </div>
+              ) : (
+                branches.map((branch) => (
+                  <button
+                    key={branch.id}
+                    onClick={() => {
+                      setSelectedBranch(branch);
+                      setIsBranchDropdownOpen(false);
+                    }}
+                    className='flex justify-between items-center px-3 py-2 w-full text-left rounded-lg hover:bg-[#2A2A30] transition-colors cursor-pointer'
+                    type="button"
+                  >
+                    <p className='text-[#F9F8FC] opacity-50 font-["Actay_Wide"] text-16 font-bold'>{branch.name}</p>
+                    <div>
+                      {branch.coordinates.split(' ')[0].toLowerCase().startsWith('зв') && (
+                        <span className='text-[#289547] text-base font-[515] leading-normal tabular-nums lining-nums font-["Actay_Wide"] font-bold'>{branch.coordinates}</span>
+                      )}
+                      {branch.coordinates.split(' ')[0].toLowerCase().startsWith('жв') && (
+                      <span className='text-[#D9C332] text-base font-[515] leading-normal tabular-nums lining-nums font-["Actay_Wide"] font-bold'>{branch.coordinates}</span>
+                    )}
+                    {branch.coordinates.split(' ')[0].toLowerCase().startsWith('кв') && (
+                      <span className='text-[#E74A4A] text-base font-[515] leading-normal tabular-nums lining-nums font-["Actay_Wide"] font-bold'>{branch.coordinates}</span>
+                    )}
+                    {branch.coordinates.split(' ')[0].toLowerCase().startsWith('св') && (
+                      <span className='text-[#668CE0] text-base font-[515] leading-normal tabular-nums lining-nums font-["Actay_Wide"] font-bold'>{branch.coordinates}</span>
+                    )}
+                  </div>
+                </button>
+                ))
+              )}
+            </div>
+          )}
+        </div>
+      )}
+      
       {/* Кнопки */}
       <div className="grid grid-cols-2 gap-2 mt-4">
         <button 
           onClick={onClose}
-          className="bg-[#19191D] hover:bg-[#1E1E23] transition-colors py-2.5 px-4 rounded-lg text-[#F9F8FC] font-bold cursor-pointer outline-none focus:outline-none active:outline-none focus:ring-0 active:ring-0"
+          className="bg-[#19191D] hover:bg-[#2A2A30] transition-colors py-2.5 px-4 rounded-lg text-[#F9F8FC] font-bold cursor-pointer outline-none focus:outline-none active:outline-none focus:ring-0 active:ring-0"
           type="button"
         >
           Отменить

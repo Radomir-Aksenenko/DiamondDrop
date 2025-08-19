@@ -111,7 +111,7 @@ const Modal = memo(function Modal({ isOpen, onClose, children, title, className 
           
           {/* Оптимизированное модальное окно */}
           <motion.div
-            className={`relative z-10 bg-[#151519] rounded-[16px] shadow-xl overflow-hidden ${className ? className : 'w-full max-w-md'}`}
+            className={`relative z-10 bg-[#151519] rounded-[16px] shadow-xl overflow-hidden mx-4 ${className ? className : 'w-full max-w-md max-h-[90vh]'}`}
             variants={modalVariants}
             initial="hidden"
             animate="visible"
@@ -138,7 +138,7 @@ const Modal = memo(function Modal({ isOpen, onClose, children, title, className 
             </button>
             
             {/* Содержимое */}
-            <div className="px-4 pb-4">
+            <div className="px-4 pb-4 overflow-y-auto max-h-[calc(90vh-80px)]">
               {children}
             </div>
           </motion.div>
