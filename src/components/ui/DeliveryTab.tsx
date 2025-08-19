@@ -15,7 +15,7 @@ const DELIVERY_BLOCKS_HEIGHT = 340; // Измените это значение 
 
 export default function DeliveryTab(): React.JSX.Element {
   // Хук для работы с API заказов
-  const { orders, loading, hasMore, loadInitial, loadMore, isInitialized } = useOrdersAPI();
+  const { orders, loading, hasMore, loadInitial, loadMore, isInitialized, branchesForDisplay } = useOrdersAPI();
   const observerRef = useRef<HTMLDivElement>(null);
   
   // Состояние для модальных окон
@@ -167,8 +167,12 @@ export default function DeliveryTab(): React.JSX.Element {
       };
 
       const branchName = order?.branch?.name || 'Неизвестный филиал';
-      const coordinates = formatCoordinates(order?.branch?.coordinates || []);
-      const cell = order?.branch?.cell?.name || 'Пока неизвестно';
+      const coordinates = formatCoordinates(
+        order?.branch?.coordinates || { overworld: null, the_nether: null },
+        order?.branch?.id,
+        branchesForDisplay
+      );
+      const cell = order?.cell?.name || 'Пока неизвестно';
 
       return {
         id: order?.id || `order-${Math.random().toString(36).slice(2)}`,

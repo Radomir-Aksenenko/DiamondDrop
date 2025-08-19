@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import useBranchesAPI from './useBranchesAPI';
 import { getAuthToken } from '@/lib/auth';
 
 // Типы для API заказов
@@ -11,16 +12,25 @@ export interface OrderCoordinate {
   z: number;
 }
 
+// Новый формат координат
+export interface BranchCoordinates {
+  overworld: {
+    x: number;
+    y: number;
+    z: number;
+  } | null;
+  the_nether: {
+    color: string;
+    distance: number;
+  } | null;
+}
+
 export interface OrderBranch {
   id: string;
   name: string;
   description: string | null;
-  coordinates: OrderCoordinate[];
+  coordinates: BranchCoordinates;
   imageUrls: string[];
-  cell: {
-    id: string;
-    name: string;
-  };
 }
 
 export interface OrderItem {
@@ -38,6 +48,10 @@ export interface OrderItem {
 export interface Order {
   id: string;
   branch: OrderBranch;
+  cell: {
+    id: string;
+    name: string;
+  } | null;
   item: {
     item: OrderItem;
     amount: number;
@@ -47,57 +61,85 @@ export interface Order {
   createdAt: string;
 }
 
-// Функция для определения направления по координатам
-export const getBranchDirection = (coordinates: OrderCoordinate[]): string => {
-  if (!coordinates || coordinates.length === 0) {
-    console.warn('getBranchDirection: пустые или некорректные координаты', coordinates);
+// Функция для определения направления по координатам (новый формат)
+export const getBranchDirection = (coordinates: BranchCoordinates): string => {
+  if (!coordinates) {
+    console.warn('getBranchDirection: пустые координаты');
     return 'Неизвестно';
   }
   
-  // Находим координаты в мире "world" или "nether"
-  const worldCoord = coordinates.find(coord => coord && coord.world === 'world') || coordinates[0];
-  
-  if (!worldCoord || typeof worldCoord.x !== 'number' || typeof worldCoord.z !== 'number') {
-    console.warn('getBranchDirection: некорректные координаты мира', worldCoord);
-    return 'Неизвестно';
+  // Приоритет: the_nether, затем overworld
+  if (coordinates.the_nether && coordinates.the_nether.color) {
+    const color = coordinates.the_nether.color.toLowerCase();
+    switch (color) {
+      case 'green':
+        return 'ЗВ';
+      case 'yellow':
+        return 'ЖВ';
+      case 'red':
+        return 'КВ';
+      case 'blue':
+        return 'СВ';
+      default:
+        return 'НВ';
+    }
   }
   
-  const { x, z } = worldCoord;
-  
-  // Определяем максимальное по модулю значение
-  const absX = Math.abs(x);
-  const absZ = Math.abs(z);
-  
-  if (absX > absZ) {
-    // X доминирует
-    return x >= 0 ? 'ЗВ' : 'СВ'; // X+ = ЗВ, X- = СВ
-  } else {
-    // Z доминирует
-    return z >= 0 ? 'ЖВ' : 'КВ'; // Z+ = ЖВ, Z- = КВ
+  if (coordinates.overworld) {
+    const { x, z } = coordinates.overworld;
+    const absX = Math.abs(x);
+    const absZ = Math.abs(z);
+    
+    if (absX > absZ) {
+      return x >= 0 ? 'ЗВ' : 'СВ';
+    } else {
+      return z >= 0 ? 'ЖВ' : 'КВ';
+    }
   }
+  
+  console.warn('getBranchDirection: нет доступных координат', coordinates);
+  return 'Неизвестно';
 };
 
-// Функция для форматирования координат в строку
-export const formatCoordinates = (coordinates: OrderCoordinate[]): string => {
-  if (!coordinates || coordinates.length === 0) {
-    console.warn('formatCoordinates: пустые координаты');
-    return 'Неизвестно';
+// Функция для форматирования координат в строку (новый формат)
+export const formatCoordinates = (coordinates: BranchCoordinates, branchId?: string, branchesForDisplay?: Array<{id: string, name: string, coordinates: string}>): string => {
+  // Если есть branchId и список филиалов, используем данные из useBranchesAPI
+  if (branchId && branchesForDisplay) {
+    const branchDisplay = branchesForDisplay.find(b => b.id === branchId);
+    if (branchDisplay) {
+      return branchDisplay.coordinates;
+    }
   }
   
-  const direction = getBranchDirection(coordinates);
-  const worldCoord = coordinates.find(coord => coord && coord.world === 'world') || coordinates[0];
-  
-  if (!worldCoord || typeof worldCoord.x !== 'number' || typeof worldCoord.z !== 'number') {
-    console.warn('formatCoordinates: некорректные координаты мира', worldCoord);
-    return 'Неизвестно';
+  // Fallback к локальной обработке координат
+  if (coordinates?.the_nether) {
+    const { color, distance } = coordinates.the_nether;
+    let prefix = '';
+    switch (color.toLowerCase()) {
+      case 'green':
+        prefix = 'зв';
+        break;
+      case 'yellow':
+        prefix = 'жв';
+        break;
+      case 'red':
+        prefix = 'кв';
+        break;
+      case 'blue':
+        prefix = 'св';
+        break;
+      default:
+        prefix = 'нв';
+    }
+    return `${prefix} ${distance}`;
   }
   
-  // Берем максимальное по модулю значение для отображения
-  const absX = Math.abs(worldCoord.x);
-  const absZ = Math.abs(worldCoord.z);
-  const maxValue = Math.max(absX, absZ);
+  if (coordinates?.overworld) {
+    const { x, y, z } = coordinates.overworld;
+    return `${x}, ${y}, ${z}`;
+  }
   
-  return `${direction.toLowerCase()} ${maxValue}`;
+  return 'Координаты не указаны';
 };
 
 // Функция валидации заказа
@@ -148,22 +190,25 @@ const createMockOrder = (page: number, index: number): Order => {
       id: `branch-${index + 1}`,
       name: `Филиал ${index + 1}`,
       description: null,
-      coordinates: [
-        {
-          world: 'world',
+      coordinates: {
+        overworld: {
           x: Math.floor(Math.random() * 400) - 200,
           y: 64,
           z: Math.floor(Math.random() * 400) - 200
+        },
+        the_nether: {
+          color: ['green', 'yellow', 'red', 'blue'][Math.floor(Math.random() * 4)],
+          distance: Math.floor(Math.random() * 1000) + 100
         }
-      ],
+      },
       imageUrls: [
         'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/barrier/icon',
         'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/diamond_ore/icon'
-      ],
-      cell: {
-        id: `cell-${index + 1}`,
-        name: `Ячейка ${String.fromCharCode(65 + (index % 5))}${Math.floor(index / 5) + 1}`
-      }
+      ]
+    },
+    cell: {
+      id: `cell-${index + 1}`,
+      name: `Ячейка ${String.fromCharCode(65 + (index % 5))}${Math.floor(index / 5) + 1}`
     },
     item: {
       item: {
@@ -192,6 +237,9 @@ export const useOrdersAPI = () => {
   const [hasMore, setHasMore] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [isInitialized, setIsInitialized] = useState(false);
+  
+  // Интеграция с useBranchesAPI для получения координат
+   const { branchesForDisplay } = useBranchesAPI();
 
   const pageSize = 10; // Количество заказов на страницу
 
@@ -362,7 +410,8 @@ export const useOrdersAPI = () => {
     loadInitial,
     loadMore,
     refresh,
-    softRefresh,
-    isInitialized
+     softRefresh,
+     isInitialized,
+     branchesForDisplay
   };
 };
