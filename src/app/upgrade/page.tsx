@@ -2,6 +2,101 @@
 
 import React from 'react';
 
+// Константа процента
+const UPGRADE_PERCENTAGE = 15;
+
+interface CircularProgressProps {
+  percentage: number;
+}
+
+// Функция для определения цвета и текста в зависимости от процента
+const getPercentageStyle = (percentage: number) => {
+  if (percentage >= 0 && percentage <= 29) {
+    return {
+      color: '#FF4444',
+      text: 'Небольшой'
+    };
+  } else if (percentage >= 30 && percentage <= 59) {
+    return {
+      color: '#D79F37',
+      text: 'Средний'
+    };
+  } else {
+    return {
+      color: '#11AB47',
+      text: 'Большой'
+    };
+  }
+};
+
+const CircularProgress = ({ percentage }: CircularProgressProps) => {
+  const radius = 82;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDasharray = `${(percentage / 100) * circumference} ${circumference}`;
+
+  return (
+    <div className="relative w-[172px] h-[172px]">
+      <svg 
+        width="172" 
+        height="172" 
+        className="transform -rotate-90"
+      >
+        <circle
+          cx="86"
+          cy="86"
+          r="78"
+          className="fill-[#232328]"
+        />
+        <circle
+          cx="86"
+          cy="86"
+          r={radius}
+          className="fill-none stroke-[#2F2F35]"
+          strokeWidth="8"
+        />
+        <circle
+          cx="86"
+          cy="86"
+          r={radius}
+          className="fill-none stroke-[#5C5ADC]"
+          strokeWidth="8"
+          strokeLinecap="butt"
+          strokeDasharray={strokeDasharray}
+        />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+           <span 
+             className="text-center font-bold" 
+             style={{ 
+               color: getPercentageStyle(percentage).color,
+               fontFamily: 'Actay Wide',
+               fontSize: '20px',
+               fontWeight: 700,
+               lineHeight: 'normal'
+             }}
+           >
+             {percentage}%
+           </span>
+           <div 
+              className="text-center font-bold" 
+              style={{ 
+                color: getPercentageStyle(percentage).color,
+                fontFamily: 'Actay Wide',
+                fontSize: '16px',
+                fontWeight: 700,
+                lineHeight: 'normal',
+                width: '123px',
+                opacity: 0.5
+              }}
+            >
+              <div>{getPercentageStyle(percentage).text}</div>
+              <div>шанс</div>
+            </div>
+         </div>
+    </div>
+  );
+};
+
 export default function UpgradePage() {
   return (
     <div className="min-h-screen flex px-6 flex-col items-center gap-2 flex-1 self-stretch">
@@ -18,36 +113,7 @@ export default function UpgradePage() {
         </div>
         <div className='flex p-2 flex-col justify-between items-center self-stretch rounded-xl bg-[rgba(249,248,252,0.05)]'>
           <div className='flex h-[180px] flex-col justify-between items-center'>
-            <div className='relative w-[172px] h-[172px]'>
-              <svg width='172' height='172' viewBox='0 0 172 172' className='absolute inset-0'>
-                {/* Серый фоновый круг */}
-                <circle
-                  cx='86'
-                  cy='86'
-                  r='82'
-                  fill='none'
-                  stroke='rgba(249,248,252,0.05)'
-                  strokeWidth='8'
-                />
-                {/* Цветная дуга поверх серого */}
-                <circle
-                  cx='86'
-                  cy='86'
-                  r='82'
-                  fill='none'
-                  stroke='#5C5ADC'
-                  strokeWidth='8'
-                  strokeDasharray={`${15 * 5.15} ${(100 - 15) * 5.15}`}
-                  strokeLinecap='round'
-                  transform='rotate(-90 86 86)'
-                />
-              </svg>
-              <div className='absolute inset-0 flex flex-col items-center justify-center'>
-                <span className='text-[#FF4444] text-2xl font-bold'>15 %</span>
-                <span className='text-[#FF4444] text-sm opacity-70'>Небольшой</span>
-                <span className='text-[#FF4444] text-sm opacity-70'>шанс</span>
-              </div>
-            </div>
+            <CircularProgress percentage={UPGRADE_PERCENTAGE} />
           </div>
           <div className='flex flex-col items-start gap-2 self-stretch'>
             <div className='flex items-start gap-2 self-stretch'>
