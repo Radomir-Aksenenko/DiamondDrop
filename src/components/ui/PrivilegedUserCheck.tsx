@@ -5,6 +5,9 @@ import { usePreloadedData } from '@/components/providers/DataPreloadProvider';
 // Список привилегированных пользователей
 const PRIVILEGED_USERS = ['megatntmega', 'fupir', 'rafael1209'];
 
+// В Dev режиме автоматически предоставляем привилегии
+const isDevelopmentMode = process.env.NODE_ENV === 'development';
+
 /**
  * Компонент для проверки привилегированных пользователей
  * Используется для условного отображения контента или функций
@@ -18,7 +21,7 @@ export function PrivilegedUserCheck({ children, fallback = null }: PrivilegedUse
   const { user } = usePreloadedData();
   const userName = user?.nickname;
   
-  const isPrivilegedUser = userName && PRIVILEGED_USERS.includes(userName);
+  const isPrivilegedUser = userName && (isDevelopmentMode || PRIVILEGED_USERS.includes(userName));
   
   return isPrivilegedUser ? <>{children}</> : <>{fallback}</>;
 }
@@ -30,7 +33,7 @@ export function usePrivilegedUser() {
   const { user } = usePreloadedData();
   const userName = user?.nickname;
   
-  const isPrivilegedUser = userName && PRIVILEGED_USERS.includes(userName);
+  const isPrivilegedUser = userName && (isDevelopmentMode || PRIVILEGED_USERS.includes(userName));
   
   return {
     isPrivilegedUser,

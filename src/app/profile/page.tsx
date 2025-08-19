@@ -12,8 +12,7 @@ import InventoryModal from '@/components/ui/InventoryModal';
 import ItemDescriptionModal from '@/components/ui/ItemDescriptionModal';
 import DeliveryTab from '@/components/ui/DeliveryTab';
 import { CaseItem } from '@/hooks/useCasesAPI';
-import PrivilegedUserCheck from '@/components/ui/PrivilegedUserCheck';
-import SettingsButton from '@/components/ui/SettingsButton';
+import { PrivilegedUserCheck } from '@/components/ui/PrivilegedUserCheck';
 
 export default function ProfilePage() {
   const { user, isAuthenticated } = usePreloadedData();
@@ -31,7 +30,8 @@ export default function ProfilePage() {
   const [selectedItem, setSelectedItem] = useState<CaseItem | null>(null);
   
   // Состояние для активной вкладки
-  const [activeTab, setActiveTab] = useState<'inventory' | 'deliveries' | 'freeCases'>('inventory');
+  const [activeTab, setActiveTab] = useState<'inventory' | 'deliveries' | 'freeCases' | 'settings'>('inventory');
+  const [hypedPhrases, setHypedPhrases] = useState(false);
   
   // Данные пользователя
   const userName = user?.nickname ?? (isAuthenticated ? 'Загрузка...' : 'Гость');
@@ -126,10 +126,7 @@ export default function ProfilePage() {
     };
   }, [handleIntersection]);
 
-  const handleSettingsClick = () => {
-    // Здесь будет логика открытия настроек
-    console.log('Открыть настройки');
-  };
+
 
   return (
     <div className="w-full max-w-6xl mx-auto pt-2 flex flex-col items-start gap-2 self-stretch">
@@ -156,11 +153,6 @@ export default function ProfilePage() {
           </motion.div>
           <p className='text-[#F9F8FC] font-unbounded text-2xl font-medium'>Профиль</p>
         </button>
-        
-        {/* Кнопка настроек для привилегированных пользователей */}
-        <PrivilegedUserCheck>
-          <SettingsButton onClick={handleSettingsClick} />
-        </PrivilegedUserCheck>
       </div>
       
       {/* Блок профиля */}
@@ -271,6 +263,35 @@ export default function ProfilePage() {
               Фри Кейсы
           </p>
         </motion.button>
+        
+        {/* Кнопка настроек для привилегированных пользователей */}
+        <PrivilegedUserCheck>
+          <motion.button 
+            onClick={() => setActiveTab('settings')}
+            className={`flex px-[12px] py-[8px] pr-2 items-center gap-2 rounded-lg cursor-pointer transition-all duration-300 ease-out ${
+              activeTab === 'settings' ? 'bg-[#232329]' : 'bg-transparent'
+            } ${activeTab === 'settings' ? '' : 'hover:bg-[#232329]'}`}
+            whileTap={{ scale: 0.98 }}
+            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+          >
+            <div className={`flex w-[30px] h-[30px] flex-col justify-center items-center gap-[10px] aspect-square rounded-[4px] transition-all duration-300 ease-out ${
+              activeTab === 'settings' ? 'bg-[#5C5ADC]' : 'bg-[#F9F8FC]/[0.05]'
+            }`}>
+              <img 
+                src="/Settings.svg" 
+                alt="Settings"
+                width={18}
+                height={18}
+                className={`opacity-${activeTab === 'settings' ? '100' : '30'}`}
+              />
+            </div>
+            <p className={`font-actay-wide text-base font-bold ${
+              activeTab === 'settings' ? 'text-[#F9F8FC]' : 'text-[#F9F8FC] opacity-50'
+            }`}>
+              Настройки
+            </p>
+          </motion.button>
+        </PrivilegedUserCheck>
       </div>
 
       {/* Контент в зависимости от активной вкладки */}
@@ -404,6 +425,40 @@ export default function ProfilePage() {
               <p className='text-[#F9F8FC] font-actay-wide text-sm opacity-50'>
                 Здесь будут отображаться ваши бесплатные кейсы
               </p>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'settings' && (
+          <div className='w-full'>
+            <div className='bg-[#1A1A20] rounded-lg p-6'>
+              <div className='flex flex-col gap-4'>
+                <h3 className='text-[#F9F8FC] font-unbounded text-lg font-medium'>
+                  Настройки
+                </h3>
+                <div className='flex items-center justify-between p-4 bg-[#232329] rounded-lg'>
+                  <div className='flex flex-col gap-1'>
+                    <span className='text-[#F9F8FC] font-unbounded text-sm font-medium'>
+                      Хайповые слова
+                    </span>
+                    <span className='text-[#F9F8FC] font-actay-wide text-xs opacity-50'>
+                      Включить хайповую локализацию сайта
+                    </span>
+                  </div>
+                  <motion.button 
+                    onClick={() => setHypedPhrases(!hypedPhrases)}
+                    className={`flex w-[40px] h-[22px] p-[3px] cursor-pointer ${
+                      hypedPhrases ? 'justify-end bg-[#5C5ADC]' : 'justify-start bg-[#F9F8FC]/[0.10]'
+                    } items-center rounded-[100px] transition-colors duration-200`}
+                  >
+                    <motion.div 
+                      className='w-[16px] h-[16px] flex-shrink-0 rounded-[100px] bg-[#F9F8FC]'
+                      layout
+                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                    />
+                  </motion.button>
+                </div>
+              </div>
             </div>
           </div>
         )}
