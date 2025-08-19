@@ -111,6 +111,7 @@ export default function UpgradePage() {
             <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold opacity-30'>3 шт.</p>
           </div>
         </div>
+
         <div className='flex p-2 flex-col justify-between items-center self-stretch rounded-xl bg-[rgba(249,248,252,0.05)]'>
           <div className='flex h-[180px] flex-col justify-between items-center'>
             <CircularProgress percentage={UPGRADE_PERCENTAGE} />
@@ -130,10 +131,22 @@ export default function UpgradePage() {
             </div>
           </div>
         </div>
+        
         <div className='flex pt-3 flex-col justify-between items-center flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)]'>
-          
+          <p className='text-white text-center font-["Actay_Wide"] text-base font-bold opacity-30'>Передмет, который хотите получить</p>
+          <div className='flex w-[160px] h-[160px] flex-col justify-end items-end aspect-square bg-[url(https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/netherite_ingot/icon)] bg-lightgray bg-center bg-cover bg-no-repeat'>
+            <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-2xl font-bold opacity-30'>x1</p>
+          </div>
+          <div className='flex px-4 py-3 justify-between items-center self-stretch border-t border-[rgba(249,248,252,0.05)]'>
+            <p className='text-[#EDD51D] text-center font-["Actay_Wide"] text-base font-bold'>Незеритовый слиток</p>
+            <div>
+              <span className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold'>999</span>
+              <span className='text-[rgba(249,248,252,0.50)] font-["Actay_Wide"] text-xs font-bold'> АР</span>
+            </div>
+          </div>
         </div>
       </div>
+
       <div className='flex items-center gap-2 flex-1 self-stretch'>
         <div className='flex flex-col items-center gap-3 flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)]'>
 
