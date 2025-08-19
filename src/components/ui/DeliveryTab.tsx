@@ -167,7 +167,18 @@ export default function DeliveryTab(): React.JSX.Element {
       };
 
       const branchName = order?.branch?.name || 'Неизвестный филиал';
-      const coordinates = formatCoordinates(order?.branch?.coordinates || []);
+      // Проверяем тип coordinates - может быть массивом или объектом
+      const branchCoordinates = order?.branch?.coordinates;
+      let coordinatesArray: any[] = [];
+      
+      if (Array.isArray(branchCoordinates)) {
+        coordinatesArray = branchCoordinates;
+      } else if (branchCoordinates && typeof branchCoordinates === 'object') {
+        // Если coordinates - объект, преобразуем его в массив
+        coordinatesArray = [branchCoordinates];
+      }
+      
+      const coordinates = formatCoordinates(coordinatesArray);
       const cell = order?.branch?.cell?.name || 'Пока неизвестно';
 
       return {
