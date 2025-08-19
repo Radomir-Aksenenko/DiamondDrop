@@ -99,7 +99,7 @@ const CircularProgress = ({ percentage }: CircularProgressProps) => {
 
 export default function UpgradePage() {
   return (
-    <div className="flex px-6 flex-col items-center gap-2 self-stretch">
+    <div className="h-screen flex px-6 flex-col items-center gap-2 self-stretch">
       <div className='flex justify-center items-end gap-2 self-stretch' style={{ height: '285.5px' }}>
         <div className='flex flex-col justify-between items-center pt-3 flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)]'>
           <p className='text-white text-center font-["Actay_Wide"] text-base font-bold opacity-30'>Передмет, который вы ставите</p>
