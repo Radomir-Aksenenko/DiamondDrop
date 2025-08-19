@@ -9,6 +9,7 @@ import { useUserFaceAvatar } from '@/hooks/useUserAvatar';
 import WalletModal from '@/components/ui/WalletModal';
 import UpgradeModal from '@/components/ui/UpgradeModal';
 import { useWalletModal } from '@/contexts/WalletModalContext';
+import { usePrivilegedUser } from '@/components/ui/PrivilegedUserCheck';
 
 export default function Header() {
   const { user, isAuthenticated } = usePreloadedData();
@@ -41,11 +42,8 @@ export default function Header() {
   
 
 
-  // Список привилегированных пользователей для доступа к странице upgrade
-  const PRIVILEGED_USERS = ['megatntmega', 'fupir', 'rafael1209'];
-  
-  // Проверяем, является ли пользователь привилегированным
-  const isPrivilegedUser = userName && PRIVILEGED_USERS.includes(userName);
+  // Используем хук для проверки привилегированного пользователя
+  const { isPrivilegedUser } = usePrivilegedUser();
 
   const handleUpgradeClick = () => {
     if (isPrivilegedUser) {

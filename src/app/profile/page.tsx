@@ -12,6 +12,8 @@ import InventoryModal from '@/components/ui/InventoryModal';
 import ItemDescriptionModal from '@/components/ui/ItemDescriptionModal';
 import DeliveryTab from '@/components/ui/DeliveryTab';
 import { CaseItem } from '@/hooks/useCasesAPI';
+import PrivilegedUserCheck from '@/components/ui/PrivilegedUserCheck';
+import SettingsButton from '@/components/ui/SettingsButton';
 
 export default function ProfilePage() {
   const { user, isAuthenticated } = usePreloadedData();
@@ -124,30 +126,42 @@ export default function ProfilePage() {
     };
   }, [handleIntersection]);
 
+  const handleSettingsClick = () => {
+    // Здесь будет логика открытия настроек
+    console.log('Открыть настройки');
+  };
+
   return (
     <div className="w-full max-w-6xl mx-auto pt-2 flex flex-col items-start gap-2 self-stretch">
-      <button 
-        onClick={() => {
-          router.back();
-        }}
-        className="flex w-full h-[42px] items-center gap-4 cursor-pointer"
-      >
-        <motion.div 
-          className="flex w-[42px] h-[42px] flex-col justify-center items-center gap-[10px] flex-shrink-0 rounded-[8px] bg-[#F9F8FC]/[0.05]"
-          whileHover={{ backgroundColor: "rgba(249, 248, 252, 0.1)" }}
-          whileTap={{ scale: 0.95 }}
-          transition={{ type: "spring", stiffness: 400, damping: 25 }}
+      <div className="flex w-full h-[42px] items-center justify-between">
+        <button 
+          onClick={() => {
+            router.back();
+          }}
+          className="flex items-center gap-4 cursor-pointer"
         >
-          <img 
-            src="/Arrow - Left.svg" 
-            alt="Назад" 
-            width={18} 
-            height={12} 
-            className="w-[18px] h-[12px]"
-          />
-        </motion.div>
-        <p className='text-[#F9F8FC] font-unbounded text-2xl font-medium'>Профиль</p>
-      </button>
+          <motion.div 
+            className="flex w-[42px] h-[42px] flex-col justify-center items-center gap-[10px] flex-shrink-0 rounded-[8px] bg-[#F9F8FC]/[0.05]"
+            whileHover={{ backgroundColor: "rgba(249, 248, 252, 0.1)" }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+          >
+            <img 
+              src="/Arrow - Left.svg" 
+              alt="Назад" 
+              width={18} 
+              height={12} 
+              className="w-[18px] h-[12px]"
+            />
+          </motion.div>
+          <p className='text-[#F9F8FC] font-unbounded text-2xl font-medium'>Профиль</p>
+        </button>
+        
+        {/* Кнопка настроек для привилегированных пользователей */}
+        <PrivilegedUserCheck>
+          <SettingsButton onClick={handleSettingsClick} />
+        </PrivilegedUserCheck>
+      </div>
       
       {/* Блок профиля */}
       <div className='flex h-[202px] p-4 items-start gap-4 self-stretch rounded-xl bg-[#F9F8FC]/[0.05]'>
