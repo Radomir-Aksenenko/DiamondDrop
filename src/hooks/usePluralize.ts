@@ -28,7 +28,7 @@ export const usePluralize = () => {
 
   const pluralizeItems = useMemo(() => {
     return (count: number): string => {
-      return pluralize(count, 'ПРЕДМЕТ', 'ПРЕДМЕТА', 'ПРЕДМЕТОВ');
+      return pluralize(count, 'Предмет', 'Предмета', 'Предметов');
     };
   }, [pluralize]);
 
