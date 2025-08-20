@@ -498,15 +498,15 @@ export default function DeliveryTab(): React.JSX.Element {
           <div className='w-full h-[260px]'>
             {selectedBranch && selectedBranch.imageUrls && selectedBranch.imageUrls.length > 0 ? (
               <div 
-                className='flex gap-2 h-full overflow-x-auto scrollbar-thin scrollbar-thumb-[#F9F8FC]/20 scrollbar-track-transparent hover:scrollbar-thumb-[#F9F8FC]/40 transition-colors'
+                className='flex gap-2 h-full overflow-x-auto scrollbar-thin scrollbar-thumb-[#F9F8FC]/20 scrollbar-track-[rgba(249,248,252,0.05)] hover:scrollbar-thumb-[#F9F8FC]/40 transition-colors'
                 onWheel={(e) => {
                   // Предотвращаем прокрутку основной страницы
                   e.preventDefault();
                   e.stopPropagation();
                   
-                  // Прокручиваем горизонтально
+                  // Прокручиваем горизонтально (инвертированное направление)
                   const container = e.currentTarget;
-                  const scrollAmount = e.deltaY > 0 ? 100 : -100;
+                  const scrollAmount = e.deltaY > 0 ? -100 : 100;
                   container.scrollLeft += scrollAmount;
                 }}
               >
@@ -516,6 +516,18 @@ export default function DeliveryTab(): React.JSX.Element {
                       src={imageUrl.trim()}
                       alt={`${selectedBranch?.name} - фото ${index + 1}`}
                       className='h-full w-auto object-cover rounded-md min-w-[200px] max-w-[300px]'
+                      onWheel={(e) => {
+                        // Предотвращаем прокрутку основной страницы
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        // Прокручиваем горизонтально (инвертированное направление)
+                        const container = e.currentTarget.parentElement?.parentElement;
+                        if (container) {
+                          const scrollAmount = e.deltaY > 0 ? -100 : 100;
+                          container.scrollLeft += scrollAmount;
+                        }
+                      }}
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
                         target.style.display = 'none';
