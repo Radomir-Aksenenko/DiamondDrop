@@ -181,3 +181,25 @@ img {
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
 }
+
+/* Стили для горизонтального скроллера изображений */
+.scrollbar-thin::-webkit-scrollbar {
+  height: 6px; /* Высота горизонтального скроллбара */
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thumb-\[\#F9F8FC\]\/20::-webkit-scrollbar-thumb {
+  background: rgba(249, 248, 252, 0.2);
+  border-radius: 3px;
+}
+
+.hover\:scrollbar-thumb-\[\#F9F8FC\]\/40:hover::-webkit-scrollbar-thumb {
+  background: rgba(249, 248, 252, 0.4);
+}
+
+.scrollbar-track-transparent::-webkit-scrollbar-track {
+  background: transparent;
+}

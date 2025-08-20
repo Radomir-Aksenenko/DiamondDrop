@@ -9,6 +9,7 @@ import { useOrdersAPI, formatCoordinates } from '@/hooks/useOrdersAPI';
 import { usePluralize } from '@/hooks/usePluralize';
 import DeliveryLoader, { DeliveryCircleLoader } from './DeliveryLoader';
 import type { Order } from '@/hooks/useOrdersAPI';
+import useBranchesAPI, { Branch } from '@/hooks/useBranchesAPI';
 
 // Настраиваемый параметр высоты блоков доставки
 const DELIVERY_BLOCKS_HEIGHT = 340; // Измените это значение для изменения высоты блоков
@@ -16,13 +17,20 @@ const DELIVERY_BLOCKS_HEIGHT = 340; // Измените это значение 
 export default function DeliveryTab(): React.JSX.Element {
   // Хук для работы с API заказов
   const { orders, loading, hasMore, loadInitial, loadMore, isInitialized, branchesForDisplay } = useOrdersAPI();
+  // Хук для получения полных данных филиалов
+  const { branches, loading: branchesLoading, error: branchesError } = useBranchesAPI();
   const observerRef = useRef<HTMLDivElement>(null);
+  
+  // Отладочные логи для филиалов
+  useEffect(() => {
+    console.log('Branches data:', { branches, branchesLoading, branchesError });
+  }, [branches, branchesLoading, branchesError]);
   
   // Состояние для модальных окон
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [isBranchModalOpen, setIsBranchModalOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<string>('');
-  const [selectedBranch, setSelectedBranch] = useState<{name: string; coordinates: string; cell: string} | null>(null);
+  const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
   
   // Состояние для модального окна описания предмета
   const [isItemDescriptionModalOpen, setIsItemDescriptionModalOpen] = useState(false);
@@ -261,12 +269,19 @@ export default function DeliveryTab(): React.JSX.Element {
   };
 
   const handleBranchClick = (branchName: string) => {
-    // Найти полную информацию о филиале по названию
-    const allOrders = [...currentOrders, ...historyOrders];
-    const foundOrder = allOrders.find(order => order.branch.name === branchName);
-    if (foundOrder) {
-      setSelectedBranch(foundOrder.branch);
+    console.log('🔥 handleBranchClick ВЫЗВАН с названием:', branchName);
+    console.log('🔥 Доступные филиалы:', branches);
+    console.log('🔥 Количество филиалов:', branches?.length || 0);
+    // Найти полную информацию о филиале по названию из API
+    const foundBranch = branches.find(branch => branch.name === branchName);
+    console.log('🔥 Найденный филиал:', foundBranch);
+    if (foundBranch) {
+      setSelectedBranch(foundBranch);
       setIsBranchModalOpen(true);
+      console.log('🔥 Модальное окно должно открыться СЕЙЧАС');
+      console.log('🔥 isBranchModalOpen установлен в true');
+    } else {
+      console.log('🔥 Филиал НЕ НАЙДЕН!');
     }
   };
 
@@ -436,45 +451,72 @@ export default function DeliveryTab(): React.JSX.Element {
             <div className=''>
               <div>
                 <span className='text-[#F9F8FC]/30 font-["Actay_Wide"] text-xl font-bold'>Имя: </span>
-                <span className='text-[#F9F8FC] font-["Actay_Wide"] text-xl font-bold leading-normal'>{selectedBranch.name}</span>
+                <span className='text-[#F9F8FC] font-["Actay_Wide"] text-xl font-bold leading-normal'>{selectedBranch?.name}</span>
               </div>
               <div>
                 <span className='text-[#F9F8FC]/30 font-["Actay_Wide"] text-xl font-bold'>Корды: </span>
-                {selectedBranch.coordinates.split(' ')[0].toLowerCase().startsWith('зв') && (
-                  <span className='text-[#289547] text-base font-[515] leading-normal tabular-nums lining-nums'>{selectedBranch.coordinates}</span>
-                )}
-                {selectedBranch.coordinates.split(' ')[0].toLowerCase().startsWith('жв') && (
-                  <span className='text-[#D9C332] text-base font-[515] leading-normal tabular-nums lining-nums'>{selectedBranch.coordinates}</span>
-                )}
-                {selectedBranch.coordinates.split(' ')[0].toLowerCase().startsWith('кв') && (
-                  <span className='text-[#E74A4A] text-base font-[515] leading-normal tabular-nums lining-nums'>{selectedBranch.coordinates}</span>
-                )}
-                {selectedBranch.coordinates.split(' ')[0].toLowerCase().startsWith('св') && (
-                  <span className='text-[#668CE0] text-base font-[515] leading-normal tabular-nums lining-nums'>{selectedBranch.coordinates}</span>
-                )}
+                {(() => {
+                  const color = selectedBranch?.coordinates.the_nether.color.toLowerCase();
+            const distance = selectedBranch?.coordinates.the_nether.distance;
+                  let prefix = '';
+                  let colorClass = '';
+                  
+                  switch (color) {
+                    case 'green':
+                      prefix = 'зв';
+                      colorClass = 'text-[#289547]';
+                      break;
+                    case 'yellow':
+                      prefix = 'жв';
+                      colorClass = 'text-[#D9C332]';
+                      break;
+                    case 'red':
+                      prefix = 'кв';
+                      colorClass = 'text-[#E74A4A]';
+                      break;
+                    case 'blue':
+                      prefix = 'св';
+                      colorClass = 'text-[#668CE0]';
+                      break;
+                    default:
+                      prefix = 'нв';
+                      colorClass = 'text-[#F9F8FC]';
+                  }
+                  
+                  return (
+                    <span className={`${colorClass} text-base font-[515] leading-normal tabular-nums lining-nums`}>
+                      {prefix} {distance}
+                    </span>
+                  );
+                })()}
               </div>
 
             </div>
           )}
           
-          <div className='flex h-[260px] flex-col items-start gap-1 self-stretch'>
-            <img 
-              src="/assets.png" 
-              alt="Branch location"
-              className="flex-1 self-stretch rounded-md"
-            />
-            <div className='flex items-start gap-[4px] flex-[1_0_0] self-stretch'>
-              <img 
-                src="/assets2.png" 
-                alt="Branch location"
-                className="flex-1 self-stretch rounded-md"
-              />
-              <img 
-                src="/assets2.png" 
-                alt="Branch location"
-                className="flex-1 self-stretch rounded-md"
-              />
-            </div>
+          {/* Скроллер с фотографиями филиала */}
+          <div className='w-full h-[260px]'>
+            {selectedBranch && selectedBranch.imageUrls && selectedBranch.imageUrls.length > 0 ? (
+              <div className='flex gap-2 h-full overflow-x-auto scrollbar-thin scrollbar-thumb-[#F9F8FC]/20 scrollbar-track-transparent hover:scrollbar-thumb-[#F9F8FC]/40 transition-colors'>
+                {selectedBranch.imageUrls.map((imageUrl, index) => (
+                  <div key={index} className='flex-shrink-0 h-full'>
+                    <img 
+                      src={imageUrl.trim()}
+                      alt={`${selectedBranch?.name} - фото ${index + 1}`}
+                      className='h-full w-auto object-cover rounded-md min-w-[200px] max-w-[300px]'
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className='flex items-center justify-center h-full bg-[#F9F8FC]/5 rounded-md'>
+                <p className='text-[#F9F8FC]/50 font-["Actay_Wide"] text-base font-bold'>Фотографии не загружены</p>
+              </div>
+            )}
           </div>
           
           <div className='grid grid-cols-2 gap-2'>
