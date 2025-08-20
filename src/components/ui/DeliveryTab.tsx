@@ -497,7 +497,19 @@ export default function DeliveryTab(): React.JSX.Element {
           {/* Скроллер с фотографиями филиала */}
           <div className='w-full h-[260px]'>
             {selectedBranch && selectedBranch.imageUrls && selectedBranch.imageUrls.length > 0 ? (
-              <div className='flex gap-2 h-full overflow-x-auto scrollbar-thin scrollbar-thumb-[#F9F8FC]/20 scrollbar-track-transparent hover:scrollbar-thumb-[#F9F8FC]/40 transition-colors'>
+              <div 
+                className='flex gap-2 h-full overflow-x-auto scrollbar-thin scrollbar-thumb-[#F9F8FC]/20 scrollbar-track-transparent hover:scrollbar-thumb-[#F9F8FC]/40 transition-colors'
+                onWheel={(e) => {
+                  // Предотвращаем прокрутку основной страницы
+                  e.preventDefault();
+                  e.stopPropagation();
+                  
+                  // Прокручиваем горизонтально
+                  const container = e.currentTarget;
+                  const scrollAmount = e.deltaY > 0 ? 100 : -100;
+                  container.scrollLeft += scrollAmount;
+                }}
+              >
                 {selectedBranch.imageUrls.map((imageUrl, index) => (
                   <div key={index} className='flex-shrink-0 h-full'>
                     <img 
