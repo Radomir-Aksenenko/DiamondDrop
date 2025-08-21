@@ -12,14 +12,12 @@ import { usePreloadedData } from '@/components/providers/DataPreloadProvider';
 interface WalletModalProps {
   isOpen: boolean;
   onClose: () => void;
-  presetAmount?: number; // Предустановленная сумма для пополнения
+  presetAmount?: number;
 }
 
-// Константы для предотвращения пересоздания при каждом рендере
 const DEPOSIT_AMOUNTS = ['16', '32', '64', '128', '512'] as const;
 const WITHDRAW_AMOUNTS = ['8', '16', '32', '64', '10000'] as const;
 
-// Мемоизированный компонент кнопки для предотвращения лишних рендеров
 const AmountButton = memo(function AmountButton({ 
   amount, 
   isSelected, 
@@ -44,7 +42,6 @@ const AmountButton = memo(function AmountButton({
   );
 });
 
-// Мемоизированный компонент кнопки карты
 const CardButton = memo(function CardButton({ 
   cardNumber, 
   isSelected, 
@@ -66,12 +63,6 @@ const CardButton = memo(function CardButton({
   );
 });
 
-/**
- * Оптимизированное модальное окно кошелька
- * @param isOpen - Флаг открытия модального окна
- * @param onClose - Функция закрытия модального окна
- * @param presetAmount - Предустановленная сумма для пополнения
- */
 const WalletModal = memo(function WalletModal({ isOpen, onClose, presetAmount }: WalletModalProps) {
   const { createDeposit, setupPaymentHandlers, isLoading: isDepositLoading, error: depositError, clearError } = useDepositAPI();
   const { createWithdraw, isLoading: isWithdrawLoading, error: withdrawError, clearError: clearWithdrawError } = useWithdrawAPI();
@@ -89,40 +80,25 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose, presetAmount }:
   const [depositAmountError, setDepositAmountError] = useState<string | null>(null);
   const [cardError, setCardError] = useState<string | null>(null);
 
-  // Обработка предустановленной суммы пополнения
   useEffect(() => {
     if (isOpen && presetAmount && presetAmount > 0) {
-      // Переключаемся на вкладку пополнения
       setActiveTab('deposit');
-      // Устанавливаем предустановленную сумму
       setDepositAmount(presetAmount.toString());
-      // Сбрасываем выбранную кнопку, так как сумма может не совпадать с предустановленными
       setSelectedDepositAmountButton(null);
-      // Очищаем ошибки
       setDepositAmountError(null);
       clearError();
     }
   }, [isOpen, presetAmount, clearError]);
 
-  // Настройка обработчиков событий оплаты
   useEffect(() => {
     if (!isOpen) return;
 
     const cleanup = setupPaymentHandlers(
-      // onSuccess - при успешной оплате
       async () => {
-        // Логирование удалено
-        
-        // Ждем 2 секунды, чтобы дать серверу время обработать платеж
         setTimeout(async () => {
-          // Логирование удалено
-          
           try {
-             // Обновляем данные пользователя с сервера
              await refreshUser();
-             // Логирование удалено
             
-            // Очищаем форму и закрываем модалку
             setDepositAmount('');
             setSelectedDepositAmountButton(null);
             setDepositAmountError(null);
@@ -134,7 +110,6 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose, presetAmount }:
           }
         }, 2000);
       },
-      // onError - при ошибке оплаты
       (error: string) => {
         console.error('Error processing deposit payment:', error);
         setDepositAmountError(error);
@@ -144,41 +119,42 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose, presetAmount }:
     return cleanup;
   }, [isOpen, setupPaymentHandlers, onClose, clearError, depositAmount, refreshUser]);
 
-  // Мемоизированные обработчики для предотвращения лишних рендеров
   const handleDepositAmountSelect = useCallback((amount: string) => {
     setDepositAmount(amount);
     setSelectedDepositAmountButton(amount);
     setDepositAmountError(null);
-    clearError(); // Очищаем ошибки API
+    clearError();
   }, [clearError]);
 
   const handleAmountSelect = useCallback((amount: string) => {
-    // Если выбрана кнопка "Макс", устанавливаем весь доступный баланс, округленный в меньшую сторону
     if (amount === '10000') {
       const userBalance = user?.balance ?? 0;
       const roundedBalance = Math.floor(userBalance).toString();
       setWithdrawAmount(roundedBalance);
       setSelectedAmountButton(amount);
       setAmountError(null);
+      clearWithdrawError();
     } else {
       setWithdrawAmount(amount);
       setSelectedAmountButton(amount);
       setAmountError(null);
+      clearWithdrawError();
     }
-  }, [user?.balance]);
+  }, [user?.balance, clearWithdrawError]);
 
   const handleCardSelect = useCallback((card: string) => {
     setCardNumber(card);
     setSelectedCardButton(card);
     setCardError(null);
-  }, []);
+    clearWithdrawError();
+  }, [clearWithdrawError]);
 
   const handleDepositAmountChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/\D/g, '');
     setDepositAmount(value);
     setSelectedDepositAmountButton(null);
     setDepositAmountError(null);
-    clearError(); // Очищаем ошибки API
+    clearError();
   }, [clearError]);
 
   const handleAmountChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -186,17 +162,17 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose, presetAmount }:
     setWithdrawAmount(value);
     setSelectedAmountButton(null);
     setAmountError(null);
-  }, []);
+    clearWithdrawError();
+  }, [clearWithdrawError]);
 
   const handleCardChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/\D/g, '').slice(0, 5);
     setCardNumber(value);
     setSelectedCardButton(null);
     setCardError(null);
-    clearWithdrawError(); // Очищаем ошибки API вывода
+    clearWithdrawError();
   }, [clearWithdrawError]);
 
-  // Мемоизированная валидация
   const validateDepositForm = useCallback(() => {
     let isValid = true;
     
@@ -226,48 +202,48 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose, presetAmount }:
     } else if (parseInt(withdrawAmount) <= 0) {
       setAmountError('Некорректная сумма');
       isValid = false;
-    } else if (parseInt(withdrawAmount) > 10000) {
-      setAmountError('Сумма превышает максимальную');
+    } else if (parseInt(withdrawAmount) > (user?.balance ?? 0)) {
+      setAmountError('Недостаточно средств');
+      isValid = false;
+    } else if (parseFloat(withdrawAmount) !== parseInt(withdrawAmount)) {
+      setAmountError('Вывод возможен только целыми значениями');
       isValid = false;
     }
     
     if (!cardNumber) {
       setCardError('Введите номер карты');
       isValid = false;
-    } else if (cardNumber.length < 5) {
+    } else if (cardNumber.length !== 5) {
       setCardError('Номер карты должен содержать 5 цифр');
       isValid = false;
     }
     
     return isValid;
-  }, [withdrawAmount, cardNumber]);
+  }, [withdrawAmount, cardNumber, user?.balance]);
 
   const handleDeposit = useCallback(async () => {
-    if (validateDepositForm()) {
-      clearError(); // Очищаем предыдущие ошибки
-      await createDeposit(parseInt(depositAmount));
+    if (!validateDepositForm()) {
+      return;
     }
-  }, [validateDepositForm, depositAmount, createDeposit, clearError]);
+
+    try {
+      await createDeposit(parseInt(depositAmount));
+    } catch (error) {
+      console.error('Error creating deposit:', error);
+    }
+  }, [validateDepositForm, depositAmount, createDeposit]);
 
   const handleWithdraw = useCallback(async () => {
-    if (validateWithdrawForm()) {
-      clearWithdrawError(); // Очищаем предыдущие ошибки
-      
+    if (!validateWithdrawForm()) {
+      return;
+    }
+
+    try {
       const success = await createWithdraw(parseInt(withdrawAmount), cardNumber);
-      
       if (success) {
-        // Логирование удалено
-        
-        // Локально уменьшаем баланс на сумму вывода
-        const withdrawAmountNum = parseInt(withdrawAmount);
-        decreaseBalance(withdrawAmountNum);
-        // Логирование удалено
-        
-        // Сохраняем карту в куки только после успешного вывода
+        decreaseBalance(parseInt(withdrawAmount));
         addCard(cardNumber);
-        // Логирование удалено
         
-        // Очищаем форму и закрываем модалку
         setWithdrawAmount('');
         setCardNumber('');
         setSelectedAmountButton(null);
@@ -276,15 +252,16 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose, presetAmount }:
         setCardError(null);
         onClose();
       }
+    } catch (error) {
+      console.error('Error creating withdraw:', error);
     }
-  }, [validateWithdrawForm, withdrawAmount, cardNumber, createWithdraw, addCard, decreaseBalance, clearWithdrawError, onClose]);
+  }, [validateWithdrawForm, withdrawAmount, cardNumber, createWithdraw, addCard, decreaseBalance, onClose]);
 
-  // Мемоизированные обработчики отмены
   const handleDepositCancel = useCallback(() => {
     setDepositAmount('');
     setSelectedDepositAmountButton(null);
     setDepositAmountError(null);
-    clearError(); // Очищаем ошибки API
+    clearError();
     onClose();
   }, [onClose, clearError]);
 
@@ -295,11 +272,10 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose, presetAmount }:
     setSelectedCardButton(null);
     setAmountError(null);
     setCardError(null);
-    clearWithdrawError(); // Очищаем ошибки API вывода
+    clearWithdrawError();
     onClose();
   }, [onClose, clearWithdrawError]);
 
-  // Мемоизированный заголовок
   const modalTitle = useMemo(() => (
     <div className="flex items-center gap-4">
       <button 
@@ -320,7 +296,6 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose, presetAmount }:
     </div>
   ), [activeTab]);
 
-  // Мемоизированные кнопки депозита
   const depositAmountButtons = useMemo(() => (
     <div className="grid grid-cols-5 gap-1.5">
       {DEPOSIT_AMOUNTS.map((amount) => (
@@ -334,7 +309,6 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose, presetAmount }:
     </div>
   ), [selectedDepositAmountButton, handleDepositAmountSelect]);
 
-  // Мемоизированные кнопки вывода
   const withdrawAmountButtons = useMemo(() => (
     <div className="grid grid-cols-5 gap-1.5">
       {WITHDRAW_AMOUNTS.map((amount) => (
@@ -349,7 +323,6 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose, presetAmount }:
     </div>
   ), [selectedAmountButton, handleAmountSelect]);
 
-  // Мемоизированные кнопки карт
   const cardButtons = useMemo(() => {
     if (savedCards.length === 0) {
       return null;
@@ -373,14 +346,13 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose, presetAmount }:
     <Modal isOpen={isOpen} onClose={onClose} title={modalTitle}>
       {activeTab === 'deposit' ? (
         <div className="flex flex-col gap-3">
-          {/* Поле ввода суммы депозита */}
           <div className="relative">
             <input 
               type="text" 
               value={depositAmount}
               onChange={handleDepositAmountChange}
               disabled={isDepositLoading}
-              className={`w-full bg-[#19191D] text-[#F9F8FC] px-3 py-3 rounded-lg outline-none text-xl font-unbounded ${(depositAmountError || depositError) ? 'border border-red-500' : 'focus:ring-1 focus:ring-[#5C5ADC]'} ${isDepositLoading ? 'opacity-50 cursor-not-allowed' : ''}`} 
+              className={`w-full bg-[#19191D] text-[#F9F8FC] px-3 py-3 rounded-lg outline-none text-xl font-unbounded ${(depositAmountError || depositError) ? 'border border-red-500' : 'border border-transparent focus:border-[#5C5ADC]'} ${isDepositLoading ? 'opacity-50 cursor-not-allowed' : ''} transition-colors`} 
               placeholder="Сумма депозита"
             />
             {(depositAmountError || depositError) && (
@@ -388,10 +360,8 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose, presetAmount }:
             )}
           </div>
           
-          {/* Кнопки быстрого выбора суммы */}
           {depositAmountButtons}
           
-          {/* Соглашение и кнопки действий */}
           <div className="mt-2">
             <p className="text-[#F9F8FC]/50 text-sm mb-3">
               Нажимая кнопку «Пополнить»,<br/>
@@ -419,25 +389,22 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose, presetAmount }:
         </div>
       ) : (
         <div className="flex flex-col gap-3">
-          {/* Поле ввода суммы вывода */}
           <div className="relative">
             <input 
               type="text" 
               value={withdrawAmount}
               onChange={handleAmountChange}
               disabled={isWithdrawLoading}
-              className={`w-full bg-[#19191D] text-[#F9F8FC] px-3 py-3 rounded-lg outline-none text-xl font-unbounded ${amountError ? 'border border-red-500' : 'focus:ring-1 focus:ring-[#5C5ADC]'} ${isWithdrawLoading ? 'opacity-50 cursor-not-allowed' : ''}`} 
+              className={`w-full bg-[#19191D] text-[#F9F8FC] px-3 py-3 rounded-lg outline-none text-xl font-unbounded ${(amountError || withdrawError) ? 'border border-red-500' : 'border border-transparent focus:border-[#5C5ADC]'} ${isWithdrawLoading ? 'opacity-50 cursor-not-allowed' : ''} transition-colors`} 
               placeholder="Сумма вывода"
             />
-            {amountError && (
-              <p className="text-red-500 text-sm mt-1">*{amountError}</p>
+            {(amountError || withdrawError) && (
+              <p className="text-red-500 text-sm mt-1">*{amountError || withdrawError}</p>
             )}
           </div>
           
-          {/* Кнопки быстрого выбора суммы */}
           {withdrawAmountButtons}
           
-          {/* Поле ввода номера карты */}
           <div className="relative">
             <input 
               type="text" 
@@ -445,7 +412,7 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose, presetAmount }:
               onChange={handleCardChange}
               maxLength={5}
               disabled={isWithdrawLoading}
-              className={`w-full bg-[#19191D] text-[#F9F8FC] px-3 py-3 rounded-lg outline-none text-xl font-unbounded ${(cardError || withdrawError) ? 'border border-red-500' : 'focus:ring-1 focus:ring-[#5C5ADC]'} ${isWithdrawLoading ? 'opacity-50 cursor-not-allowed' : ''}`} 
+              className={`w-full bg-[#19191D] text-[#F9F8FC] px-3 py-3 rounded-lg outline-none text-xl font-unbounded ${(cardError || withdrawError) ? 'border border-red-500' : 'border border-transparent focus:border-[#5C5ADC]'} ${isWithdrawLoading ? 'opacity-50 cursor-not-allowed' : ''} transition-colors`} 
               placeholder="Номер карты"
             />
             {(cardError || withdrawError) && (
@@ -453,10 +420,8 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose, presetAmount }:
             )}
           </div>
           
-          {/* Кнопки быстрого выбора карты */}
           {cardButtons}
           
-          {/* Соглашение и кнопки действий */}
           <div className="mt-2">
             <p className="text-[#F9F8FC]/50 text-sm mb-3">
               Нажимая кнопку «Вывести»,<br/>
@@ -482,7 +447,7 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose, presetAmount }:
             </div>
           </div>
         </div>
-      )}    
+      )}
     </Modal>
   );
 });
