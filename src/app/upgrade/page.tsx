@@ -164,12 +164,17 @@ export default function UpgradePage() {
             </div>
           </div>
           <div className='flex px-4 flex-col items-start gap-1 flex-1 self-stretch'>
-        
+        к
           </div>
         </div>
         <div className='flex flex-col items-center gap-3 flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)]'>
           <div className='flex px-4 py-[10px] justify-between items-center self-stretch border-b border-[rgba(249,248,252,0.05)]'>
-
+            <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold'>Выберите предмет</p>
+            <div className='flex px-2 py-[6px] justify-center items-center gap-[10px] border-b border-[rgba(249,248,252,0.30)]'>
+              <span className='text-[rgba(249,248,252,0.50)] text-center font-["Actay_Wide"] text-base font-bold'>от</span>
+              <span className='text-[rgba(249,248,252,0.30)] font-["Actay_Wide"] text-base font-bold'>10</span>
+              <span className='text-[rgba(249,248,252,0.50)] text-center font-["Actay_Wide"] text-base font-bold'>АР</span>
+            </div>
           </div>
         </div>
       </div>
