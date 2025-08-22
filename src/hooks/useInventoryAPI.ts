@@ -121,6 +121,244 @@ export const useInventoryAPI = () => {
               isWithdrawable: true
             },
             amount: 35
+          },
+          {
+            item: {
+              id: "mock-4",
+              name: "Алмазный меч",
+              description: "Острота V; Заговор огня II; Мародёрство III; Прочность III; Починка",
+              imageUrl: "https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/diamond_sword/icon",
+              amount: 1,
+              price: 45,
+              percentChance: 100,
+              rarity: "Epic",
+              isWithdrawable: true
+            },
+            amount: 12
+          },
+          {
+            item: {
+              id: "mock-5",
+              name: "Незеритовая кирка",
+              description: "Эффективность V; Удача III; Прочность III; Починка",
+              imageUrl: "https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/netherite_pickaxe/icon",
+              amount: 1,
+              price: 89,
+              percentChance: 100,
+              rarity: "Legendary",
+              isWithdrawable: true
+            },
+            amount: 7
+          },
+          {
+            item: {
+              id: "mock-6",
+              name: "Элитры",
+              description: "Прочность III; Починка",
+              imageUrl: "https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/elytra/icon",
+              amount: 1,
+              price: 156,
+              percentChance: 100,
+              rarity: "Legendary",
+              isWithdrawable: false
+            },
+            amount: 3
+          },
+          {
+            item: {
+              id: "mock-7",
+              name: "Золотое яблоко",
+              description: null,
+              imageUrl: "https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/golden_apple/icon",
+              amount: 64,
+              price: 2.5,
+              percentChance: 100,
+              rarity: "Rare",
+              isWithdrawable: true
+            },
+            amount: 256
+          },
+          {
+            item: {
+              id: "mock-8",
+              name: "Зачарованное золотое яблоко",
+              description: null,
+              imageUrl: "https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/enchanted_golden_apple/icon",
+              amount: 1,
+              price: 78,
+              percentChance: 100,
+              rarity: "Legendary",
+              isWithdrawable: false
+            },
+            amount: 15
+          },
+          {
+            item: {
+              id: "mock-9",
+              name: "Алмазная броня",
+              description: "Защита IV; Прочность III; Починка",
+              imageUrl: "https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/diamond_chestplate/icon",
+              amount: 1,
+              price: 67,
+              percentChance: 100,
+              rarity: "Epic",
+              isWithdrawable: true
+            },
+            amount: 8
+          },
+          {
+            item: {
+              id: "mock-10",
+              name: "Трезубец",
+              description: "Верность III; Пронзание V; Прочность III; Починка",
+              imageUrl: "https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/trident/icon",
+              amount: 1,
+              price: 134,
+              percentChance: 100,
+              rarity: "Legendary",
+              isWithdrawable: true
+            },
+            amount: 4
+          },
+          {
+            item: {
+              id: "mock-11",
+              name: "Шалкеровый ящик",
+              description: null,
+              imageUrl: "https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/shulker_box/icon",
+              amount: 1,
+              price: 23,
+              percentChance: 100,
+              rarity: "Rare",
+              isWithdrawable: true
+            },
+            amount: 27
+          },
+          {
+            item: {
+              id: "mock-12",
+              name: "Маяк",
+              description: null,
+              imageUrl: "https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/beacon/icon",
+              amount: 1,
+              price: 189,
+              percentChance: 100,
+              rarity: "Legendary",
+              isWithdrawable: false
+            },
+            amount: 2
+          },
+          {
+            item: {
+              id: "mock-13",
+              name: "Незеритовый слиток",
+              description: null,
+              imageUrl: "https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/netherite_ingot/icon",
+              amount: 64,
+              price: 12,
+              percentChance: 100,
+              rarity: "Epic",
+              isWithdrawable: true
+            },
+            amount: 128
+          },
+          {
+            item: {
+              id: "mock-14",
+              name: "Алмаз",
+              description: null,
+              imageUrl: "https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/diamond/icon",
+              amount: 64,
+              price: 3.2,
+              percentChance: 100,
+              rarity: "Uncommon",
+              isWithdrawable: true
+            },
+            amount: 512
+          },
+          {
+            item: {
+              id: "mock-15",
+              name: "Изумруд",
+              description: null,
+              imageUrl: "https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/emerald/icon",
+              amount: 64,
+              price: 4.1,
+              percentChance: 100,
+              rarity: "Rare",
+              isWithdrawable: true
+            },
+            amount: 256
+          },
+          {
+            item: {
+              id: "mock-16",
+              name: "Звезда Нижнего мира",
+              description: null,
+              imageUrl: "https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/nether_star/icon",
+              amount: 1,
+              price: 234,
+              percentChance: 100,
+              rarity: "Legendary",
+              isWithdrawable: false
+            },
+            amount: 6
+          },
+          {
+            item: {
+              id: "mock-17",
+              name: "Яйцо дракона",
+              description: null,
+              imageUrl: "https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/dragon_egg/icon",
+              amount: 1,
+              price: 500,
+              percentChance: 100,
+              rarity: "Legendary",
+              isWithdrawable: false
+            },
+            amount: 1
+          },
+          {
+            item: {
+              id: "mock-18",
+              name: "Кольчужная броня",
+              description: "Защита III; Прочность II",
+              imageUrl: "https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/chainmail_chestplate/icon",
+              amount: 1,
+              price: 15,
+              percentChance: 100,
+              rarity: "Common",
+              isWithdrawable: true
+            },
+            amount: 45
+          },
+          {
+            item: {
+              id: "mock-19",
+              name: "Железная броня",
+              description: "Защита III; Прочность III",
+              imageUrl: "https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/iron_chestplate/icon",
+              amount: 1,
+              price: 28,
+              percentChance: 100,
+              rarity: "Uncommon",
+              isWithdrawable: true
+            },
+            amount: 32
+          },
+          {
+            item: {
+              id: "mock-20",
+              name: "Золотая броня",
+              description: "Защита II; Прочность I",
+              imageUrl: "https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/golden_chestplate/icon",
+              amount: 1,
+              price: 8,
+              percentChance: 100,
+              rarity: "Common",
+              isWithdrawable: true
+            },
+            amount: 67
           }
         ];
         

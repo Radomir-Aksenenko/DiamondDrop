@@ -19,6 +19,7 @@ export default function ProfilePage() {
   const router = useRouter();
   const { items: inventoryItems, loading, error, hasMore, loadMore, softRefresh } = useInventoryAPI();
   const observerRef = useRef<HTMLDivElement>(null);
+  const tabsRef = useRef<HTMLDivElement>(null);
   
   // Состояние для модалки инвентаря
   const [isInventoryModalOpen, setIsInventoryModalOpen] = useState(false);
@@ -32,6 +33,57 @@ export default function ProfilePage() {
   // Состояние для активной вкладки
   const [activeTab, setActiveTab] = useState<'inventory' | 'deliveries' | 'freeCases' | 'settings'>('inventory');
   const [hypedPhrases, setHypedPhrases] = useState(false);
+  
+  // Состояние для sticky поведения
+  const [isSticky, setIsSticky] = useState(false);
+  const stickyThreshold = useRef(0);
+  
+  // Инициализация порога для sticky поведения
+  useEffect(() => {
+    if (tabsRef.current) {
+      const rect = tabsRef.current.getBoundingClientRect();
+      stickyThreshold.current = window.scrollY + rect.top - 90; // 90px - отступ от хедера
+    }
+  }, []);
+  
+  // Упрощенная логика sticky поведения только с Intersection Observer
+  useEffect(() => {
+    let observer: IntersectionObserver | null = null;
+    
+    // Создаем Intersection Observer для отслеживания sticky состояния
+    if (tabsRef.current) {
+      // Проверяем начальное состояние панели с небольшой задержкой
+      setTimeout(() => {
+        if (tabsRef.current) {
+          const initialTop = tabsRef.current.getBoundingClientRect().top;
+          const initialShouldBeSticky = initialTop <= 90;
+          setIsSticky(initialShouldBeSticky);
+        }
+      }, 100);
+      
+      observer = new IntersectionObserver(
+        (entries) => {
+          const entry = entries[0];
+          if (entry) {
+            // Панель становится sticky когда её верх поднимается выше 90px от верха viewport
+            const shouldBeSticky = entry.boundingClientRect.top <= 90;
+            setIsSticky(shouldBeSticky);
+          }
+        },
+        {
+          threshold: [0, 1]
+        }
+      );
+      
+      observer.observe(tabsRef.current);
+    }
+    
+    return () => {
+      if (observer) {
+        observer.disconnect();
+      }
+    };
+  }, []);
   
   // Данные пользователя
   const userName = user?.nickname ?? (isAuthenticated ? 'Загрузка...' : 'Гость');
@@ -193,7 +245,14 @@ export default function ProfilePage() {
         </div>
       </div>
       
-      <div className='flex p-2 items-start gap-1 self-stretch rounded-xl bg-[#F9F8FC]/[0.05]'>
+      <div 
+         ref={tabsRef}
+         className={`flex p-2 items-start gap-1 self-stretch rounded-xl ${
+           isSticky 
+             ? 'sticky top-[90px] z-50 bg-[#18181D]' 
+             : 'bg-[#18181D]'
+         }`}
+       >
         <motion.button 
           onClick={() => setActiveTab('inventory')}
           className={`flex px-[12px] py-[8px] pr-2 items-center gap-2 rounded-lg cursor-pointer transition-all duration-300 ease-out ${
@@ -294,6 +353,8 @@ export default function ProfilePage() {
         </PrivilegedUserCheck>
       </div>
 
+
+      
       {/* Контент в зависимости от активной вкладки */}
       <motion.div 
         key={activeTab}
@@ -301,7 +362,7 @@ export default function ProfilePage() {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
-        className='w-full'
+        className="w-full"
       >
         {activeTab === 'inventory' && (
           <>
