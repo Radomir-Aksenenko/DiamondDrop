@@ -12,7 +12,7 @@ import type { Order } from '@/hooks/useOrdersAPI';
 import useBranchesAPI, { Branch } from '@/hooks/useBranchesAPI';
 
 // Настраиваемый параметр высоты блоков доставки
-const DELIVERY_BLOCKS_HEIGHT = 680; // Измените это значение для изменения высоты блоков
+const DELIVERY_BLOCKS_HEIGHT = 700; // Измените это значение для изменения высоты блоков
 
 export default function DeliveryTab(): React.JSX.Element {
   // Хук для работы с API заказов
