@@ -61,37 +61,25 @@ export default function DeliveryTab(): React.JSX.Element {
     }
   }, []);
 
-  // Конфигурация группировки и сортировки по блокам (легко изменяемая)
+  // Конфигурация группировки по блокам (без сортировки)
   type BlockKey = 'active' | 'history';
   const deliveryBlockConfig = useMemo(() => ({
     active: {
-      // Можно легко переставлять порядок статусов для активного блока
+      // Статусы для активного блока
       statuses: [
         DeliveryStatus.IN_DELIVERY,
         DeliveryStatus.ACCEPTED,
         DeliveryStatus.DELIVERED,
         DeliveryStatus.CREATED,
       ],
-      priority: {
-        [DeliveryStatus.DELIVERED]: 0,
-        [DeliveryStatus.IN_DELIVERY]: 1,
-        [DeliveryStatus.ACCEPTED]: 2,
-        [DeliveryStatus.CREATED]: 3,
-      } as Record<DeliveryStatus, number>,
-      secondarySort: 'createdAtAsc' as const,
     },
     history: {
+      // Статусы для истории
       statuses: [
         DeliveryStatus.CONFIRMED,
         DeliveryStatus.CANCELLED,
         DeliveryStatus.UNKNOWN,
       ],
-      priority: {
-        [DeliveryStatus.CONFIRMED]: 0,
-        [DeliveryStatus.CANCELLED]: 1,
-        [DeliveryStatus.UNKNOWN]: 2,
-      } as Record<DeliveryStatus, number>,
-      secondarySort: 'createdAtDesc' as const,
     },
   }), []);
   
@@ -222,37 +210,29 @@ export default function DeliveryTab(): React.JSX.Element {
     }
   }, [mapApiStatusToDeliveryStatus]);
 
-  // Универсальная функция группировки и сортировки заказов по указанному блоку
-  const groupAndSortOrders = useCallback((srcOrders: Order[], block: BlockKey): DeliveryOrder[] => {
+  // Универсальная функция группировки заказов по указанному блоку (без сортировки)
+  const groupOrders = useCallback((srcOrders: Order[], block: BlockKey): DeliveryOrder[] => {
     try {
       const cfg = deliveryBlockConfig[block];
-      const withStatus = (srcOrders || [])
-        .map((o) => ({ api: o, status: mapApiStatusToDeliveryStatus(o?.status ?? 'Unknown') }))
-        .filter(({ status }) => cfg.statuses.includes(status));
+      // Фильтруем заказы по статусам без изменения порядка
+      const filteredOrders = (srcOrders || [])
+        .filter((order) => {
+          const status = mapApiStatusToDeliveryStatus(order?.status ?? 'Unknown');
+          return cfg.statuses.includes(status);
+        });
   
-      withStatus.sort((a, b) => {
-        const pa = cfg.priority[a.status] ?? 999;
-        const pb = cfg.priority[b.status] ?? 999;
-        if (pa !== pb) return pa - pb;
-        // Вторичная сортировка по дате создания
-        if (cfg.secondarySort === 'createdAtAsc') {
-          return new Date(a.api.createdAt).getTime() - new Date(b.api.createdAt).getTime();
-        }
-        // По умолчанию убывание (сначала новые)
-        return new Date(b.api.createdAt).getTime() - new Date(a.api.createdAt).getTime();
-      });
-  
-      const result = withStatus.map(({ api }) => convertToDeliveryOrder(api));
+      // Преобразуем в DeliveryOrder без сортировки, сохраняя порядок бэкенда
+      const result = filteredOrders.map((order) => convertToDeliveryOrder(order));
       return result;
     } catch (err) {
-      console.error('DeliveryTab: Ошибка группировки/сортировки заказов', err);
+      console.error('DeliveryTab: Ошибка группировки заказов', err);
       return [];
     }
   }, [convertToDeliveryOrder, deliveryBlockConfig, mapApiStatusToDeliveryStatus]);
 
-  // Получаем заказы для каждого блока с учетом конфигурации
-  const currentOrders = groupAndSortOrders(orders, 'active');
-  const historyOrders = groupAndSortOrders(orders, 'history');
+  // Получаем заказы для каждого блока с учетом конфигурации (без сортировки)
+  const currentOrders = groupOrders(orders, 'active');
+  const historyOrders = groupOrders(orders, 'history');
 
   useEffect(() => {
     console.log('[DeliveryTab] totals:', { total: orders.length, current: currentOrders.length, history: historyOrders.length });
