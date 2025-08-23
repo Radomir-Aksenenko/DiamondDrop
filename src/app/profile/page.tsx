@@ -375,8 +375,21 @@ export default function ProfilePage() {
               </div>
             )}
 
+            {/* Индикатор начальной загрузки */}
+            {loading && inventoryItems.length === 0 && (
+              <div className='flex flex-col items-center justify-center w-full py-16 gap-4'>
+                <div className="w-12 h-12 border-4 border-[#F9F8FC]/20 border-t-[#5C5ADC] rounded-full animate-spin"></div>
+                <div className='text-center'>
+                  <p className='text-[#F9F8FC] font-actay-wide text-sm opacity-70'>
+                    Загрузка инвентаря...
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Сетка предметов инвентаря */}
-            <div className='flex flex-col items-start gap-2 self-stretch'>
+            {!loading || inventoryItems.length > 0 ? (
+              <div className='flex flex-col items-start gap-2 self-stretch'>
               <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 w-full'>
                 {inventoryItems.map((inventoryItem, index) => (
                   <InventoryItemCard 
@@ -438,6 +451,7 @@ export default function ProfilePage() {
                 </div>
               )}
             </div>
+            ) : null}
           </>
         )}
 

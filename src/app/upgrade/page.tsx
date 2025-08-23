@@ -1,6 +1,9 @@
 'use client';
 
 import React from 'react';
+import { useInventoryAPI, InventoryItem } from '@/hooks/useInventoryAPI';
+import { ItemCard } from '@/components/ui/RarityCard';
+import { CaseItem } from '@/hooks/useCasesAPI';
 
 // Константа процента
 const UPGRADE_PERCENTAGE = 15;
@@ -97,18 +100,127 @@ const CircularProgress = ({ percentage }: CircularProgressProps) => {
   );
 };
 
+// Компонент для отображения списка предметов инвентаря
+function InventoryItemsList() {
+  const { items, loading, error, loadMore, hasMore } = useInventoryAPI();
+
+  // Сортируем предметы по цене (по убыванию)
+  const sortedItems = React.useMemo(() => {
+    return [...items].sort((a, b) => b.item.price - a.item.price);
+  }, [items]);
+
+  // Преобразуем InventoryItem в CaseItem для совместимости с ItemCard
+  const convertToCaseItem = (inventoryItem: InventoryItem): CaseItem => {
+    return {
+      id: inventoryItem.item.id,
+      name: inventoryItem.item.name,
+      description: inventoryItem.item.description || '',
+      imageUrl: inventoryItem.item.imageUrl,
+      amount: inventoryItem.item.amount,
+      price: inventoryItem.item.price,
+      percentChance: inventoryItem.item.percentChance,
+      rarity: inventoryItem.item.rarity,
+      isWithdrawable: inventoryItem.item.isWithdrawable
+    };
+  };
+
+  if (loading && items.length === 0) {
+    return (
+      <div className='flex px-4 flex-col items-center justify-center gap-4 flex-1 self-stretch'>
+        <div className="w-12 h-12 border-4 border-[#F9F8FC]/20 border-t-[#5C5ADC] rounded-full animate-spin"></div>
+        <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-sm opacity-70'>Загрузка предметов...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className='flex px-4 flex-col items-center justify-center gap-2 flex-1 self-stretch'>
+        <p className='text-[#FF4444] text-center font-["Actay_Wide"] text-sm'>Ошибка загрузки</p>
+        <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-xs opacity-50'>{error}</p>
+      </div>
+    );
+  }
+
+  if (items.length === 0) {
+    return (
+      <div className='flex px-4 flex-col items-center justify-center gap-2 flex-1 self-stretch'>
+        <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-sm opacity-50'>Инвентарь пуст</p>
+      </div>
+    );
+  }
+
+  return (
+    <div 
+      className='flex px-4 flex-col items-start gap-2 flex-1 self-stretch overflow-y-auto'
+      style={{
+        scrollbarWidth: 'thin',
+        scrollbarColor: 'rgba(249, 248, 252, 0.2) transparent'
+      }}
+    >
+      <style jsx>{`
+        div::-webkit-scrollbar {
+          width: 4px;
+        }
+        div::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        div::-webkit-scrollbar-thumb {
+          background: rgba(249, 248, 252, 0.2);
+          border-radius: 2px;
+        }
+        div::-webkit-scrollbar-thumb:hover {
+          background: rgba(249, 248, 252, 0.3);
+        }
+      `}</style>
+      
+      {sortedItems.map((inventoryItem) => (
+        <ItemCard
+          key={inventoryItem.item.id}
+          item={convertToCaseItem(inventoryItem)}
+          amount={inventoryItem.amount}
+          orientation="horizontal"
+          className="cursor-pointer hover:bg-[rgba(249,248,252,0.1)] transition-colors"
+          onClick={() => {
+            console.log('Выбран предмет для апгрейда:', inventoryItem.item.name);
+            // Здесь можно добавить логику выбора предмета для апгрейда
+          }}
+        />
+      ))}
+      
+      {/* Кнопка загрузки дополнительных предметов */}
+      {hasMore && (
+        <div className='flex justify-center w-full py-2'>
+          <button
+            onClick={loadMore}
+            disabled={loading}
+            className='flex items-center gap-2 px-4 py-2 rounded-lg bg-[rgba(249,248,252,0.05)] hover:bg-[rgba(249,248,252,0.1)] transition-colors disabled:opacity-50'
+          >
+            {loading ? (
+              <div className="w-4 h-4 border-2 border-[#F9F8FC]/20 border-t-[#5C5ADC] rounded-full animate-spin"></div>
+            ) : null}
+            <span className='text-[#F9F8FC] font-["Actay_Wide"] text-sm'>
+              {loading ? 'Загрузка...' : 'Загрузить ещё'}
+            </span>
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function UpgradePage() {
   return (
     <div className="h-screen flex px-6 flex-col items-center gap-2 self-stretch">
       <div className='flex justify-center items-end gap-2 self-stretch' style={{ height: '285.5px' }}>
         <div className='flex flex-col justify-between items-center pt-3 flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)]'>
-          <p className='text-white text-center font-["Actay_Wide"] text-base font-bold opacity-30'>Передмет, который вы ставите</p>
-          <div className='flex w-[160px] h-[160px] flex-col justify-end items-end aspect-square bg-[url(https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/netherite_ingot/icon)] bg-lightgray bg-center bg-cover bg-no-repeat'>
-            <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-2xl font-bold opacity-30'>x1</p>
+          <p className='text-white text-center font-["Actay_Wide"] text-base font-bold opacity-30'>Предмет,<br/>который вы ставите</p>
+          <div className='flex w-[160px] h-[160px] flex-col justify-center items-center aspect-square bg-[rgba(249,248,252,0.05)] rounded-lg'>
+            <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-sm opacity-50'>Выберите предмет<br/>из инвентаря</p>
           </div>
           <div className='flex px-4 py-3 justify-between items-center self-stretch border-t border-[rgba(249,248,252,0.05)]'>
-            <p className='text-[#EDD51D] text-center font-["Actay_Wide"] text-base font-bold'>Незеритовый слиток</p>
-            <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold opacity-30'>3 шт.</p>
+            <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold opacity-30'>Не выбран</p>
+            <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold opacity-30'>0 шт.</p>
           </div>
         </div>
 
@@ -133,7 +245,7 @@ export default function UpgradePage() {
         </div>
         
         <div className='flex pt-3 flex-col justify-between items-center flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)]'>
-          <p className='text-white text-center font-["Actay_Wide"] text-base font-bold opacity-30'>Передмет, который хотите получить</p>
+          <p className='text-white text-center font-["Actay_Wide"] text-base font-bold opacity-30'>Передмет, <br/>который хотите получить</p>
           <div className='flex w-[160px] h-[160px] flex-col justify-end items-end aspect-square bg-[url(https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/netherite_ingot/icon)] bg-lightgray bg-center bg-cover bg-no-repeat'>
             <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-2xl font-bold opacity-30'>x1</p>
           </div>
@@ -163,9 +275,7 @@ export default function UpgradePage() {
               </div>
             </div>
           </div>
-          <div className='flex px-4 flex-col items-start gap-1 flex-1 self-stretch'>
-        к
-          </div>
+          <InventoryItemsList />
         </div>
         <div className='flex flex-col items-center gap-3 flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)]'>
           <div className='flex px-4 py-[10px] justify-between items-center self-stretch border-b border-[rgba(249,248,252,0.05)]'>
