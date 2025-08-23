@@ -217,7 +217,7 @@ export default function UpgradePage() {
 
   return (
     <div className="h-screen flex flex-col items-center gap-2 self-stretch overflow-hidden p-2">
-      <div className='flex justify-center items-stretch gap-2 self-stretch min-h-0 flex-1'>
+      <div className='flex justify-center items-stretch gap-2 self-stretch min-h-0 h-[300px]'>
         <div className='flex flex-col justify-center items-center flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)] p-4 min-h-0 max-h-full overflow-hidden'>
           {selectedItems.length === 0 ? (
             <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base opacity-50'>Выберите до 8 предметов<br/>для апгрейда</p>
