@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useInventoryAPI, InventoryItem } from '@/hooks/useInventoryAPI';
-import { ItemCardNoMagnifier } from '@/components/ui/ItemCardNoMagnifier';
+import { ItemCard } from '@/components/ui/RarityCard';
 import { CaseItem } from '@/hooks/useCasesAPI';
 
 // Константа процента
@@ -189,9 +189,10 @@ function InventoryItemsList({ selectedItems, onItemSelect }: { selectedItems: Se
           
           return (
             <div key={inventoryItem.item.id} className="relative group">
-              <ItemCardNoMagnifier
+              <ItemCard
                 item={convertToCaseItem(inventoryItem)}
                 amount={availableAmount}
+                orientation="horizontal"
                 className="hover:brightness-110 transition-all"
                 onClick={() => {
                   if (availableAmount > 0) {
@@ -199,15 +200,6 @@ function InventoryItemsList({ selectedItems, onItemSelect }: { selectedItems: Se
                   }
                 }}
               />
-              {availableAmount > 0 && (
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/50 rounded-lg">
-                  <div className="w-8 h-8 bg-[#5C5ADC] rounded-full flex items-center justify-center">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M8 3V13M3 8H13" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-                    </svg>
-                  </div>
-                </div>
-              )}
             </div>
           );
         })}
