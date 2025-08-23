@@ -161,28 +161,7 @@ function InventoryItemsList({ selectedItems, onItemSelect }: { selectedItems: Se
 
   return (
     <div className='flex px-4 flex-col items-start gap-2 flex-1 self-stretch min-h-0'>
-      <div 
-        className="grid grid-cols-3 gap-2 w-full flex-1 overflow-y-auto"
-        style={{
-          scrollbarWidth: 'thin',
-          scrollbarColor: 'rgba(249, 248, 252, 0.2) transparent'
-        }}
-      >
-        <style jsx>{`
-          div::-webkit-scrollbar {
-            width: 4px;
-          }
-          div::-webkit-scrollbar-track {
-            background: transparent;
-          }
-          div::-webkit-scrollbar-thumb {
-            background: rgba(249, 248, 252, 0.2);
-            border-radius: 2px;
-          }
-          div::-webkit-scrollbar-thumb:hover {
-            background: rgba(249, 248, 252, 0.3);
-          }
-        `}</style>
+      <div className="grid grid-cols-3 gap-2 w-full flex-1 overflow-hidden">
         {sortedItems.map((inventoryItem) => {
           const selectedItem = selectedItems.find(selected => selected.inventoryItem.item.id === inventoryItem.item.id);
           const availableAmount = inventoryItem.amount - (selectedItem?.selectedAmount || 0);
@@ -204,23 +183,6 @@ function InventoryItemsList({ selectedItems, onItemSelect }: { selectedItems: Se
           );
         })}
       </div>
-      
-      {hasMore && (
-        <div className="flex justify-center py-2">
-          <button
-            onClick={loadMore}
-            disabled={loading}
-            className="flex items-center gap-2 px-4 py-2 bg-[rgba(249,248,252,0.05)] rounded-lg hover:bg-[rgba(249,248,252,0.1)] transition-colors"
-          >
-            {loading ? (
-              <div className="w-4 h-4 border-2 border-[#F9F8FC]/20 border-t-[#5C5ADC] rounded-full animate-spin"></div>
-            ) : null}
-            <span className='text-[#F9F8FC] font-["Actay_Wide"] text-sm'>
-              {loading ? 'Загрузка...' : 'Загрузить ещё'}
-            </span>
-          </button>
-        </div>
-      )}
     </div>
   );
 }
@@ -262,7 +224,7 @@ export default function UpgradePage() {
           ) : (
             <div className="flex flex-col gap-2 w-full">
               <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-sm opacity-70 mb-2'>Выбрано предметов: {selectedItems.length}/{MAX_UPGRADE_ITEMS}</p>
-              <div className="grid grid-cols-2 gap-2 flex-1 overflow-y-auto">
+              <div className="grid grid-cols-2 gap-2 flex-1 overflow-hidden">
                 {selectedItems.map((selectedItem, index) => (
                   <div key={`${selectedItem.inventoryItem.item.id}-${index}`} className="flex items-center gap-2 p-2 bg-[rgba(249,248,252,0.05)] rounded-lg">
                     <div 
@@ -333,7 +295,7 @@ export default function UpgradePage() {
       </div>
 
       <div className='flex items-stretch gap-2 self-stretch flex-1 min-h-0 max-h-[50vh]'>
-        <div className='flex flex-col items-center gap-3 flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)] min-h-0'>
+        <div className='flex flex-col items-center gap-3 flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)] min-h-0 overflow-hidden'>
           <div className='flex p-4 justify-between items-center self-stretch border-b border-[rgba(249,248,252,0.05)]'>
             <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold'>Мои предметы</p>
             <div className='flex items-center gap-[6px]'>
@@ -350,7 +312,7 @@ export default function UpgradePage() {
           </div>
           <InventoryItemsList selectedItems={selectedItems} onItemSelect={handleItemSelect} />
         </div>
-        <div className='flex flex-col items-center gap-3 flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)] min-h-0'>
+        <div className='flex flex-col items-center gap-3 flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)] min-h-0 overflow-hidden'>
           <div className='flex px-4 py-[10px] justify-between items-center self-stretch border-b border-[rgba(249,248,252,0.05)]'>
             <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold'>Выберите предмет</p>
             <div className='flex px-2 py-[6px] justify-center items-center gap-[10px] border-b border-[rgba(249,248,252,0.30)]'>
