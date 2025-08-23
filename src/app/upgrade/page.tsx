@@ -212,16 +212,9 @@ function InventoryItemsList() {
 export default function UpgradePage() {
   return (
     <div className="h-screen flex px-6 flex-col items-center gap-2 self-stretch">
-      <div className='flex justify-center items-end gap-2 self-stretch' style={{ height: '285.5px' }}>
-        <div className='flex flex-col justify-between items-center pt-3 flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)]'>
-          <p className='text-white text-center font-["Actay_Wide"] text-base font-bold opacity-30'>Предмет,<br/>который вы ставите</p>
-          <div className='flex w-[160px] h-[160px] flex-col justify-center items-center aspect-square bg-[rgba(249,248,252,0.05)] rounded-lg'>
-            <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-sm opacity-50'>Выберите предмет<br/>из инвентаря</p>
-          </div>
-          <div className='flex px-4 py-3 justify-between items-center self-stretch border-t border-[rgba(249,248,252,0.05)]'>
-            <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold opacity-30'>Не выбран</p>
-            <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold opacity-30'>0 шт.</p>
-          </div>
+      <div className='flex justify-center items-end gap-2 self-stretch' style={{ height: '317.5px' }}>
+        <div className='flex flex-col justify-center items-center flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)]'>
+          <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base opacity-50'>Выберите до 8 предметов<br/>для апгрейда</p>
         </div>
 
         <div className='flex p-2 flex-col justify-between items-center self-stretch rounded-xl bg-[rgba(249,248,252,0.05)]'>
