@@ -255,14 +255,14 @@ export default function UpgradePage() {
 
   return (
     <div className="h-screen flex flex-col items-center gap-2 self-stretch overflow-hidden">
-      <div className='flex justify-center items-stretch gap-2 self-stretch flex-1'>
-        <div className='flex flex-col justify-center items-center flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)] p-4 min-h-0'>
+      <div className='flex justify-center items-stretch gap-2 self-stretch min-h-0 max-h-[45vh]'>
+        <div className='flex flex-col justify-center items-center flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)] p-4 min-h-0 max-h-full overflow-hidden'>
           {selectedItems.length === 0 ? (
             <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base opacity-50'>Выберите до 8 предметов<br/>для апгрейда</p>
           ) : (
             <div className="flex flex-col gap-2 w-full">
               <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-sm opacity-70 mb-2'>Выбрано предметов: {selectedItems.length}/{MAX_UPGRADE_ITEMS}</p>
-              <div className="grid grid-cols-2 gap-2 max-h-[250px] overflow-y-auto">
+              <div className="grid grid-cols-2 gap-2 flex-1 overflow-y-auto">
                 {selectedItems.map((selectedItem, index) => (
                   <div key={`${selectedItem.inventoryItem.item.id}-${index}`} className="flex items-center gap-2 p-2 bg-[rgba(249,248,252,0.05)] rounded-lg">
                     <div 
@@ -332,7 +332,7 @@ export default function UpgradePage() {
         </div>
       </div>
 
-      <div className='flex items-stretch gap-2 self-stretch flex-1 min-h-0'>
+      <div className='flex items-stretch gap-2 self-stretch flex-1 min-h-0 max-h-[50vh]'>
         <div className='flex flex-col items-center gap-3 flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)] min-h-0'>
           <div className='flex p-4 justify-between items-center self-stretch border-b border-[rgba(249,248,252,0.05)]'>
             <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold'>Мои предметы</p>
