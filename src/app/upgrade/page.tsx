@@ -12,7 +12,7 @@ const UPGRADE_PERCENTAGE = 15;
 const MAX_UPGRADE_ITEMS = 8;
 
 // Единый параметр высоты нижних блоков (в пикселях)
-const BOTTOM_SECTION_HEIGHT = 340;
+const BOTTOM_SECTION_HEIGHT = 380;
 
 // Интерфейс для выбранного предмета
 interface SelectedItem {
