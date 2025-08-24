@@ -294,7 +294,7 @@ export default function UpgradePage() {
         </div>
       </div>
 
-      <div className='flex items-stretch gap-2 self-stretch flex-1 min-h-0'>
+      <div className='flex items-stretch gap-2 self-stretch h-[280px] min-h-0'>
         <div className='flex flex-col items-center gap-3 flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)] min-h-0 overflow-hidden'>
           <div className='flex p-4 justify-between items-center self-stretch border-b border-[rgba(249,248,252,0.05)]'>
             <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold'>Мои предметы</p>
