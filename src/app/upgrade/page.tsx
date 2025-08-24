@@ -164,25 +164,39 @@ function InventoryItemsList({ selectedItems, onItemSelect }: { selectedItems: Se
 
   return (
     <div className='flex px-4 flex-col items-start gap-2 flex-1 self-stretch min-h-0'>
-      <div className="grid grid-cols-3 gap-2 w-full flex-1 overflow-hidden">
+      <div className="grid grid-cols-3 gap-2 w-full flex-1 min-h-0 overflow-y-auto pr-2">
         {sortedItems.map((inventoryItem) => {
           const selectedItem = selectedItems.find(selected => selected.inventoryItem.item.id === inventoryItem.item.id);
           const availableAmount = inventoryItem.amount - (selectedItem?.selectedAmount || 0);
           
           return (
-            <div key={inventoryItem.item.id} className="relative group">
-              <ItemCard
-                item={convertToCaseItem(inventoryItem)}
-                amount={availableAmount}
-                orientation="horizontal"
-                className="hover:brightness-110 transition-all"
-                onClick={() => {
-                  if (availableAmount > 0) {
-                    onItemSelect(inventoryItem);
-                  }
-                }}
+            <button
+              key={inventoryItem.item.id}
+              type="button"
+              onClick={() => {
+                if (availableAmount > 0) {
+                  onItemSelect(inventoryItem);
+                }
+              }}
+              className="relative group flex items-center gap-3 h-[84px] w-full rounded-xl border border-[rgba(249,248,252,0.07)] bg-[rgba(249,248,252,0.03)] hover:border-[rgba(249,248,252,0.15)] transition-colors px-3"
+            >
+              <div
+                className="w-12 h-12 bg-center bg-cover bg-no-repeat rounded"
+                style={{ backgroundImage: `url(${inventoryItem.item.imageUrl})` }}
               />
-            </div>
+
+              <div className="flex flex-col items-end gap-1 ml-auto">
+                <p className='text-[rgba(249,248,252,0.50)] text-right font-["Actay_Wide"] text-xs font-bold'>
+                  {availableAmount} шт.
+                </p>
+                <div className='flex items-baseline gap-1'>
+                  <span className='text-[#F9F8FC] text-right font-["Actay_Wide"] text-base font-bold'>{inventoryItem.item.price}</span>
+                  <span className='text-[rgba(249,248,252,0.50)] font-["Actay_Wide"] text-xs font-bold'>АР</span>
+                </div>
+              </div>
+
+              <span className='absolute left-3 bottom-2 text-[rgba(249,248,252,0.30)] font-["Actay_Wide"] text-xs font-bold'>x{inventoryItem.item.amount}</span>
+            </button>
           );
         })}
       </div>
