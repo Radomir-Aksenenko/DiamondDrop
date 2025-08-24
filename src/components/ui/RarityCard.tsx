@@ -30,6 +30,7 @@ interface ItemCardProps {
   orientation?: OrientationType;
   className?: string;
   onClick?: () => void;
+  hoverIcon?: 'plus' | 'magnifier'; // Тип иконки при наведении
 }
 
 // Конфигурация цветов и стилей для каждого типа редкости с новыми градиентами
@@ -272,7 +273,8 @@ export function ItemCard({
   amount,
   orientation = 'horizontal',
   className = '',
-  onClick
+  onClick,
+  hoverIcon = 'plus'
 }: ItemCardProps) {
   const config = rarityConfig[item.rarity as keyof typeof rarityConfig] || rarityConfig.Common;
   const isHorizontal = orientation === 'horizontal';
@@ -308,14 +310,33 @@ export function ItemCard({
         }}
         onClick={onClick}
       >
-        {/* Иконка плюса при наведении на всю карточку */}
+        {/* Иконка при наведении на всю карточку */}
         {onClick && (
           <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg bg-black/50 z-10">
-            <div className="w-8 h-8 bg-[#5C5ADC] rounded-full flex items-center justify-center">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M8 3V13M3 8H13" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+            {hoverIcon === 'plus' ? (
+              <div className="w-8 h-8 bg-[#5C5ADC] rounded-full flex items-center justify-center">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M8 3V13M3 8H13" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+              </div>
+            ) : (
+              <svg 
+                width="32" 
+                height="32" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                xmlns="http://www.w3.org/2000/svg"
+                className="text-white/80 drop-shadow-lg"
+              >
+                <path 
+                  d="M21 21L16.514 16.506M19 10.5C19 15.194 15.194 19 10.5 19C5.806 19 2 15.194 2 10.5C2 5.806 5.806 2 10.5 2C15.194 2 19 5.806 19 10.5Z" 
+                  stroke="currentColor" 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                />
               </svg>
-            </div>
+            )}
           </div>
         )}
         
@@ -423,25 +444,33 @@ export function ItemCard({
       }}
       onClick={onClick}
     >
-      {/* Иконка лупы при наведении на всю карточку */}
+      {/* Иконка при наведении на всю карточку */}
        {onClick && (
           <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg bg-black/20 z-10">
-          <svg 
-            width="32" 
-            height="32" 
-            viewBox="0 0 24 24" 
-            fill="none" 
-            xmlns="http://www.w3.org/2000/svg"
-            className="text-white/80 drop-shadow-lg"
-          >
-            <path 
-              d="M21 21L16.514 16.506M19 10.5C19 15.194 15.194 19 10.5 19C5.806 19 2 15.194 2 10.5C2 5.806 5.806 2 10.5 2C15.194 2 19 5.806 19 10.5Z" 
-              stroke="currentColor" 
-              strokeWidth="2" 
-              strokeLinecap="round" 
-              strokeLinejoin="round"
-            />
-          </svg>
+            {hoverIcon === 'plus' ? (
+              <div className="w-8 h-8 bg-[#5C5ADC] rounded-full flex items-center justify-center">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M8 3V13M3 8H13" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+              </div>
+            ) : (
+              <svg 
+                width="32" 
+                height="32" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                xmlns="http://www.w3.org/2000/svg"
+                className="text-white/80 drop-shadow-lg"
+              >
+                <path 
+                  d="M21 21L16.514 16.506M19 10.5C19 15.194 15.194 19 10.5 19C5.806 19 2 15.194 2 10.5C2 5.806 5.806 2 10.5 2C15.194 2 19 5.806 19 10.5Z" 
+                  stroke="currentColor" 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                />
+              </svg>
+            )}
         </div>
       )}
       {/* Верхняя часть - цена и количество штук */}

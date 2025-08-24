@@ -139,6 +139,7 @@ export function DeliveryOrderCard({ order, onConfirmDelivery, onBranchClick, onI
           amount={Math.max(1, order.amount || 1)} // Защита от неопределенного количества
           orientation="horizontal"
           onClick={onItemClick ? () => onItemClick(order.item) : undefined}
+          hoverIcon="magnifier"
         />
         
         {/* Информация о филиале */}
