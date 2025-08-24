@@ -400,6 +400,53 @@ export const useOrdersAPI = () => {
     }
   }, [fetchOrders]);
 
+  // Подтверждение заказа
+  const confirmOrder = useCallback(async (orderId: string): Promise<boolean> => {
+    console.log(`useOrdersAPI: confirmOrder - подтверждение заказа ${orderId}`);
+    
+    try {
+      const token = getAuthToken();
+      if (!token) {
+        console.warn('useOrdersAPI: Токен авторизации не найден');
+        throw new Error('Токен авторизации не найден');
+      }
+
+      const response = await fetch(
+        `https://battle-api.chasman.engineer/api/v1/orders/${orderId}/confirm`,
+        {
+          method: 'POST',
+          headers: {
+            'accept': '*/*',
+            'Authorization': token,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Ошибка подтверждения заказа: ${response.status} ${response.statusText}`);
+      }
+
+      console.log(`useOrdersAPI: Заказ ${orderId} успешно подтвержден`);
+      
+      // Обновляем статус заказа локально
+      setOrders(prevOrders => 
+        prevOrders.map(order => 
+          order.id === orderId 
+            ? { ...order, status: 'Confirmed' as const }
+            : order
+        )
+      );
+
+      return true;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Неизвестная ошибка';
+      console.error(`useOrdersAPI: Ошибка подтверждения заказа ${orderId}:`, err);
+      setError(errorMessage);
+      return false;
+    }
+  }, []);
+
   console.log(`useOrdersAPI: Текущее состояние - заказов: ${orders.length}, загружается: ${loading}, ошибка: ${error}, инициализировано: ${isInitialized}`);
 
   return {
@@ -410,8 +457,9 @@ export const useOrdersAPI = () => {
     loadInitial,
     loadMore,
     refresh,
-     softRefresh,
-     isInitialized,
-     branchesForDisplay
+    softRefresh,
+    confirmOrder,
+    isInitialized,
+    branchesForDisplay
   };
 };

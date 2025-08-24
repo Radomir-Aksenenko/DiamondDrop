@@ -16,7 +16,7 @@ const DELIVERY_BLOCKS_HEIGHT = 670; // Измените это значение 
 
 export default function DeliveryTab(): React.JSX.Element {
   // Хук для работы с API заказов
-  const { orders, loading, hasMore, loadInitial, loadMore, isInitialized, branchesForDisplay } = useOrdersAPI();
+  const { orders, loading, hasMore, loadInitial, loadMore, isInitialized, branchesForDisplay, confirmOrder } = useOrdersAPI();
   // Хук для получения полных данных филиалов
   const { branches, loading: branchesLoading, error: branchesError } = useBranchesAPI();
   const observerRef = useRef<HTMLDivElement>(null);
@@ -35,6 +35,9 @@ export default function DeliveryTab(): React.JSX.Element {
   // Состояние для модального окна описания предмета
   const [isItemDescriptionModalOpen, setIsItemDescriptionModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<CaseItem | null>(null);
+  
+  // Состояние загрузки подтверждения
+  const [isConfirming, setIsConfirming] = useState(false);
   
   // Хук для склонения слов
   const { pluralizeItems } = usePluralize();
@@ -268,6 +271,7 @@ export default function DeliveryTab(): React.JSX.Element {
   const handleCloseConfirmModal = () => {
     setIsConfirmModalOpen(false);
     setSelectedOrderId('');
+    setIsConfirming(false);
   };
 
   const handleCloseBranchModal = () => {
@@ -400,21 +404,46 @@ export default function DeliveryTab(): React.JSX.Element {
           <div className='grid grid-cols-2 gap-2'>
             <button 
               onClick={handleCloseConfirmModal}
-              className='bg-[#19191D] hover:bg-[#1E1E23] transition-colors py-2.5 px-4 rounded-lg text-[#F9F8FC] font-bold cursor-pointer outline-none focus:outline-none active:outline-none focus:ring-0 active:ring-0'
+              disabled={isConfirming}
+              className={`${
+                isConfirming 
+                  ? 'bg-[#19191D] cursor-not-allowed opacity-50' 
+                  : 'bg-[#19191D] hover:bg-[#1E1E23] cursor-pointer'
+              } transition-colors py-2.5 px-4 rounded-lg text-[#F9F8FC] font-bold outline-none focus:outline-none active:outline-none focus:ring-0 active:ring-0`}
               type="button"
             >
               Отменить
             </button>
             <button 
-              onClick={() => {
-                // Здесь будет логика подтверждения
-                console.log('Подтверждение получения заказа:', selectedOrderId);
-                handleCloseConfirmModal();
+              onClick={async () => {
+                if (!selectedOrderId || isConfirming) return;
+                
+                setIsConfirming(true);
+                try {
+                  const success = await confirmOrder(selectedOrderId);
+                  if (success) {
+                    console.log('Заказ успешно подтвержден:', selectedOrderId);
+                    // Можно добавить уведомление об успехе
+                  } else {
+                    console.error('Ошибка при подтверждении заказа:', selectedOrderId);
+                    // Можно добавить уведомление об ошибке
+                  }
+                } catch (error) {
+                  console.error('Ошибка при подтверждении заказа:', error);
+                } finally {
+                  setIsConfirming(false);
+                  handleCloseConfirmModal();
+                }
               }}
-              className='bg-[#5C5ADC] hover:bg-[#4A48B0] transition-colors py-2.5 px-4 rounded-lg text-[#F9F8FC] font-bold cursor-pointer outline-none focus:outline-none active:outline-none focus:ring-0 active:ring-0'
+              disabled={isConfirming}
+              className={`${
+                isConfirming 
+                  ? 'bg-[#4A48B0] cursor-not-allowed opacity-50' 
+                  : 'bg-[#5C5ADC] hover:bg-[#4A48B0] cursor-pointer'
+              } transition-colors py-2.5 px-4 rounded-lg text-[#F9F8FC] font-bold outline-none focus:outline-none active:outline-none focus:ring-0 active:ring-0`}
               type="button"
             >
-              Подтвердить
+              {isConfirming ? 'Подтверждение...' : 'Подтвердить'}
             </button>
           </div>
         </div>
