@@ -11,6 +11,9 @@ const UPGRADE_PERCENTAGE = 15;
 // Максимальное количество предметов для апгрейда
 const MAX_UPGRADE_ITEMS = 8;
 
+// Единый параметр высоты нижних блоков (в пикселях)
+const BOTTOM_SECTION_HEIGHT = 340;
+
 // Интерфейс для выбранного предмета
 interface SelectedItem {
   inventoryItem: InventoryItem;
@@ -216,7 +219,7 @@ export default function UpgradePage() {
   };
 
   return (
-    <div className="h-[calc(100vh-85px-1rem)] flex flex-col items-stretch gap-2 self-stretch overflow-hidden p-2">
+    <div className="h-[calc(100vh-85px-1rem)] flex flex-col items-stretch gap-2 self-stretch overflow-hidden py-2">
       <div className='flex justify-center items-stretch gap-2 self-stretch min-h-0 h-[300px]'>
         <div className='flex flex-col justify-center items-center flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)] p-4 min-h-0 max-h-full overflow-hidden'>
           {selectedItems.length === 0 ? (
@@ -269,7 +272,7 @@ export default function UpgradePage() {
                 <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold opacity-30 overflow-hidden text-ellipsis line-clamp-1' style={{ display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 1 }}>x9</p>
               </div>
               <div className='flex w-[104px] h-[36px] px-2 py-[6px] pb-[6px] justify-center items-center gap-2 rounded-lg bg-[rgba(17,171,71,0.10)]'>
-                <span className='text-[#11AB47] font-["Actay_Wide"] text-base font-bold overflow-hidden text-ellipsis line-clamp-1' style={{ display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 1 }}>+ 999</span>
+                <span className='text-[#11AB47] font-["Actay_Wide"] text-base font-bold overflow-hidden text-ellipsis line-clamp-1' style={{ display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 1, textOverflow: 'ellipsis' }}>+ 999</span>
                 <span className='overflow-hidden text-[#11AB47] font-["Actay_Wide"] text-sm font-bold leading-normal' style={{ display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 1, textOverflow: 'ellipsis' }}> АР</span>
               </div>
             </div>
@@ -294,35 +297,37 @@ export default function UpgradePage() {
         </div>
       </div>
 
-      <div className='flex items-stretch gap-2 self-stretch h-[280px] min-h-0'>
-        <div className='flex flex-col items-center gap-3 flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)] min-h-0 overflow-hidden'>
-          <div className='flex p-4 justify-between items-center self-stretch border-b border-[rgba(249,248,252,0.05)]'>
-            <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold'>Мои предметы</p>
-            <div className='flex items-center gap-[6px]'>
-              <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold opacity-30'>по цене</p>
-              <div className='flex w-[6.588px] flex-col items-start gap-[2px]'>
-                <svg xmlns="http://www.w3.org/2000/svg" width="6" height="5" viewBox="0 0 6 5" fill="none">
-                  <path opacity="0.1" d="M2.91522 0.5C3.07248 0.500018 3.23021 0.545562 3.35826 0.63625C3.44654 0.694976 3.58912 0.829867 3.58912 0.829867C4.14182 1.30731 4.97411 2.49454 5.24143 3.09687C5.24702 3.09687 5.40581 3.45471 5.41211 3.62513V3.64808C5.41206 3.90905 5.25341 4.15316 4.99864 4.27818C4.85876 4.34679 4.45184 4.40909 4.44562 4.4149C4.08131 4.46606 3.5225 4.5 2.909 4.5C2.26502 4.5 1.68183 4.4662 1.32309 4.40343C1.31687 4.40343 0.988952 4.34124 0.87953 4.30112C0.72162 4.23891 0.588068 4.1246 0.502896 3.98273C0.442007 3.86938 0.412109 3.74952 0.412109 3.62513C0.417765 3.49432 0.508862 3.25031 0.551142 3.15376C0.818479 2.51707 1.69368 1.30134 2.22836 0.835604C2.31337 0.756099 2.41606 0.670575 2.44054 0.647723C2.57421 0.551203 2.73866 0.5 2.91522 0.5Z" fill="#F9F8FC"/>
-                </svg>
-                <svg xmlns="http://www.w3.org/2000/svg" width="6" height="5" viewBox="0 0 6 5" fill="none">
-                  <path opacity="0.3" d="M2.91522 4.5C3.07248 4.49998 3.23021 4.45444 3.35826 4.36375C3.44654 4.30502 3.58912 4.17013 3.58912 4.17013C4.14182 3.69269 4.97411 2.50546 5.24143 1.90313C5.24702 1.90313 5.40581 1.54529 5.41211 1.37487V1.35192C5.41206 1.09095 5.25341 0.846838 4.99864 0.721824C4.85876 0.653213 4.45184 0.590911 4.44562 0.585096C4.08131 0.533944 3.5225 0.500003 2.909 0.5C2.26502 0.5 1.68183 0.533795 1.32309 0.59657C1.31687 0.59657 0.988952 0.658756 0.87953 0.698876C0.72162 0.761092 0.588068 0.875401 0.502896 1.01727C0.442007 1.13062 0.412109 1.25048 0.412109 1.37487C0.417765 1.50568 0.508862 1.74969 0.551142 1.84624C0.818479 2.48293 1.69368 3.69866 2.22836 4.1644C2.31337 4.2439 2.41606 4.32943 2.44054 4.35228C2.57421 4.4488 2.73866 4.5 2.91522 4.5Z" fill="#F9F8FC"/>
-                </svg>
-              </div>
-            </div>
-          </div>
-          <InventoryItemsList selectedItems={selectedItems} onItemSelect={handleItemSelect} />
-        </div>
-        <div className='flex flex-col items-center gap-3 flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)] min-h-0 overflow-hidden'>
-          <div className='flex px-4 py-[10px] justify-between items-center self-stretch border-b border-[rgba(249,248,252,0.05)]'>
-            <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold'>Выберите предмет</p>
-            <div className='flex px-2 py-[6px] justify-center items-center gap-[10px] border-b border-[rgba(249,248,252,0.30)]'>
-              <span className='text-[rgba(249,248,252,0.50)] text-center font-["Actay_Wide"] text-base font-bold'>от</span>
-              <span className='text-[rgba(249,248,252,0.30)] font-["Actay_Wide"] text-base font-bold'>10</span>
-              <span className='text-[rgba(249,248,252,0.50)] text-center font-["Actay_Wide"] text-base font-bold'>АР</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+      <div className='flex items-stretch gap-2 self-stretch min-h-0' style={{ height: `${BOTTOM_SECTION_HEIGHT}px` }}>
+        <div className='flex box-border h-full flex-col items-center gap-3 flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)] min-h-0 overflow-hidden'>
+          <div className='flex h-[52px] px-4 justify-between items-center self-stretch border-b border-[rgba(249,248,252,0.05)]'>
+             <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold'>Мои предметы</p>
+             <div className='flex items-center gap-[6px]'>
+               <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold opacity-30'>по цене</p>
+               <div className='flex w-[6.588px] flex-col items-start gap-[2px]'>
+                 <svg xmlns="http://www.w3.org/2000/svg" width="6" height="5" viewBox="0 0 6 5" fill="none">
+                   <path opacity="0.1" d="M2.91522 0.5C3.07248 0.500018 3.23021 0.545562 3.35826 0.63625C3.44654 0.694976 3.58912 0.829867 3.58912 0.829867C4.14182 1.30731 4.97411 2.49454 5.24143 3.09687C5.24702 3.09687 5.40581 3.45471 5.41211 3.62513V3.64808C5.41206 3.90905 5.25341 4.15316 4.99864 4.27818C4.85876 4.34679 4.45184 4.40909 4.44562 4.4149C4.08131 4.46606 3.5225 4.5 2.909 4.5C2.26502 4.5 1.68183 4.4662 1.32309 4.40343C1.31687 4.40343 0.988952 4.34124 0.87953 4.30112C0.72162 4.23891 0.588068 4.1246 0.502896 3.98273C0.442007 3.86938 0.412109 3.74952 0.412109 3.62513C0.417765 3.49432 0.508862 3.25031 0.551142 3.15376C0.818479 2.51707 1.69368 1.30134 2.22836 0.835604C2.31337 0.756099 2.41606 0.670575 2.44054 0.647723C2.57421 0.551203 2.73866 0.5 2.91522 0.5Z" fill="#F9F8FC"/>
+                 </svg>
+                 <svg xmlns="http://www.w3.org/2000/svg" width="6" height="5" viewBox="0 0 6 5" fill="none">
+                   <path opacity="0.3" d="M2.91522 4.5C3.07248 4.49998 3.23021 4.45444 3.35826 4.36375C3.44654 4.30502 3.58912 4.17013 3.58912 4.17013C4.14182 3.69269 4.97411 2.50546 5.24143 1.90313C5.24702 1.90313 5.40581 1.54529 5.41211 1.37487V1.35192C5.41206 1.09095 5.25341 0.846838 4.99864 0.721824C4.85876 0.653213 4.45184 0.590911 4.44562 0.585096C4.08131 0.533944 3.5225 0.500003 2.909 0.5C2.26502 0.5 1.68183 0.533795 1.32309 0.59657C1.31687 0.59657 0.988952 0.658756 0.87953 0.698876C0.72162 0.761092 0.588068 0.875401 0.502896 1.01727C0.442007 1.13062 0.412109 1.25048 0.412109 1.37487C0.417765 1.50568 0.508862 1.74969 0.551142 1.84624C0.818479 2.48293 1.69368 3.69866 2.22836 4.1644C2.31337 4.2439 2.41606 4.32943 2.44054 4.35228C2.57421 4.4488 2.73866 4.5 2.91522 4.5Z" fill="#F9F8FC"/>
+                 </svg>
+               </div>
+             </div>
+           </div>
+           <InventoryItemsList selectedItems={selectedItems} onItemSelect={handleItemSelect} />
+         </div>
+        <div className='flex box-border h-full flex-col items-center gap-3 flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)] min-h-0 overflow-hidden'>
+          <div className='flex h-[52px] px-4 justify-between items-center self-stretch border-b border-[rgba(249,248,252,0.05)]'>
+             <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold'>Выберите предмет</p>
+             <div className='flex px-2 justify-center items-center gap-[10px] border-b border-[rgba(249,248,252,0.30)]'>
+               <span className='text-[rgba(249,248,252,0.50)] text-center font-["Actay_Wide"] text-base font-bold'>от</span>
+               <span className='text-[rgba(249,248,252,0.30)] font-["Actay_Wide"] text-base font-bold'>10</span>
+               <span className='text-[rgba(249,248,252,0.50)] text-center font-["Actay_Wide"] text-base font-bold'>АР</span>
+             </div>
+           </div>
+           <div className='flex-1 self-stretch' />
+         </div>
+       </div>
+     </div>
+   );
+ }
+ // EOF
