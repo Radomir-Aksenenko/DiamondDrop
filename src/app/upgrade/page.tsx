@@ -166,13 +166,13 @@ function InventoryItemsList({ selectedItems, onItemSelect }: { selectedItems: Se
     <div className='flex px-4 flex-col items-stretch gap-2 flex-1 self-stretch min-h-0'>
       {/* Область со скроллом для сетки предметов */}
       <div className="flex-1 w-full overflow-y-auto pr-2">
-        <div className="grid grid-cols-3 gap-2 auto-rows-[110px]">
+        <div className="grid grid-cols-4 gap-3 auto-rows-[92px]">
           {sortedItems.map((inventoryItem) => {
             const selectedItem = selectedItems.find(selected => selected.inventoryItem.item.id === inventoryItem.item.id);
             const availableAmount = inventoryItem.amount - (selectedItem?.selectedAmount || 0);
             
             return (
-              <div key={inventoryItem.item.id} className="relative group h-[110px]">
+              <div key={inventoryItem.item.id} className="relative group h-[92px]">
                 <ItemCard
                   item={convertToCaseItem(inventoryItem)}
                   amount={availableAmount}
