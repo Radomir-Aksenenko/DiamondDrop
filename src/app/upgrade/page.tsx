@@ -216,7 +216,7 @@ export default function UpgradePage() {
   };
 
   return (
-    <div className="h-screen flex flex-col items-center gap-2 self-stretch overflow-hidden p-2">
+    <div className="h-[calc(100vh-85px-1rem)] flex flex-col items-stretch gap-2 self-stretch overflow-hidden p-2">
       <div className='flex justify-center items-stretch gap-2 self-stretch min-h-0 h-[300px]'>
         <div className='flex flex-col justify-center items-center flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)] p-4 min-h-0 max-h-full overflow-hidden'>
           {selectedItems.length === 0 ? (
