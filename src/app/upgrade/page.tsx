@@ -23,6 +23,7 @@ interface SelectedItem {
 
 interface CircularProgressProps {
   percentage: number;
+  hasSelectedUpgradeItem?: boolean;
 }
 
 // Функция для определения цвета и текста в зависимости от процента
@@ -45,7 +46,7 @@ const getPercentageStyle = (percentage: number) => {
   }
 };
 
-const CircularProgress = ({ percentage }: CircularProgressProps) => {
+const CircularProgress = ({ percentage, hasSelectedUpgradeItem = false }: CircularProgressProps) => {
   const radius = 82;
   const circumference = 2 * Math.PI * radius;
   const strokeDasharray = `${(percentage / 100) * circumference} ${circumference}`;
@@ -61,7 +62,7 @@ const CircularProgress = ({ percentage }: CircularProgressProps) => {
           cx="86"
           cy="86"
           r="78"
-          className="fill-[#232328]"
+          className={hasSelectedUpgradeItem ? "fill-[#3A3A40]" : "fill-[#232328]"}
         />
         <circle
           cx="86"
@@ -363,7 +364,8 @@ export default function UpgradePage() {
       return 0;
     }
     
-    return Math.round(upgradeItemPrice - totalUserItemsPrice);
+    const payback = Math.round(upgradeItemPrice - totalUserItemsPrice);
+    return payback < 0 ? 0 : payback;
   }, [calculateTotalPrice, selectedUpgradeItem?.price]);
 
   // Обработчик выбора предмета для апгрейда
@@ -499,7 +501,10 @@ export default function UpgradePage() {
 
         <div className='flex p-2 flex-col justify-between items-center self-stretch rounded-xl bg-[rgba(249,248,252,0.05)] min-w-[200px]'>
           <div className='flex h-[180px] flex-col justify-between items-center'>
-            <CircularProgress percentage={calculateUpgradeSuccessPercentage()} />
+            <CircularProgress 
+              percentage={calculateUpgradeSuccessPercentage()} 
+              hasSelectedUpgradeItem={selectedUpgradeItem !== null}
+            />
           </div>
           <div className='flex flex-col items-start gap-2 self-stretch'>
             <div className='flex items-start gap-2 self-stretch'>
