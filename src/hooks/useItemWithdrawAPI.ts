@@ -75,6 +75,11 @@ export default function useItemWithdrawAPI() {
             throw new Error('Ошибка вывода, обратитесь в тех поддержку');
           }
           
+          // Специальная обработка ошибки максимального количества активных заказов
+          if (errorData.message === "You have reached the maximum number of active orders.") {
+            throw new Error('Вы достигли максимального количества активных заказов');
+          }
+          
           throw new Error(errorData.message || `Ошибка сервера: ${response.status}`);
         } catch (err) {
           // Если не удалось распарсить JSON ошибки, но есть специальные статусы
