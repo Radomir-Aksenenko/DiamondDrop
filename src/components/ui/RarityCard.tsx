@@ -32,6 +32,7 @@ interface ItemCardProps {
   onClick?: () => void;
   hoverIcon?: 'plus' | 'magnifier'; // Тип иконки при наведении
   fullWidth?: boolean; // Растягивать по ширине контейнера (для апгрейда)
+  showPercentage?: boolean; // Показывать проценты вместо количества штук
 }
 
 // Конфигурация цветов и стилей для каждого типа редкости с новыми градиентами
@@ -277,7 +278,8 @@ export function ItemCard({
   className = '',
   onClick,
   hoverIcon = 'plus',
-  fullWidth = false
+  fullWidth = false,
+  showPercentage = false
 }: ItemCardProps) {
   const config = rarityConfig[item.rarity as keyof typeof rarityConfig] || rarityConfig.Common;
   const isHorizontal = orientation === 'horizontal';
@@ -318,7 +320,12 @@ export function ItemCard({
         {onClick && (
           <div
             className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg z-10"
-            style={fullWidth ? { background: 'rgba(13, 13, 17, 0.70)', backdropFilter: 'blur(2px)' } : { background: 'rgba(0, 0, 0, 0.5)' }}
+            style={fullWidth ? {
+              background: 'rgba(13, 13, 17, 0.70)',
+              backdropFilter: 'blur(2px)'
+            } : {
+              background: 'rgba(0, 0, 0, 0.5)'
+            }}
           >
             {hoverIcon === 'plus' ? (
               <div className="w-8 h-8 bg-[#5C5ADC] rounded-full flex items-center justify-center">
@@ -405,7 +412,7 @@ export function ItemCard({
               АР
             </span>
           </div>
-          {/* Количество штук */}
+          {/* Количество штук или проценты */}
           <div className="flex items-baseline">
             <span 
               style={{
@@ -417,21 +424,23 @@ export function ItemCard({
                 lineHeight: 'normal'
               }}
             >
-              {amount}
+              {showPercentage ? `${amount}%` : amount}
             </span>
-            <span 
-              style={{
-                color: 'rgba(249, 248, 252, 0.50)',
-                fontFamily: 'Actay Wide',
-                fontSize: '12px',
-                fontStyle: 'normal',
-                fontWeight: 700,
-                lineHeight: 'normal',
-                marginLeft: '4px'
-              }}
-            >
-              ШТ.
-            </span>
+            {!showPercentage && (
+              <span 
+                style={{
+                  color: 'rgba(249, 248, 252, 0.50)',
+                  fontFamily: 'Actay Wide',
+                  fontSize: '12px',
+                  fontStyle: 'normal',
+                  fontWeight: 700,
+                  lineHeight: 'normal',
+                  marginLeft: '4px'
+                }}
+              >
+                ШТ.
+              </span>
+            )}
           </div>
         </div>
       </div>

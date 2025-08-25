@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useInventoryAPI, InventoryItem } from '@/hooks/useInventoryAPI';
 import { ItemCard } from '@/components/ui/RarityCard';
 import { CaseItem } from '@/hooks/useCasesAPI';
+import useCasesAPI from '@/hooks/useCasesAPI';
 
 // Константа процента
 const UPGRADE_PERCENTAGE = 15;
@@ -112,6 +113,64 @@ const CircularProgress = ({ percentage }: CircularProgressProps) => {
   );
 };
 
+// Компонент для отображения списка предметов с процентами
+function CaseItemsList({ items, loading }: { items: CaseItem[], loading: boolean }) {
+  // Сортируем предметы по цене (по возрастанию для правого блока)
+  const sortedItems = React.useMemo(() => {
+    return [...items].sort((a, b) => a.price - b.price);
+  }, [items]);
+
+  if (loading) {
+    return (
+      <div className='flex-1 flex items-center justify-center'>
+        <div className='w-6 h-6 border-2 border-[#F9F8FC]/20 border-t-[#F9F8FC] rounded-full animate-spin'></div>
+      </div>
+    );
+  }
+
+  if (items.length === 0) {
+    return (
+      <div className='flex-1 flex items-center justify-center'>
+        <p className='text-[#F9F8FC] opacity-50 text-center'>Нет доступных предметов</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className='flex px-4 flex-col items-stretch gap-2 flex-1 self-stretch min-h-0'>
+      {/* Область со скроллом для сетки предметов */}
+      <div 
+        className="flex-1 w-full overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-[#F9F8FC]/20 scrollbar-track-[rgba(249,248,252,0.05)] hover:scrollbar-thumb-[#F9F8FC]/40 transition-colors"
+        style={{
+          scrollbarWidth: 'thin',
+          scrollbarColor: 'rgba(249, 248, 252, 0.2) transparent',
+          paddingBottom: '10px'
+        }}
+      >
+        <style jsx>{`
+          div::-webkit-scrollbar { width: 4px; }
+          div::-webkit-scrollbar-track { background: transparent; }
+          div::-webkit-scrollbar-thumb { background: rgba(249, 248, 252, 0.2); border-radius: 2px; }
+          div::-webkit-scrollbar-thumb:hover { background: rgba(249, 248, 252, 0.3); }
+        `}</style>
+        <div className='grid grid-cols-3 gap-2'>
+          {sortedItems.map((item, index) => (
+            <ItemCard
+              key={`${item.id}-${index}`}
+              item={item}
+              amount={Math.round(item.percentChance * 100) / 100} // Используем процент вместо количества
+              fullWidth={true}
+              hoverIcon='plus'
+              onClick={() => console.log('Selected item:', item)}
+              showPercentage={true}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+   );
+}
+
 // Компонент для отображения списка предметов инвентаря
 function InventoryItemsList({ selectedItems, onItemSelect }: { selectedItems: SelectedItem[], onItemSelect: (item: InventoryItem) => void }) {
   const { items, loading, error, loadMore, hasMore } = useInventoryAPI();
@@ -209,6 +268,66 @@ function InventoryItemsList({ selectedItems, onItemSelect }: { selectedItems: Se
 
 export default function UpgradePage() {
   const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
+  const [minPrice, setMinPrice] = useState<number>(10);
+  const [upgradeItems, setUpgradeItems] = useState<CaseItem[]>([]);
+  const [loadingUpgradeItems, setLoadingUpgradeItems] = useState<boolean>(false);
+
+  // Функция для расчета общей суммы выбранных предметов
+  const calculateTotalPrice = () => {
+    return selectedItems.reduce((total, item) => {
+      return total + (item.inventoryItem.item.price * item.selectedAmount);
+    }, 0);
+  };
+
+  // Функция для загрузки предметов по API
+  const fetchUpgradeItems = async (price: number) => {
+    setLoadingUpgradeItems(true);
+    try {
+      const response = await fetch(`https://battle-api.chasman.engineer/api/v1/upgrade/items?minPrice=${price}`, {
+        method: 'GET',
+        headers: {
+          'accept': '*/*',
+          'Authorization': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI2ODhjYWQ2YWJlNjU0MWU5ZTgzMWFiZTciLCJwZXJtaXNzaW9uIjoiT3duZXIiLCJuYmYiOjE3NTQzMjU0OTEsImV4cCI6MTc1NDMyOTA5MSwiaWF0IjoxNzU0MzI1NDkxLCJpc3MiOiJtci5yYWZhZWxsbyJ9.kjvs3RdU4ettjsnNjTEQH8VDxXQdETcUX6B7HdB08k4'
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        // Преобразуем данные в формат CaseItem
+        const items: CaseItem[] = data.map((item: any) => ({
+          id: item.id,
+          name: item.name,
+          description: item.description || '',
+          imageUrl: item.imageUrl,
+          amount: item.amount,
+          price: item.price,
+          percentChance: item.percentChance || 0,
+          rarity: item.rarity,
+          isWithdrawable: item.isWithdrawable
+        }));
+        setUpgradeItems(items);
+      } else {
+        console.error('Ошибка загрузки предметов:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Ошибка при запросе к API:', error);
+    } finally {
+      setLoadingUpgradeItems(false);
+    }
+  };
+
+  // Обновляем минимальную цену при изменении выбранных предметов
+  React.useEffect(() => {
+    const totalPrice = calculateTotalPrice();
+    if (totalPrice > minPrice) {
+      setMinPrice(totalPrice);
+    }
+  }, [selectedItems]);
+
+  // Загружаем предметы при изменении минимальной цены
+  React.useEffect(() => {
+    fetchUpgradeItems(minPrice);
+  }, [minPrice]);
 
   const handleItemSelect = (inventoryItem: InventoryItem) => {
     if (selectedItems.length >= MAX_UPGRADE_ITEMS) {
@@ -337,11 +456,30 @@ export default function UpgradePage() {
              <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold'>Выберите предмет</p>
              <div className='flex px-2 justify-center items-center gap-[10px] border-b border-[rgba(249,248,252,0.30)]'>
                <span className='text-[rgba(249,248,252,0.50)] text-center font-["Actay_Wide"] text-base font-bold'>от</span>
-               <span className='text-[rgba(249,248,252,0.30)] font-["Actay_Wide"] text-base font-bold'>10</span>
+               <input
+                 type=''
+                 value={minPrice}
+                 onChange={(e) => {
+                   const value = parseFloat(e.target.value) || 0;
+                   const totalPrice = calculateTotalPrice();
+                   if (value >= totalPrice) {
+                     setMinPrice(value);
+                   }
+                 }}
+                 onKeyDown={(e) => {
+                   // Разрешаем только цифры, точку, запятую, backspace, delete, tab, enter, стрелки
+                   if (!/[0-9.,]/.test(e.key) && !['Backspace', 'Delete', 'Tab', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+                     e.preventDefault();
+                   }
+                 }}
+                 min={calculateTotalPrice()}
+                 className='w-16 bg-transparent text-[rgba(249,248,252,0.30)] font-["Actay_Wide"] text-base font-bold text-center border-none outline-none'
+                 style={{ appearance: 'textfield' }}
+               />
                <span className='text-[rgba(249,248,252,0.50)] text-center font-["Actay_Wide"] text-base font-bold'>АР</span>
              </div>
            </div>
-           <div className='flex-1 self-stretch' />
+           <CaseItemsList items={upgradeItems} loading={loadingUpgradeItems} />
          </div>
        </div>
      </div>
