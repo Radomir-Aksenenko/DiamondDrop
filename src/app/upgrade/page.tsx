@@ -113,7 +113,19 @@ const CircularProgress = ({ percentage }: CircularProgressProps) => {
 };
 
 // Компонент для отображения списка предметов с процентами
-function CaseItemsList({ items, loading }: { items: CaseItem[], loading: boolean }) {
+function CaseItemsList({ 
+  items, 
+  loading, 
+  selectedUpgradeItem, 
+  onItemSelect, 
+  onItemRemove 
+}: { 
+  items: CaseItem[], 
+  loading: boolean,
+  selectedUpgradeItem: CaseItem | null,
+  onItemSelect: (item: CaseItem) => void,
+  onItemRemove: () => void
+}) {
   // Сортируем предметы по цене (по возрастанию для правого блока)
   const sortedItems = React.useMemo(() => {
     return [...items].sort((a, b) => a.price - b.price);
@@ -160,8 +172,14 @@ function CaseItemsList({ items, loading }: { items: CaseItem[], loading: boolean
               amount={Math.round(item.percentChance * 100) / 100} // Используем процент вместо количества
               fullWidth={true}
               hoverIcon='plus'
-              onClick={() => console.log('Selected item:', item)}
+              onClick={() => {
+                if (!selectedUpgradeItem) {
+                  onItemSelect(item);
+                }
+              }}
               showPercentage={true}
+              isSelected={selectedUpgradeItem?.id === item.id}
+              onRemove={selectedUpgradeItem?.id === item.id ? onItemRemove : undefined}
             />
           ))}
         </div>
@@ -270,6 +288,7 @@ export default function UpgradePage() {
   const [minPrice, setMinPrice] = useState<number>(10);
   const [upgradeItems, setUpgradeItems] = useState<CaseItem[]>([]);
   const [loadingUpgradeItems, setLoadingUpgradeItems] = useState<boolean>(false);
+  const [selectedUpgradeItem, setSelectedUpgradeItem] = useState<CaseItem | null>(null);
 
   // Функция для расчета общей суммы выбранных предметов
   const calculateTotalPrice = useCallback(() => {
@@ -277,6 +296,18 @@ export default function UpgradePage() {
       return total + (item.inventoryItem.item.price * item.selectedAmount);
     }, 0);
   }, [selectedItems]);
+
+  // Обработчик выбора предмета для апгрейда
+  const handleUpgradeItemSelect = (item: CaseItem) => {
+    if (!selectedUpgradeItem) {
+      setSelectedUpgradeItem(item);
+    }
+  };
+
+  // Обработчик удаления предмета из апгрейда
+  const handleUpgradeItemRemove = () => {
+    setSelectedUpgradeItem(null);
+  };
 
   // Функция для загрузки предметов по API
   const fetchUpgradeItems = async (price: number) => {
@@ -478,7 +509,13 @@ export default function UpgradePage() {
                <span className='text-[rgba(249,248,252,0.50)] text-center font-["Actay_Wide"] text-base font-bold'>АР</span>
              </div>
            </div>
-           <CaseItemsList items={upgradeItems} loading={loadingUpgradeItems} />
+           <CaseItemsList 
+             items={upgradeItems} 
+             loading={loadingUpgradeItems}
+             selectedUpgradeItem={selectedUpgradeItem}
+             onItemSelect={handleUpgradeItemSelect}
+             onItemRemove={handleUpgradeItemRemove}
+           />
          </div>
        </div>
      </div>
