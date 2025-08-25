@@ -316,7 +316,10 @@ export function ItemCard({
       >
         {/* Иконка при наведении на всю карточку */}
         {onClick && (
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg bg-black/50 z-10">
+          <div
+            className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg z-10"
+            style={fullWidth ? { background: 'rgba(13, 13, 17, 0.70)', backdropFilter: 'blur(2px)' } : { background: 'rgba(0, 0, 0, 0.5)' }}
+          >
             {hoverIcon === 'plus' ? (
               <div className="w-8 h-8 bg-[#5C5ADC] rounded-full flex items-center justify-center">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
