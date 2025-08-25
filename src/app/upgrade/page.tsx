@@ -119,14 +119,29 @@ function CaseItemsList({
   loading, 
   selectedUpgradeItem, 
   onItemSelect, 
-  onItemRemove 
+  onItemRemove,
+  calculateTotalPrice,
+  rtp
 }: { 
   items: CaseItem[], 
   loading: boolean,
   selectedUpgradeItem: CaseItem | null,
   onItemSelect: (item: CaseItem) => void,
-  onItemRemove: () => void
+  onItemRemove: () => void,
+  calculateTotalPrice: () => number,
+  rtp: number
 }) {
+  // Функция для расчета процента успешного апгрейда для конкретного предмета
+  const calculateItemUpgradePercentage = (upgradeItemPrice: number) => {
+    const totalUserItemsPrice = calculateTotalPrice();
+    
+    if (upgradeItemPrice === 0 || rtp === 0) {
+      return 0;
+    }
+    
+    const percentage = (totalUserItemsPrice / upgradeItemPrice) * rtp;
+    return Math.ceil(percentage); // Округляем вверх до целого числа
+  };
   // Сортируем предметы по цене (по возрастанию для правого блока)
   const sortedItems = React.useMemo(() => {
     return [...items].sort((a, b) => a.price - b.price);
@@ -170,7 +185,7 @@ function CaseItemsList({
             <ItemCard
               key={`${item.id}-${index}`}
               item={item}
-              amount={Math.round(item.percentChance * 100) / 100} // Используем процент вместо количества
+              amount={calculateItemUpgradePercentage(item.price)} // Используем правильный расчет процента
               fullWidth={true}
               hoverIcon='plus'
               onClick={() => {
@@ -310,7 +325,8 @@ export default function UpgradePage() {
       return 0;
     }
     
-    return (totalUserItemsPrice / upgradeItemPrice) * rtp;
+    const percentage = (totalUserItemsPrice / upgradeItemPrice) * rtp;
+    return Math.ceil(percentage); // Округляем вверх до целого числа
   }, [calculateTotalPrice, selectedUpgradeItem?.price, rtp]);
 
   // Функция для расчета округленного окупа (x9 формат)
@@ -555,6 +571,8 @@ export default function UpgradePage() {
              selectedUpgradeItem={selectedUpgradeItem}
              onItemSelect={handleUpgradeItemSelect}
              onItemRemove={handleUpgradeItemRemove}
+             calculateTotalPrice={calculateTotalPrice}
+             rtp={rtp}
            />
          </div>
        </div>
