@@ -31,6 +31,7 @@ interface ItemCardProps {
   className?: string;
   onClick?: () => void;
   hoverIcon?: 'plus' | 'magnifier'; // Тип иконки при наведении
+  fullWidth?: boolean; // Растягивать по ширине контейнера (для апгрейда)
 }
 
 // Конфигурация цветов и стилей для каждого типа редкости с новыми градиентами
@@ -78,7 +79,8 @@ export default function RarityCard({
   // Единые стили для всех карт согласно требованиям
   const cardStyles = {
     display: 'flex',
-    width: '138px',
+    width: isHorizontal ? '138px' : '138px',
+    ...(isHorizontal ? { height: '76px' } : {}),
     padding: '8px',
     justifyContent: 'center',
     alignItems: 'center',
@@ -234,7 +236,7 @@ export default function RarityCard({
               marginLeft: '2px'
             }}
           >
-            AP
+            АР
           </span>
         </div>
       </div>
@@ -274,7 +276,8 @@ export function ItemCard({
   orientation = 'horizontal',
   className = '',
   onClick,
-  hoverIcon = 'plus'
+  hoverIcon = 'plus',
+  fullWidth = false
 }: ItemCardProps) {
   const config = rarityConfig[item.rarity as keyof typeof rarityConfig] || rarityConfig.Common;
   const isHorizontal = orientation === 'horizontal';
@@ -282,7 +285,8 @@ export function ItemCard({
   // Единые стили для всех карт согласно требованиям
   const cardStyles = {
     display: 'flex',
-    width: '138px',
+    width: isHorizontal ? (fullWidth ? '100%' : '138px') : '138px',
+    ...(isHorizontal ? { height: '76px' } : {}),
     padding: '8px',
     justifyContent: 'center',
     alignItems: 'center',

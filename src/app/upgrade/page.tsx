@@ -165,19 +165,33 @@ function InventoryItemsList({ selectedItems, onItemSelect }: { selectedItems: Se
   return (
     <div className='flex px-4 flex-col items-stretch gap-2 flex-1 self-stretch min-h-0'>
       {/* Область со скроллом для сетки предметов */}
-      <div className="flex-1 w-full overflow-y-auto pr-2">
-        <div className="grid grid-cols-3 gap-3 auto-rows-[92px]">
+      <div 
+        className="flex-1 w-full overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-[#F9F8FC]/20 scrollbar-track-[rgba(249,248,252,0.05)] hover:scrollbar-thumb-[#F9F8FC]/40 transition-colors"
+        style={{
+          scrollbarWidth: 'thin',
+          scrollbarColor: 'rgba(249, 248, 252, 0.2) transparent',
+          paddingBottom: '10px'
+        }}
+      >
+        <style jsx>{`
+          div::-webkit-scrollbar { width: 4px; }
+          div::-webkit-scrollbar-track { background: transparent; }
+          div::-webkit-scrollbar-thumb { background: rgba(249, 248, 252, 0.2); border-radius: 2px; }
+          div::-webkit-scrollbar-thumb:hover { background: rgba(249, 248, 252, 0.3); }
+        `}</style>
+        <div className="grid grid-cols-3 auto-rows-[76px] gap-3">
           {sortedItems.map((inventoryItem) => {
             const selectedItem = selectedItems.find(selected => selected.inventoryItem.item.id === inventoryItem.item.id);
             const availableAmount = inventoryItem.amount - (selectedItem?.selectedAmount || 0);
             
             return (
-              <div key={inventoryItem.item.id} className="relative group h-[92px]">
+              <div key={inventoryItem.item.id} className="relative group">
                 <ItemCard
                   item={convertToCaseItem(inventoryItem)}
                   amount={availableAmount}
                   orientation="horizontal"
-                  className="w-full h-full hover:brightness-110 transition-all"
+                  className="hover:brightness-110 transition-all"
+                  fullWidth
                   onClick={() => {
                     if (availableAmount > 0) {
                       onItemSelect(inventoryItem);

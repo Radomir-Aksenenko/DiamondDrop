@@ -73,7 +73,6 @@ export const useInventoryAPI = () => {
       
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Неизвестная ошибка';
-      setError(errorMessage);
       console.error('[InventoryAPI] Error loading inventory:', errorMessage);
       
       // В случае ошибки используем мок-данные в режиме разработки
@@ -322,38 +321,38 @@ export const useInventoryAPI = () => {
             item: {
               id: "mock-18",
               name: "Кольчужная броня",
-              description: "Защита III; Прочность II",
+              description: null,
               imageUrl: "https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/chainmail_chestplate/icon",
               amount: 1,
-              price: 15,
+              price: 30,
               percentChance: 100,
-              rarity: "Common",
+              rarity: "Rare",
               isWithdrawable: true
             },
-            amount: 45
+            amount: 14
           },
           {
             item: {
               id: "mock-19",
-              name: "Железная броня",
-              description: "Защита III; Прочность III",
-              imageUrl: "https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/iron_chestplate/icon",
+              name: "Ткацкий станок",
+              description: null,
+              imageUrl: "https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/loom/icon",
               amount: 1,
-              price: 28,
+              price: 5,
               percentChance: 100,
               rarity: "Uncommon",
               isWithdrawable: true
             },
-            amount: 32
+            amount: 40
           },
           {
             item: {
               id: "mock-20",
-              name: "Золотая броня",
-              description: "Защита II; Прочность I",
-              imageUrl: "https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/golden_chestplate/icon",
-              amount: 1,
-              price: 8,
+              name: "Обсидиан",
+              description: null,
+              imageUrl: "https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/obsidian/icon",
+              amount: 64,
+              price: 1.2,
               percentChance: 100,
               rarity: "Common",
               isWithdrawable: true
@@ -365,6 +364,10 @@ export const useInventoryAPI = () => {
         setItems(prevItems => append ? [...prevItems, ...mockItems] : mockItems);
         setHasMore(false);
         setTotalCount(mockItems.length);
+        setCurrentPage(1);
+        setError(null);
+      } else {
+        setError(errorMessage);
       }
     } finally {
       setLoading(false);

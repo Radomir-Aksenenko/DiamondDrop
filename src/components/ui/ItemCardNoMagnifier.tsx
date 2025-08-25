@@ -75,7 +75,7 @@ export function ItemCardNoMagnifier({
         border: config.border,
         ...cardStyles,
         flexDirection: 'column',
-        height: '138px',
+        height: '76px',
         justifyContent: 'space-between'
       }}
       onClick={onClick}

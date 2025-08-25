@@ -174,7 +174,7 @@ export default function CaseItemCard({
                 marginLeft: '2px'
               }}
             >
-              AP
+              АР
             </span>
           </div>
         </>
@@ -253,7 +253,7 @@ export default function CaseItemCard({
                 marginLeft: '2px'
               }}
             >
-              AP
+              АР
             </span>
           </div>
         </>

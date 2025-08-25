@@ -131,7 +131,7 @@ export default function CaseSlotItemCard({
             marginLeft: '2px'
           }}
         >
-          AP
+          АР
         </span>
       </div>
     </div>
