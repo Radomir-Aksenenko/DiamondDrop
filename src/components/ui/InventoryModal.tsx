@@ -38,7 +38,7 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
   const [selectedBranch, setSelectedBranch] = useState<BranchForDisplay | null>(null);
   
   // Получаем данные филиалов из API
-  const { branchesForDisplay: branches, loading: branchesLoading, error: branchesError, refetch: refetchBranches } = useBranchesAPI();
+  const { branchesForDisplay: branches, loading: branchesLoading, error: branchesError } = useBranchesAPI();
   
   // Хук для продажи предметов
   const { sellItem, isLoading: isSelling, error: sellError, clearError } = useSellAPI();
@@ -78,10 +78,9 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
       }
       // Сбрасываем состояние выпадающего списка при смене вкладки
       setIsBranchDropdownOpen(false);
-      // Загружаем филиалы при открытии модального окна
-      refetchBranches();
+      // Данные филиалов загружаются автоматически через useBranchesAPI с кэшированием
     }
-  }, [isOpen, initialTab, selectedItem, refetchBranches]);
+  }, [isOpen, initialTab, selectedItem]);
 
   // Сброс состояния выпадающего списка при смене вкладки
   useEffect(() => {

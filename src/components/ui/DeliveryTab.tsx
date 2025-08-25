@@ -15,9 +15,9 @@ import useBranchesAPI, { Branch } from '@/hooks/useBranchesAPI';
 const DELIVERY_BLOCKS_HEIGHT = 670; // Измените это значение для изменения высоты блоков
 
 export default function DeliveryTab(): React.JSX.Element {
-  // Хук для работы с API заказов
+  // Хук для работы с API заказов (включает данные филиалов)
   const { orders, loading, hasMore, loadInitial, loadMore, isInitialized, branchesForDisplay, confirmOrder } = useOrdersAPI();
-  // Хук для получения полных данных филиалов
+  // Хук для получения полных данных филиалов (только для модального окна)
   const { branches, loading: branchesLoading, error: branchesError } = useBranchesAPI();
   const observerRef = useRef<HTMLDivElement>(null);
   

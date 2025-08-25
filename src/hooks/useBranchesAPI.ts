@@ -45,12 +45,14 @@ const useBranchesAPI = () => {
       if (!force) {
         if (branchesCache) {
           setBranches(branchesCache);
+          setLoading(false);
           return;
         }
         if (branchesFetchPromise) {
           const data = await branchesFetchPromise;
           setBranches(data);
           if (branchesErrorCache) setError(branchesErrorCache);
+          setLoading(false);
           return;
         }
       }
@@ -88,7 +90,7 @@ const useBranchesAPI = () => {
   };
 
   const getBranchesForDisplay = (): BranchForDisplay[] => {
-    return branches.map(branch => {
+    return branches.map((branch: Branch) => {
       const color = branch.coordinates.the_nether.color.toLowerCase();
       const distance = branch.coordinates.the_nether.distance;
 
