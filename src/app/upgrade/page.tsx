@@ -121,7 +121,8 @@ function CaseItemsList({
   onItemSelect, 
   onItemRemove,
   calculateTotalPrice,
-  rtp
+  rtp,
+  hasSelectedItems
 }: { 
   items: CaseItem[], 
   loading: boolean,
@@ -129,7 +130,8 @@ function CaseItemsList({
   onItemSelect: (item: CaseItem) => void,
   onItemRemove: () => void,
   calculateTotalPrice: () => number,
-  rtp: number
+  rtp: number,
+  hasSelectedItems: boolean
 }) {
   // Функция для расчета процента успешного апгрейда для конкретного предмета
   const calculateItemUpgradePercentage = (upgradeItemPrice: number) => {
@@ -151,6 +153,17 @@ function CaseItemsList({
     return (
       <div className='flex-1 flex items-center justify-center'>
         <div className='w-6 h-6 border-2 border-[#F9F8FC]/20 border-t-[#F9F8FC] rounded-full animate-spin'></div>
+      </div>
+    );
+  }
+
+  // Если нет выбранных предметов из инвентаря, показываем сообщение
+  if (!hasSelectedItems) {
+    return (
+      <div className='flex-1 flex items-center justify-center'>
+        <p className='text-[#F9F8FC] opacity-50 text-center font-["Actay_Wide"] text-base'>
+          Сначала выберите предметы<br />из инвентаря
+        </p>
       </div>
     );
   }
@@ -545,6 +558,7 @@ export default function UpgradePage() {
                <input
                  type=''
                  value={minPrice}
+                 disabled={selectedItems.length === 0}
                  onChange={(e) => {
                    const value = parseFloat(e.target.value) || 0;
                    const totalPrice = calculateTotalPrice();
@@ -559,7 +573,11 @@ export default function UpgradePage() {
                    }
                  }}
                  min={calculateTotalPrice()}
-                 className='w-16 bg-transparent text-[rgba(249,248,252,0.30)] font-["Actay_Wide"] text-base font-bold text-center border-none outline-none'
+                 className={`w-16 bg-transparent font-["Actay_Wide"] text-base font-bold text-center border-none outline-none ${
+                   selectedItems.length === 0 
+                     ? 'text-[rgba(249,248,252,0.15)] cursor-not-allowed' 
+                     : 'text-[rgba(249,248,252,0.30)]'
+                 }`}
                  style={{ appearance: 'textfield' }}
                />
                <span className='text-[rgba(249,248,252,0.50)] text-center font-["Actay_Wide"] text-base font-bold'>АР</span>
@@ -573,6 +591,7 @@ export default function UpgradePage() {
              onItemRemove={handleUpgradeItemRemove}
              calculateTotalPrice={calculateTotalPrice}
              rtp={rtp}
+             hasSelectedItems={selectedItems.length > 0}
            />
          </div>
        </div>
