@@ -4,6 +4,7 @@ import React, { useState, useCallback } from 'react';
 import { useInventoryAPI, InventoryItem } from '@/hooks/useInventoryAPI';
 import { ItemCard } from '@/components/ui/RarityCard';
 import { CaseItem } from '@/hooks/useCasesAPI';
+import useUpgradeAPI from '@/hooks/useUpgradeAPI';
 
 // Константа процента
 const UPGRADE_PERCENTAGE = 15;
@@ -290,12 +291,51 @@ export default function UpgradePage() {
   const [loadingUpgradeItems, setLoadingUpgradeItems] = useState<boolean>(false);
   const [selectedUpgradeItem, setSelectedUpgradeItem] = useState<CaseItem | null>(null);
 
+  // Получаем RTP коэффициент из API
+  const { rtp, loading: rtpLoading, error: rtpError } = useUpgradeAPI();
+
   // Функция для расчета общей суммы выбранных предметов
   const calculateTotalPrice = useCallback(() => {
     return selectedItems.reduce((total, item) => {
       return total + (item.inventoryItem.item.price * item.selectedAmount);
     }, 0);
   }, [selectedItems]);
+
+  // Функция для расчета процента успешного апгрейда
+  const calculateUpgradeSuccessPercentage = useCallback(() => {
+    const totalUserItemsPrice = calculateTotalPrice();
+    const upgradeItemPrice = selectedUpgradeItem?.price || 0;
+    
+    if (upgradeItemPrice === 0 || rtp === 0) {
+      return 0;
+    }
+    
+    return (totalUserItemsPrice / upgradeItemPrice) * rtp;
+  }, [calculateTotalPrice, selectedUpgradeItem?.price, rtp]);
+
+  // Функция для расчета округленного окупа (x9 формат)
+  const calculateRoundedPayback = useCallback(() => {
+    const totalUserItemsPrice = calculateTotalPrice();
+    const upgradeItemPrice = selectedUpgradeItem?.price || 0;
+    
+    if (totalUserItemsPrice === 0) {
+      return 0;
+    }
+    
+    return Math.round(upgradeItemPrice / totalUserItemsPrice);
+  }, [calculateTotalPrice, selectedUpgradeItem?.price]);
+
+  // Функция для расчета точного значения окупа
+  const calculateExactPayback = useCallback(() => {
+    const totalUserItemsPrice = calculateTotalPrice();
+    const upgradeItemPrice = selectedUpgradeItem?.price || 0;
+    
+    if (totalUserItemsPrice === 0) {
+      return 0;
+    }
+    
+    return Math.round(upgradeItemPrice - totalUserItemsPrice);
+  }, [calculateTotalPrice, selectedUpgradeItem?.price]);
 
   // Обработчик выбора предмета для апгрейда
   const handleUpgradeItemSelect = (item: CaseItem) => {
@@ -430,15 +470,15 @@ export default function UpgradePage() {
 
         <div className='flex p-2 flex-col justify-between items-center self-stretch rounded-xl bg-[rgba(249,248,252,0.05)] min-w-[200px]'>
           <div className='flex h-[180px] flex-col justify-between items-center'>
-            <CircularProgress percentage={UPGRADE_PERCENTAGE} />
+            <CircularProgress percentage={calculateUpgradeSuccessPercentage()} />
           </div>
           <div className='flex flex-col items-start gap-2 self-stretch'>
             <div className='flex items-start gap-2 self-stretch'>
               <div className='flex h-[36px] px-2 py-[6px] pb-[6px] justify-center items-center gap-2 flex-1 rounded-lg bg-[rgba(249,248,252,0.05)]'>
-                <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold opacity-30 overflow-hidden text-ellipsis line-clamp-1' style={{ display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 1 }}>x9</p>
+                <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold opacity-30 overflow-hidden text-ellipsis line-clamp-1' style={{ display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 1 }}>x{calculateRoundedPayback()}</p>
               </div>
               <div className='flex w-[104px] h-[36px] px-2 py-[6px] pb-[6px] justify-center items-center gap-2 rounded-lg bg-[rgba(17,171,71,0.10)]'>
-                <span className='text-[#11AB47] font-["Actay_Wide"] text-base font-bold overflow-hidden text-ellipsis line-clamp-1' style={{ display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 1, textOverflow: 'ellipsis' }}>+ 999</span>
+                <span className='text-[#11AB47] font-["Actay_Wide"] text-base font-bold overflow-hidden text-ellipsis line-clamp-1' style={{ display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 1, textOverflow: 'ellipsis' }}>+ {calculateExactPayback()}</span>
                 <span className='overflow-hidden text-[#11AB47] font-["Actay_Wide"] text-sm font-bold leading-normal' style={{ display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 1, textOverflow: 'ellipsis' }}> АР</span>
               </div>
             </div>
