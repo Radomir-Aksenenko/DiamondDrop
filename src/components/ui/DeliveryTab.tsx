@@ -211,7 +211,7 @@ export default function DeliveryTab(): React.JSX.Element {
         showConfirmButton: false
       };
     }
-  }, [mapApiStatusToDeliveryStatus]);
+  }, [mapApiStatusToDeliveryStatus, branchesForDisplay]);
 
   // Универсальная функция группировки заказов по указанному блоку (без сортировки)
   const groupOrders = useCallback((srcOrders: Order[], block: BlockKey): DeliveryOrder[] => {

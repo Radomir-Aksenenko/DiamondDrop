@@ -26,34 +26,64 @@ export interface BranchForDisplay {
   coordinates: string;
 }
 
+// Простое кэширование в пределах жизненного цикла приложения, чтобы избежать повторных запросов
+let branchesCache: Branch[] | null = null;
+let branchesErrorCache: string | null = null;
+let branchesFetchPromise: Promise<Branch[]> | null = null;
+
 const useBranchesAPI = () => {
   const [branches, setBranches] = useState<Branch[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchBranches = async () => {
+  const fetchBranches = async (force: boolean = false) => {
     setLoading(true);
     setError(null);
-    
-    try {
-      const response = await fetch('https://battle-api.chasman.engineer/api/v1/branches', {
-        method: 'GET',
-        headers: {
-          'accept': '*/*',
-          'Authorization': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI2ODhjYWQ2YWJlNjU0MWU5ZTgzMWFiZTciLCJwZXJtaXNzaW9uIjoiT3duZXIiLCJuYmYiOjE3NTQzMjU0OTEsImV4cCI6MTc1NDMyOTA5MSwiaWF0IjoxNzU0MzI1NDkxLCJpc3MiOiJtci5yYWZhZWxsbyJ9.kjvs3RdU4ettjsnNjTEQH8VDxXQdETcUX6B7HdB08k4'
-        }
-      });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+    try {
+      // Если не требуется принудительное обновление — используем кэш/объединяем параллельные запросы
+      if (!force) {
+        if (branchesCache) {
+          setBranches(branchesCache);
+          return;
+        }
+        if (branchesFetchPromise) {
+          const data = await branchesFetchPromise;
+          setBranches(data);
+          if (branchesErrorCache) setError(branchesErrorCache);
+          return;
+        }
       }
 
-      const data: Branch[] = await response.json();
+      // Запускаем единый запрос и сохраняем промис, чтобы все параллельные вызовы его переиспользовали
+      branchesFetchPromise = (async () => {
+        const response = await fetch('https://battle-api.chasman.engineer/api/v1/branches', {
+          method: 'GET',
+          headers: {
+            'accept': '*/*',
+            'Authorization': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI2ODhjYWQ2YWJlNjU0MWU5ZTgzMWFiZTciLCJwZXJtaXNzaW9uIjoiT3duZXIiLCJuYmYiOjE3NTQzMjU0OTEsImV4cCI6MTc1NDMyOTA5MSwiaWF0IjoxNzU0MzI1NDkxLCJpc3MiOiJtci5yYWZhZWxsbyJ9.kjvs3RdU4ettjsnNjTEQH8VDxXQdETcUX6B7HdB08k4'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data: Branch[] = await response.json();
+        branchesCache = data;
+        branchesErrorCache = null;
+        return data;
+      })();
+
+      const data = await branchesFetchPromise;
       setBranches(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Произошла ошибка при загрузке филиалов');
+      const message = err instanceof Error ? err.message : 'Произошла ошибка при загрузке филиалов';
+      setError(message);
+      branchesErrorCache = message;
     } finally {
       setLoading(false);
+      branchesFetchPromise = null;
     }
   };
 
@@ -61,7 +91,7 @@ const useBranchesAPI = () => {
     return branches.map(branch => {
       const color = branch.coordinates.the_nether.color.toLowerCase();
       const distance = branch.coordinates.the_nether.distance;
-      
+
       let prefix = '';
       switch (color) {
         case 'green':
@@ -79,7 +109,7 @@ const useBranchesAPI = () => {
         default:
           prefix = 'нв';
       }
-      
+
       return {
         id: branch.id,
         name: branch.name,
@@ -89,7 +119,8 @@ const useBranchesAPI = () => {
   };
 
   useEffect(() => {
-    fetchBranches();
+    // При первом обращении подтянем данные (или используем кэш/в ожидании существующего запроса)
+    fetchBranches(false);
   }, []);
 
   return {
@@ -97,7 +128,8 @@ const useBranchesAPI = () => {
     branchesForDisplay: getBranchesForDisplay(),
     loading,
     error,
-    refetch: fetchBranches
+    // Принудительное обновление для явного refetch
+    refetch: () => fetchBranches(true)
   };
 };
 

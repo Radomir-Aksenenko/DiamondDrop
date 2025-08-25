@@ -1,10 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useInventoryAPI, InventoryItem } from '@/hooks/useInventoryAPI';
 import { ItemCard } from '@/components/ui/RarityCard';
 import { CaseItem } from '@/hooks/useCasesAPI';
-import useCasesAPI from '@/hooks/useCasesAPI';
 
 // Константа процента
 const UPGRADE_PERCENTAGE = 15;
@@ -173,7 +172,7 @@ function CaseItemsList({ items, loading }: { items: CaseItem[], loading: boolean
 
 // Компонент для отображения списка предметов инвентаря
 function InventoryItemsList({ selectedItems, onItemSelect }: { selectedItems: SelectedItem[], onItemSelect: (item: InventoryItem) => void }) {
-  const { items, loading, error, loadMore, hasMore } = useInventoryAPI();
+  const { items, loading, error } = useInventoryAPI();
 
   // Сортируем предметы по цене (по убыванию)
   const sortedItems = React.useMemo(() => {
@@ -273,11 +272,11 @@ export default function UpgradePage() {
   const [loadingUpgradeItems, setLoadingUpgradeItems] = useState<boolean>(false);
 
   // Функция для расчета общей суммы выбранных предметов
-  const calculateTotalPrice = () => {
+  const calculateTotalPrice = useCallback(() => {
     return selectedItems.reduce((total, item) => {
       return total + (item.inventoryItem.item.price * item.selectedAmount);
     }, 0);
-  };
+  }, [selectedItems]);
 
   // Функция для загрузки предметов по API
   const fetchUpgradeItems = async (price: number) => {
@@ -294,7 +293,7 @@ export default function UpgradePage() {
       if (response.ok) {
         const data = await response.json();
         // Преобразуем данные в формат CaseItem
-        const items: CaseItem[] = data.map((item: any) => ({
+        const items: CaseItem[] = data.map((item: { id: string; name: string; description?: string; imageUrl: string; amount: number; price: number; percentChance?: number; rarity: string; isWithdrawable: boolean }) => ({
           id: item.id,
           name: item.name,
           description: item.description || '',
@@ -322,7 +321,7 @@ export default function UpgradePage() {
     if (totalPrice > minPrice) {
       setMinPrice(totalPrice);
     }
-  }, [selectedItems]);
+  }, [selectedItems, calculateTotalPrice, minPrice]);
 
   // Загружаем предметы при изменении минимальной цены
   React.useEffect(() => {

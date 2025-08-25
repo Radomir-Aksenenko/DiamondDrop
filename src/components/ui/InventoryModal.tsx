@@ -81,7 +81,7 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
       // Загружаем филиалы при открытии модального окна
       refetchBranches();
     }
-  }, [isOpen, initialTab, selectedItem]);
+  }, [isOpen, initialTab, selectedItem, refetchBranches]);
 
   // Сброс состояния выпадающего списка при смене вкладки
   useEffect(() => {
