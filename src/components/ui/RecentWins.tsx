@@ -100,12 +100,14 @@ export default function RecentWins() {
         </div>
       </div>
 
-      {/* Сообщение об ошибке */}
-      {error && !isConnected && (
-        <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
-          <p className="text-red-400 text-sm">
-            {error}. Показаны предзагруженные данные.
-          </p>
+      {/* Индикатор подключения в правом нижнем углу */}
+      {!isConnected && (
+        <div className="fixed bottom-4 right-4 z-50 flex items-center gap-2 bg-[rgba(21,21,25,0.9)] border border-red-500/40 rounded-full px-3 py-2 shadow-lg">
+          <span className="relative inline-flex h-3 w-3">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+          </span>
+          <span className="text-xs text-red-400 font-['Actay_Wide']">Подключение...</span>
         </div>
       )}
     </div>
