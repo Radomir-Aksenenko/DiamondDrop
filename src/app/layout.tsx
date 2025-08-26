@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { Unbounded } from "next/font/google";
-import BroadcastBanner from "@/components/ui/BroadcastBanner";
 import "./globals.css";
-import Header from "@/components/layout/Header";
 import SPWProvider from "@/components/providers/SPWProvider";
 import { WalletModalProvider } from "@/contexts/WalletModalContext";
+import ClientLayout from "@/components/layout/ClientLayout";
 
 const unbounded = Unbounded({
   variable: "--font-unbounded",
@@ -50,13 +49,9 @@ export default function RootLayout({
         </noscript>
         <SPWProvider>
           <WalletModalProvider>
-            <Header />
-            <BroadcastBanner />
-            <main className="pt-[85px] px-6">
-              <div className="pt-4">
-                {children}
-              </div>
-            </main>
+            <ClientLayout>
+              {children}
+            </ClientLayout>
           </WalletModalProvider>
         </SPWProvider>
       </body>
