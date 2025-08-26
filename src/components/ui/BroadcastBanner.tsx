@@ -18,13 +18,11 @@ export default function BroadcastBanner() {
     const unsubscribe = liveWinsSocket.subscribe({
       onBroadcast: (payload) => {
         setBanner({ ...payload, visible: true });
-        // auto hide after 8s
-        setTimeout(() => {
-          hide();
-        }, 8000);
       }
     });
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+    };
   }, [hide]);
 
   if (!banner || !banner.visible) return null;
