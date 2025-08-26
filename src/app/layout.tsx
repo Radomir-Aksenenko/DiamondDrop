@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Unbounded } from "next/font/google";
+import BroadcastBanner from "@/components/ui/BroadcastBanner";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import SPWProvider from "@/components/providers/SPWProvider";
@@ -29,6 +30,7 @@ export default function RootLayout({
         <SPWProvider>
           <WalletModalProvider>
             <Header />
+            <BroadcastBanner />
             <main className="pt-[85px] px-6">
               <div className="pt-4">
                 {children}
