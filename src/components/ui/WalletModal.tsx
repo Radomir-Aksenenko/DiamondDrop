@@ -365,7 +365,7 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose, presetAmount }:
           <div className="mt-2">
             <p className="text-[#F9F8FC]/50 text-sm mb-3">
               Нажимая кнопку «Пополнить»,<br/>
-              я соглашаюсь с <SmartLink href="https://example.com/terms" className="text-[#5C5ADC] hover:underline">«Договором оферты»</SmartLink>
+              я соглашаюсь с <SmartLink href="https://docs.google.com/document/d/1Ck3NgHOBdc4YtYaAvRgR3FAvcWRgdYMwOA1Y10Iw6hI/edit?usp=sharing" className="text-[#5C5ADC] hover:underline">«Договором оферты»</SmartLink>
             </p>
             
             <div className="grid grid-cols-2 gap-2">
@@ -425,7 +425,7 @@ const WalletModal = memo(function WalletModal({ isOpen, onClose, presetAmount }:
           <div className="mt-2">
             <p className="text-[#F9F8FC]/50 text-sm mb-3">
               Нажимая кнопку «Вывести»,<br/>
-              я соглашаюсь с <SmartLink href="https://example.com/terms" className="text-[#5C5ADC] hover:underline">«Договором оферты»</SmartLink>
+              я соглашаюсь с <SmartLink href="https://docs.google.com/document/d/1Ck3NgHOBdc4YtYaAvRgR3FAvcWRgdYMwOA1Y10Iw6hI/edit?usp=sharing" className="text-[#5C5ADC] hover:underline">«Договором оферты»</SmartLink>
             </p>
             
             <div className="grid grid-cols-2 gap-2">
