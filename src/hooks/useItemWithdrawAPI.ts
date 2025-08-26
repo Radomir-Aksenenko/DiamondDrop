@@ -65,7 +65,6 @@ export default function useItemWithdrawAPI() {
       );
 
       if (!response.ok) {
-        // Обрабатываем ошибки
         try {
           const errorData: ItemWithdrawErrorResponse = await response.json();
           console.error('[ItemWithdrawAPI] Ошибка вывода предмета:', errorData);
@@ -79,17 +78,15 @@ export default function useItemWithdrawAPI() {
           }
           
           if (errorData.message === "The total order price must be at least 10. (Parameter 'Amount')") {
-            throw new Error('Общая стоимость заказа должна быть не менее 10');
+            throw new Error('Общая стоимость заказа должна быть не менее 10 АР.');
           }
           
           throw new Error(errorData.message || `Ошибка сервера: ${response.status}`);
         } catch (err) {
-          // Если не удалось распарсить JSON ошибки, но есть специальные статусы
           if (response.status === 500) {
             throw new Error('Ошибка вывода, обратитесь в тех поддержку');
           }
           
-          // Если это уже Error из блока try выше, пробрасываем его
           if (err instanceof Error) {
             throw err;
           }
@@ -98,7 +95,6 @@ export default function useItemWithdrawAPI() {
         }
       }
 
-      // Успешный вывод (код 200)
       console.log('[ItemWithdrawAPI] Предмет успешно отправлен на вывод');
       return true;
 
