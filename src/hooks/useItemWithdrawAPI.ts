@@ -70,14 +70,16 @@ export default function useItemWithdrawAPI() {
           const errorData: ItemWithdrawErrorResponse = await response.json();
           console.error('[ItemWithdrawAPI] Ошибка вывода предмета:', errorData);
           
-          // Специальная обработка ошибки сервера (500)
           if (response.status === 500) {
             throw new Error('Ошибка вывода, обратитесь в тех поддержку');
           }
           
-          // Специальная обработка ошибки максимального количества активных заказов
           if (errorData.message === "You have reached the maximum number of active orders.") {
             throw new Error('Вы достигли максимального количества активных заказов');
+          }
+          
+          if (errorData.message === "The total order price must be at least 10. (Parameter 'Amount')") {
+            throw new Error('Общая стоимость заказа должна быть не менее 10');
           }
           
           throw new Error(errorData.message || `Ошибка сервера: ${response.status}`);
