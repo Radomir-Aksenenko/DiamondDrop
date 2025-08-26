@@ -21,6 +21,12 @@ interface RarityCardProps {
   amount?: number;
   orientation?: OrientationType;
   className?: string;
+  // Данные для hover состояния (live wins)
+  playerName?: string;
+  playerAvatarUrl?: string | null;
+  showPlayerOnHover?: boolean;
+  // Функция для обработки клика по карточке
+  onPlayerClick?: () => void;
 }
 
 // Интерфейс пропсов для ItemCard
@@ -74,10 +80,18 @@ export default function RarityCard({
   apValue, 
   amount = 1,
   orientation = 'vertical',
-  className = '' 
+  className = '',
+  playerName,
+  playerAvatarUrl,
+  showPlayerOnHover = false,
+  onPlayerClick
 }: RarityCardProps) {
+  const [isHovered, setIsHovered] = React.useState(false);
   const config = rarityConfig[rarity];
   const isHorizontal = orientation === 'horizontal';
+  
+  // Для live wins при hover показываем Common стиль
+  const hoverConfig = showPlayerOnHover && isHovered ? rarityConfig.Common : config;
 
   // Единые стили для всех карт согласно требованиям
   const cardStyles = {
@@ -98,27 +112,52 @@ export default function RarityCard({
     return price % 1 === 0 ? price.toString() : price.toFixed(1);
   };
 
+  // Обрезаем никнейм до 5 символов с многоточием
+  const truncateNickname = (nickname: string): string => {
+    return nickname.length > 5 ? nickname.substring(0, 5) + '...' : nickname;
+  };
+
   if (isHorizontal) {
     return (
       <div 
-        className={className}
+        className={`${className} ${showPlayerOnHover ? 'cursor-pointer' : ''} transition-all duration-300 ease-in-out`}
         style={{
-          background: config.background,
-          border: config.border,
+          background: hoverConfig.background,
+          border: hoverConfig.border,
           ...cardStyles,
           flexDirection: 'row',
           justifyContent: 'space-between'
         }}
+        onMouseEnter={() => showPlayerOnHover && setIsHovered(true)}
+        onMouseLeave={() => showPlayerOnHover && setIsHovered(false)}
+        onClick={() => showPlayerOnHover && isHovered && onPlayerClick && onPlayerClick()}
       >
-        {/* Левая часть - иконка предмета */}
+        {/* Левая часть - иконка предмета или аватар пользователя */}
         <div className={`relative ${imageSize} flex items-center justify-center flex-shrink-0`}>
-          <img
-            src={itemImage}
-            alt={itemName || `${rarity} предмет`}
-            className="w-full h-full object-contain drop-shadow-lg"
-          />
-          {/* Количество поверх изображения */}
-          <div className="absolute -bottom-1 -right-1">
+          <div className="relative w-full h-full">
+            {/* Изображение предмета */}
+            <img
+              src={itemImage}
+              alt={itemName || `${rarity} предмет`}
+              className={`absolute inset-0 w-full h-full object-contain drop-shadow-lg transition-all duration-300 ease-in-out ${
+                showPlayerOnHover && isHovered && playerAvatarUrl ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
+              }`}
+            />
+            {/* Аватар пользователя */}
+            {showPlayerOnHover && playerAvatarUrl && (
+              <img
+                 src={playerAvatarUrl}
+                 alt={playerName || 'Игрок'}
+                 className={`absolute inset-0 w-full h-full object-cover drop-shadow-lg transition-all duration-300 ease-in-out rounded-none ${
+                   isHovered ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+                 }`}
+               />
+            )}
+          </div>
+          {/* Количество поверх изображения (скрываем при hover) */}
+          <div className={`absolute -bottom-1 -right-1 transition-all duration-300 ease-in-out ${
+            showPlayerOnHover && isHovered ? 'opacity-0 transform scale-75' : 'opacity-100 transform scale-100'
+          }`}>
             <span 
               style={{
                 color: '#F9F8FC',
@@ -135,50 +174,58 @@ export default function RarityCard({
           </div>
         </div>
 
-        {/* Правая часть - процент и стоимость */}
-        <div className="flex flex-col items-end justify-center flex-1">
-          {/* Процент */}
-          <span 
-            style={{
-              color: '#F9F8FC',
-              fontFamily: 'Actay Wide',
-              fontSize: '14px',
-              fontStyle: 'normal',
-              fontWeight: 700,
-              lineHeight: 'normal',
-              opacity: 0.5
-            }}
-          >
-            {percentage}
-          </span>
-          {/* Стоимость */}
-          <div className="flex items-baseline">
+        {/* Правая часть - процент/имя пользователя и стоимость */}
+        <div className="flex flex-col items-end justify-start flex-1 pt-1">
+          {/* Процент или имя пользователя */}
+          <div className="relative w-full flex justify-end">
             <span 
+              className="transition-all duration-300 ease-in-out truncate max-w-full"
               style={{
                 color: '#F9F8FC',
-                textAlign: 'center',
                 fontFamily: 'Actay Wide',
-                fontSize: '16px',
-                fontStyle: 'normal',
-                fontWeight: 700,
-                lineHeight: 'normal'
-              }}
-            >
-              {formatPrice(apValue)}
-            </span>
-            <span 
-              style={{
-                color: 'rgba(249, 248, 252, 0.50)',
-                fontFamily: 'Actay Wide',
-                fontSize: '12px',
+                fontSize: '14px',
                 fontStyle: 'normal',
                 fontWeight: 700,
                 lineHeight: 'normal',
-                marginLeft: '2px'
+                opacity: 0.5
               }}
+              title={showPlayerOnHover && isHovered && playerName ? playerName : percentage}
             >
-              AP
+              {showPlayerOnHover && isHovered && playerName ? truncateNickname(playerName) : percentage}
             </span>
+          </div>
+          {/* Стоимость (скрываем при hover) */}
+          <div className={`transition-all duration-300 ease-in-out ${
+            showPlayerOnHover && isHovered ? 'opacity-0 transform translate-y-2' : 'opacity-100 transform translate-y-0'
+          }`}>
+            <div className="flex items-baseline">
+              <span 
+                style={{
+                  color: '#F9F8FC',
+                  textAlign: 'center',
+                  fontFamily: 'Actay Wide',
+                  fontSize: '16px',
+                  fontStyle: 'normal',
+                  fontWeight: 700,
+                  lineHeight: 'normal'
+                }}
+              >
+                {formatPrice(apValue)}
+              </span>
+              <span 
+                style={{
+                  color: 'rgba(249, 248, 252, 0.50)',
+                  fontFamily: 'Actay Wide',
+                  fontSize: '12px',
+                  fontStyle: 'normal',
+                  fontWeight: 700,
+                  lineHeight: 'normal',
+                  marginLeft: '2px'
+                }}
+              >
+                AP
+              </span>
+            </div>
           </div>
         </div>
       </div>

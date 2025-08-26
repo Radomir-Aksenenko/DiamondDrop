@@ -78,6 +78,7 @@ const transformAPIGameResult = (apiResult: APIGameResult, index: number): LiveWi
   return {
     id: `api-${apiResult.item.id}-${index}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     playerName: apiResult.user?.username || 'Анонимный игрок',
+    playerAvatarUrl: apiResult.user?.avatarUrl || null,
     rarity: mapRarityToType(apiResult.item.rarity),
     percentage: `${apiResult.item.percentChance.toFixed(2)}%`,
     itemImage: apiResult.item.imageUrl || 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/cobblestone/icon',

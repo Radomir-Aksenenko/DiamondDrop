@@ -1,11 +1,13 @@
 'use client';
 
 import React, { useEffect, useState, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import RarityCard from './RarityCard';
 import { usePreloadedData } from '@/components/providers/DataPreloadProvider';
 import useLiveWins, { LiveWinData } from '@/hooks/useLiveWins';
 
 export default function RecentWins() {
+  const router = useRouter();
   const { liveWins: preloadedWins } = usePreloadedData();
   const { wins: liveWins, isConnected, error, forceRefresh } = useLiveWins({ initialData: preloadedWins });
   const [displayWins, setDisplayWins] = useState<LiveWinData[]>(liveWins);
@@ -13,6 +15,12 @@ export default function RecentWins() {
   const [isShifting, setIsShifting] = useState(false);
   const prevWinsRef = useRef<LiveWinData[]>(liveWins);
   const mountTimeRef = useRef<number>(Date.now());
+
+  // Функция для перехода на профиль пользователя
+  const handlePlayerClick = (playerName: string) => {
+    // Переходим на профиль пользователя, используя никнейм вместо ID
+    router.push(`/profile/${encodeURIComponent(playerName)}`);
+  };
 
   // Эффект для принудительного обновления при монтировании компонента
   useEffect(() => {
@@ -94,6 +102,10 @@ export default function RecentWins() {
                 apValue={win.apValue}
                 amount={win.amount}
                 orientation="horizontal"
+                playerName={win.playerName}
+                playerAvatarUrl={win.playerAvatarUrl}
+                showPlayerOnHover={true}
+                onPlayerClick={() => handlePlayerClick(win.playerName)}
               />
             </div>
           ))}

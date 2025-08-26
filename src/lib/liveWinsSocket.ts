@@ -7,6 +7,7 @@ export type RarityType = 'Common' | 'Uncommon' | 'Rare' | 'Epic' | 'Legendary';
 export interface LiveWinData {
   id: string;
   playerName: string;
+  playerAvatarUrl: string | null;
   rarity: RarityType;
   percentage: string;
   itemImage: string;
@@ -64,6 +65,7 @@ function transformWSData(wsData: WSWinData, messageCounter: number): LiveWinData
   return {
     id: uniqueId,
     playerName: wsData.user.Username,
+    playerAvatarUrl: wsData.user.AvatarUrl,
     rarity: mapRarityToType(wsData.item.Rarity),
     percentage: `${wsData.item.PercentChance.toFixed(2)}%`,
     itemImage: wsData.item.ImageUrl || 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/cobblestone/icon',
