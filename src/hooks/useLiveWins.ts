@@ -67,6 +67,8 @@ export interface LiveWinData {
   apValue: number;
   amount: number;
   timestamp: Date;
+  caseId: string;
+  caseName: string;
 }
 
 // Функция для преобразования редкости из API в тип компонента
@@ -104,14 +106,16 @@ const transformWSData = (wsData: WSWinData, messageCounter: number): LiveWinData
   return {
     id: uniqueId,
     playerName: wsData.user.Username,
-    playerAvatarUrl: wsData.user.AvatarUrl,
+    playerAvatarUrl: wsData.user.Username ? `https://avatar.spoverlay.ru/face/${encodeURIComponent(wsData.user.Username)}?w=128` : null,
     rarity: mapRarityToType(wsData.item.Rarity),
     percentage: `${wsData.item.PercentChance.toFixed(2)}%`,
     itemImage: wsData.item.ImageUrl || 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/cobblestone/icon',
     itemName: decodeUnicode(wsData.item.Name),
     apValue: parseFloat(wsData.item.Price.toFixed(1)), // Сохраняем дробные значения до десятых
     amount: wsData.item.Amount || 1, // Извлекаем количество из данных
-    timestamp: new Date()
+    timestamp: new Date(),
+    caseId: wsData.case.Id,
+    caseName: decodeUnicode(wsData.case.Name)
   };
 };
 
@@ -173,5 +177,3 @@ export default function useLiveWins(options: UseLiveWinsOptions = {}) {
     forceRefresh
   };
 }
-
-// ...existing code...

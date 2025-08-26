@@ -74,7 +74,7 @@ export default function Header() {
                 alt="User Avatar"
                 width={50}
                 height={50}
-                className="rounded-lg"
+                className=""
               />
               <div>
                 <p className={`text-[#F9F8FC] ${getNicknameTextSize(userName)} font-bold mr-2 font-unbounded`}>{userName}</p>

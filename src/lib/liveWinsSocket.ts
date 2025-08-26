@@ -15,6 +15,8 @@ export interface LiveWinData {
   apValue: number;
   amount: number;
   timestamp: Date;
+  caseId: string;
+  caseName: string;
 }
 
 type Listener = {
@@ -65,14 +67,16 @@ function transformWSData(wsData: WSWinData, messageCounter: number): LiveWinData
   return {
     id: uniqueId,
     playerName: wsData.user.Username,
-    playerAvatarUrl: wsData.user.AvatarUrl,
+    playerAvatarUrl: wsData.user.Username ? `https://avatar.spoverlay.ru/face/${encodeURIComponent(wsData.user.Username)}?w=128` : null,
     rarity: mapRarityToType(wsData.item.Rarity),
     percentage: `${wsData.item.PercentChance.toFixed(2)}%`,
     itemImage: wsData.item.ImageUrl || 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/cobblestone/icon',
     itemName: decodeUnicode(wsData.item.Name),
     apValue: parseFloat(wsData.item.Price.toFixed(1)),
     amount: wsData.item.Amount || 1,
-    timestamp: new Date()
+    timestamp: new Date(),
+    caseId: wsData.case.Id,
+    caseName: decodeUnicode(wsData.case.Name)
   };
 }
 

@@ -22,6 +22,10 @@ export default function RecentWins() {
     router.push(`/profile/${encodeURIComponent(playerName)}`);
   };
 
+  const handleCaseClick = (caseId: string) => {
+    router.push(`/case/${caseId}`);
+  };
+
   // Эффект для принудительного обновления при монтировании компонента
   useEffect(() => {
     const currentTime = Date.now();
@@ -106,6 +110,7 @@ export default function RecentWins() {
                 playerAvatarUrl={win.playerAvatarUrl}
                 showPlayerOnHover={true}
                 onPlayerClick={() => handlePlayerClick(win.playerName)}
+                onCardClick={() => handleCaseClick(win.caseId)}
               />
             </div>
           ))}

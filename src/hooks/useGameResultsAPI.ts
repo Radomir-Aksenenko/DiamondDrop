@@ -85,7 +85,9 @@ const transformAPIGameResult = (apiResult: APIGameResult, index: number): LiveWi
     itemName: decodeUnicode(apiResult.item.name),
     apValue: parseFloat(apiResult.item.price.toFixed(1)),
     amount: apiResult.item.amount || 1,
-    timestamp: new Date(Date.now() - index * 1000 * 60) // Создаем временные метки с интервалом в минуту
+    timestamp: new Date(Date.now() - index * 1000 * 60), // Создаем временные метки с интервалом в минуту
+    caseId: apiResult.case?.id || '',
+    caseName: decodeUnicode(apiResult.case?.name || 'Неизвестный кейс')
   };
 };
 

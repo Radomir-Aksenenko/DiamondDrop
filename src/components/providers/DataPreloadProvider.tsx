@@ -69,7 +69,10 @@ const mockLiveWins: LiveWinData[] = [
     itemName: 'Золотой меч',
     apValue: 999.5,
     amount: 1,
-    timestamp: new Date(Date.now() - 1000 * 60 * 5)
+    timestamp: new Date(Date.now() - 1000 * 60 * 5),
+    playerAvatarUrl: 'https://avatar.spoverlay.ru/face/Player123?w=128',
+    caseId: 'case-1',
+    caseName: 'Легендарный кейс'
   },
   {
     id: 'mock-2',
@@ -80,7 +83,10 @@ const mockLiveWins: LiveWinData[] = [
     itemName: 'Магический щит',
     apValue: 250.3,
     amount: 2,
-    timestamp: new Date(Date.now() - 1000 * 60 * 15)
+    timestamp: new Date(Date.now() - 1000 * 60 * 15),
+    playerAvatarUrl: 'https://avatar.spoverlay.ru/face/GamerPro?w=128',
+    caseId: 'case-2',
+    caseName: 'Эпический кейс'
   },
   {
     id: 'mock-3',
@@ -91,7 +97,10 @@ const mockLiveWins: LiveWinData[] = [
     itemName: 'Редкий кристалл',
     apValue: 100.7,
     amount: 16,
-    timestamp: new Date(Date.now() - 1000 * 60 * 30)
+    timestamp: new Date(Date.now() - 1000 * 60 * 30),
+    playerAvatarUrl: 'https://avatar.spoverlay.ru/face/LuckyOne?w=128',
+    caseId: 'case-3',
+    caseName: 'Редкий кейс'
   }
 ];
 

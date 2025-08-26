@@ -27,6 +27,8 @@ interface RarityCardProps {
   showPlayerOnHover?: boolean;
   // Функция для обработки клика по карточке
   onPlayerClick?: () => void;
+  // Функция для обработки клика по карточке (переход к кейсу)
+  onCardClick?: () => void;
 }
 
 // Интерфейс пропсов для ItemCard
@@ -84,7 +86,8 @@ export default function RarityCard({
   playerName,
   playerAvatarUrl,
   showPlayerOnHover = false,
-  onPlayerClick
+  onPlayerClick,
+  onCardClick
 }: RarityCardProps) {
   const [isHovered, setIsHovered] = React.useState(false);
   const config = rarityConfig[rarity];
@@ -120,7 +123,7 @@ export default function RarityCard({
   if (isHorizontal) {
     return (
       <div 
-        className={`${className} ${showPlayerOnHover ? 'cursor-pointer' : ''} transition-all duration-300 ease-in-out`}
+        className={`${className} ${showPlayerOnHover || onCardClick ? 'cursor-pointer' : ''} transition-all duration-300 ease-in-out`}
         style={{
           background: hoverConfig.background,
           border: hoverConfig.border,
@@ -130,7 +133,12 @@ export default function RarityCard({
         }}
         onMouseEnter={() => showPlayerOnHover && setIsHovered(true)}
         onMouseLeave={() => showPlayerOnHover && setIsHovered(false)}
-        onClick={() => showPlayerOnHover && isHovered && onPlayerClick && onPlayerClick()}
+        onClick={() => {
+          // Всегда перенаправляем на кейс, независимо от состояния hover
+          if (onCardClick) {
+            onCardClick();
+          }
+        }}
       >
         {/* Левая часть - иконка предмета или аватар пользователя */}
         <div className={`relative ${imageSize} flex items-center justify-center flex-shrink-0`}>
@@ -153,6 +161,7 @@ export default function RarityCard({
                  }`}
                />
             )}
+            {/* Кликабельный оверлей удален - теперь клик всегда ведет на кейс */}
           </div>
           {/* Количество поверх изображения (скрываем при hover) */}
           <div className={`absolute -bottom-1 -right-1 transition-all duration-300 ease-in-out ${
