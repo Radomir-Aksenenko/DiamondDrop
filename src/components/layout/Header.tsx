@@ -88,20 +88,6 @@ export default function Header() {
           <NavButton icon="Case" href="/" label="Кейсы" />
           <NavButton icon="Update" onClick={handleUpgradeClick} label="Апгрейд" activeOnPath="/upgrade" />
           <NavButton icon="About" href="/about" label="О проекте" />
-          <button 
-            onClick={() => window.open('https://discord.gg/KRXYaXdQuf', '_blank')}
-            className="flex items-center justify-center gap-2 px-4 py-2 rounded-[12px] bg-[#5865F2] hover:bg-[#4752C4] transition-colors cursor-pointer text-white font-unbounded text-sm font-medium"
-            title="Присоединиться к Discord"
-          >
-            <img
-              src="/Discord.svg"
-              alt="Discord"
-              width={20}
-              height={20}
-              className="aspect-square"
-            />
-            <span>Discord</span>
-          </button>
         </nav>
         <div className='flex items-center gap-2'>
           <div className='h-[44px] bg-[#18181D] flex items-center rounded-[12px]'>
