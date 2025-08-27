@@ -228,5 +228,3 @@ class LiveWinsSocketManager {
 }
 
 export const liveWinsSocket = new LiveWinsSocketManager();
-
-
