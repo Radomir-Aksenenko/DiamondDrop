@@ -47,7 +47,7 @@ export default function MobileNotSupported() {
 
         {/* Основное сообщение */}
         <h2 className="text-xl font-bold text-[#F9F8FC] mb-4">
-          Мобильная версия в разработке
+          Мобильная версия в разработке{dots}
         </h2>
 
         {/* Описание */}

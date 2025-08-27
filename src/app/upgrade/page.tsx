@@ -6,8 +6,7 @@ import { ItemCard } from '@/components/ui/RarityCard';
 import { CaseItem } from '@/hooks/useCasesAPI';
 import useUpgradeAPI from '@/hooks/useUpgradeAPI';
 
-// Константа процента
-const UPGRADE_PERCENTAGE = 15;
+// Константа процента удалена как неиспользуемая
 
 // Максимальное количество предметов для апгрейда
 const MAX_UPGRADE_ITEMS = 8;
@@ -321,7 +320,7 @@ export default function UpgradePage() {
   const [selectedUpgradeItem, setSelectedUpgradeItem] = useState<CaseItem | null>(null);
 
   // Получаем RTP коэффициент из API
-  const { rtp, loading: rtpLoading, error: rtpError } = useUpgradeAPI();
+  const { rtp } = useUpgradeAPI();
 
   // Функция для расчета общей суммы выбранных предметов
   const calculateTotalPrice = useCallback(() => {

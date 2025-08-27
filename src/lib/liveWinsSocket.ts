@@ -188,7 +188,7 @@ class LiveWinsSocketManager {
             const win = transformWSData(winMsg.data, this.messageCounter);
             this.notifyWin(win);
           }
-        } catch (err) {
+        } catch {
           // swallow
         }
       };
@@ -220,7 +220,7 @@ class LiveWinsSocketManager {
         this.isConnecting = false;
         this.setError('Ошибка подключения к серверу');
       };
-    } catch (err) {
+    } catch {
       this.isConnecting = false;
       this.setError('Не удалось создать подключение');
     }

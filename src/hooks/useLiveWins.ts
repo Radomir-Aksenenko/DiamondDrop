@@ -52,8 +52,7 @@ interface WSKeepAliveMessage {
   timestamp: number;
 }
 
-// Общий тип для всех сообщений WebSocket
-type WSMessage = WSWinMessage | WSKeepAliveMessage;
+// Общий тип для всех сообщений WebSocket (не используется напрямую)
 
 // Интерфейс для обработанных данных выигрыша
 export interface LiveWinData {

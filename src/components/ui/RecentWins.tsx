@@ -9,12 +9,12 @@ import useLiveWins, { LiveWinData } from '@/hooks/useLiveWins';
 export default function RecentWins() {
   const router = useRouter();
   const { liveWins: preloadedWins, refreshLiveWins } = usePreloadedData();
-  const { wins: liveWins, isConnected, error } = useLiveWins({ initialData: preloadedWins });
+  const { wins: liveWins, isConnected } = useLiveWins({ initialData: preloadedWins });
   const [displayWins, setDisplayWins] = useState<LiveWinData[]>(liveWins);
   const [animatingWins, setAnimatingWins] = useState<Set<string>>(new Set());
   const [isShifting, setIsShifting] = useState(false);
   const prevWinsRef = useRef<LiveWinData[]>(liveWins);
-  const mountTimeRef = useRef<number>(Date.now());
+  // mountTimeRef удалён как неиспользуемый
 
   // Функция для перехода на профиль пользователя
   const handlePlayerClick = (playerName: string) => {
