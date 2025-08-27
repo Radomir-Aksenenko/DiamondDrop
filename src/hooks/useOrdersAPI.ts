@@ -241,7 +241,7 @@ export const useOrdersAPI = () => {
   // Интеграция с useBranchesAPI для получения координат
    const { branchesForDisplay } = useBranchesAPI();
 
-  const pageSize = 10; // Количество заказов на страницу
+  const pageSize = 15; // Количество заказов на страницу (обновлено под новый API)
 
   // Функция для загрузки заказов
   const fetchOrders = useCallback(async (page: number, append: boolean = false) => {
@@ -295,7 +295,7 @@ export const useOrdersAPI = () => {
       console.log('useOrdersAPI: Загрузка данных с реального API');
       
       const response = await fetch(
-        `https://battle-api.chasman.engineer/api/v1/orders?page=${page}&pageSize=${pageSize}`,
+        `https://battle-api.chasman.engineer/api/v1/orders?page=${page}&pageSize=${pageSize}&activeOnly=false`,
         {
           method: 'GET',
           headers: {
@@ -309,12 +309,14 @@ export const useOrdersAPI = () => {
         throw new Error(`Ошибка загрузки заказов: ${response.status} ${response.statusText}`);
       }
 
-      const data: Order[] = await response.json();
+      const data: { items: Order[]; totalCount?: number; page?: number; pageSize?: number } = await response.json();
+      const apiItems: Order[] = Array.isArray((data as any).items) ? (data as any).items : [];
+      const totalCount: number = typeof data.totalCount === 'number' ? data.totalCount : apiItems.length;
       
-      console.log(`useOrdersAPI: Получено ${data.length} заказов с API`);
+      console.log(`useOrdersAPI: Получено ${apiItems.length} заказов с API (totalCount=${totalCount})`);
       
       // Валидируем полученные данные
-      const validOrders = data.filter(order => {
+      const validOrders = apiItems.filter(order => {
         const isValid = validateOrder(order);
         if (!isValid) {
           console.warn('useOrdersAPI: Невалидный заказ отфильтрован', order);
@@ -322,10 +324,10 @@ export const useOrdersAPI = () => {
         return isValid;
       });
       
-      console.log(`useOrdersAPI: ${validOrders.length} из ${data.length} заказов прошли валидацию`);
+      console.log(`useOrdersAPI: ${validOrders.length} из ${apiItems.length} заказов прошли валидацию`);
       
       // Определяем, есть ли еще страницы
-      const hasMoreData = validOrders.length === pageSize;
+      const hasMoreData = page * pageSize < totalCount;
       
       if (append) {
         setOrders(prev => {
