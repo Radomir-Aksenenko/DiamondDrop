@@ -43,7 +43,7 @@ export default function RecentWins() {
     const newWins = liveWins.filter(win => !prevWinIds.has(win.id));
     
     if (newWins.length > 0) {
-      // Запускаем анимацию сдвига для всех карточек
+      // Запускаем анимацию сдвига для всех карточек вправо
       setIsShifting(true);
       
       // Добавляем новые выигрыши в состояние анимации
@@ -72,25 +72,19 @@ export default function RecentWins() {
     <div className="w-full max-w-4xl mx-auto mt-6">
       {/* Горизонтальная прокрутка карточек */}
       <div className="relative">
-        <div className={`flex gap-4 overflow-x-auto no-scrollbar transition-all duration-500 ease-out ${
-          isShifting ? 'animate-container-shift' : ''
-        }`}>
+        <div className={`flex gap-4 overflow-x-auto no-scrollbar ${
+          isShifting ? 'shift-right' : ''
+        } transition-transform-smooth`}>
           {displayWins.map((win, index) => (
             <div 
               key={win.id} 
               className={`flex-shrink-0 transition-all duration-500 ease-out ${
-                animatingWins.has(win.id) 
-                  ? 'animate-slide-in-left' 
-                  : isShifting 
-                    ? 'animate-smooth-shift' 
-                    : ''
+                animatingWins.has(win.id) ? 'animate-slide-in-left' : ''
               }`}
               style={{
                 transitionDelay: animatingWins.has(win.id) 
                   ? '0ms' 
-                  : isShifting 
-                    ? `${Math.min(index * 30, 300)}ms` 
-                    : '0ms'
+                  : '0ms'
               }}
             >
               <RarityCard
