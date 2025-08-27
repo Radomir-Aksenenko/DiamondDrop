@@ -61,6 +61,27 @@ export interface Order {
   createdAt: string;
 }
 
+// Тип ответа API заказов
+interface ApiOrdersResponse {
+  items: Order[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+}
+
+function isApiOrdersResponse(value: unknown): value is ApiOrdersResponse {
+  if (typeof value !== 'object' || value === null) return false;
+  const obj = value as Record<string, unknown>;
+  const items = obj.items;
+  const totalCount = obj.totalCount;
+  const page = obj.page;
+  const pageSize = obj.pageSize;
+  return Array.isArray(items)
+    && typeof totalCount === 'number'
+    && typeof page === 'number'
+    && typeof pageSize === 'number';
+}
+
 // Функция для определения направления по координатам (новый формат)
 export const getBranchDirection = (coordinates: BranchCoordinates): string => {
   if (!coordinates) {
@@ -237,6 +258,7 @@ export const useOrdersAPI = () => {
   const [hasMore, setHasMore] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [totalCount, setTotalCount] = useState<number>(0);
   
   // Интеграция с useBranchesAPI для получения координат
    const { branchesForDisplay } = useBranchesAPI();
@@ -309,11 +331,21 @@ export const useOrdersAPI = () => {
         throw new Error(`Ошибка загрузки заказов: ${response.status} ${response.statusText}`);
       }
 
-      const data: { items: Order[]; totalCount?: number; page?: number; pageSize?: number } = await response.json();
-      const apiItems: Order[] = Array.isArray((data as any).items) ? (data as any).items : [];
-      const totalCount: number = typeof data.totalCount === 'number' ? data.totalCount : apiItems.length;
+      const raw = (await response.json()) as unknown;
+      let apiItems: Order[] = [];
+      let apiTotalCount = 0;
+      if (isApiOrdersResponse(raw)) {
+        apiItems = raw.items;
+        apiTotalCount = raw.totalCount;
+      } else if (Array.isArray(raw)) {
+        apiItems = raw as Order[];
+        apiTotalCount = apiItems.length;
+      } else {
+        apiItems = [];
+        apiTotalCount = 0;
+      }
       
-      console.log(`useOrdersAPI: Получено ${apiItems.length} заказов с API (totalCount=${totalCount})`);
+      console.log(`useOrdersAPI: Получено ${apiItems.length} заказов с API (totalCount=${apiTotalCount})`);
       
       // Валидируем полученные данные
       const validOrders = apiItems.filter(order => {
@@ -327,7 +359,7 @@ export const useOrdersAPI = () => {
       console.log(`useOrdersAPI: ${validOrders.length} из ${apiItems.length} заказов прошли валидацию`);
       
       // Определяем, есть ли еще страницы
-      const hasMoreData = page * pageSize < totalCount;
+      const hasMoreData = page * pageSize < apiTotalCount;
       
       if (append) {
         setOrders(prev => {
@@ -342,6 +374,7 @@ export const useOrdersAPI = () => {
       
       setHasMore(hasMoreData);
       setCurrentPage(page);
+      setTotalCount(apiTotalCount);
       
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Неизвестная ошибка';
@@ -462,6 +495,7 @@ export const useOrdersAPI = () => {
     softRefresh,
     confirmOrder,
     isInitialized,
-    branchesForDisplay
+    branchesForDisplay,
+    totalCount
   };
 };
