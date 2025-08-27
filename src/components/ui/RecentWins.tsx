@@ -13,6 +13,7 @@ export default function RecentWins() {
   const [displayWins, setDisplayWins] = useState<LiveWinData[]>(liveWins);
   const [animatingWins, setAnimatingWins] = useState<Set<string>>(new Set());
   const prevWinsRef = useRef<LiveWinData[]>(liveWins);
+  const [isShifting, setIsShifting] = useState(false);
   // mountTimeRef удалён как неиспользуемый
 
   // Функция для перехода на профиль пользователя
@@ -42,6 +43,8 @@ export default function RecentWins() {
     const newWins = liveWins.filter(win => !prevWinIds.has(win.id));
     
     if (newWins.length > 0) {
+      // Запускаем анимацию сдвига для всех карточек вправо
+      setIsShifting(true);
       // Добавляем новые выигрыши в состояние анимации
       setAnimatingWins(prev => new Set([...prev, ...newWins.map(win => win.id)]));
       
@@ -53,6 +56,11 @@ export default function RecentWins() {
           return updated;
         });
       }, 500);
+      
+      // Убираем состояние сдвига через 600ms
+      setTimeout(() => {
+        setIsShifting(false);
+      }, 600);
     }
     
     setDisplayWins(liveWins);
@@ -63,7 +71,9 @@ export default function RecentWins() {
     <div className="w-full max-w-4xl mx-auto mt-6">
       {/* Горизонтальная прокрутка карточек */}
       <div className="relative">
-        <div className={`flex gap-4 overflow-x-auto no-scrollbar`}>
+        <div className={`flex gap-4 overflow-x-auto no-scrollbar ${
+          isShifting ? 'shift-right' : ''
+        } transition-transform-smooth`}>
           {displayWins.map((win, index) => (
             <div 
               key={win.id} 
