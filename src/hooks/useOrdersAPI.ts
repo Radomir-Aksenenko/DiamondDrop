@@ -259,6 +259,7 @@ export const useOrdersAPI = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isInitialized, setIsInitialized] = useState(false);
   const [totalCount, setTotalCount] = useState<number>(0);
+  const [responsePageSize, setResponsePageSize] = useState<number>(pageSize);
   
   // Интеграция с useBranchesAPI для получения координат
    const { branchesForDisplay } = useBranchesAPI();
@@ -337,12 +338,15 @@ export const useOrdersAPI = () => {
       if (isApiOrdersResponse(raw)) {
         apiItems = raw.items;
         apiTotalCount = raw.totalCount;
+        setResponsePageSize(raw.pageSize);
       } else if (Array.isArray(raw)) {
         apiItems = raw as Order[];
         apiTotalCount = apiItems.length;
+        setResponsePageSize(pageSize);
       } else {
         apiItems = [];
         apiTotalCount = 0;
+        setResponsePageSize(pageSize);
       }
       
       console.log(`useOrdersAPI: Получено ${apiItems.length} заказов с API (totalCount=${apiTotalCount})`);
@@ -496,6 +500,7 @@ export const useOrdersAPI = () => {
     confirmOrder,
     isInitialized,
     branchesForDisplay,
-    totalCount
+    totalCount,
+    pageSize: responsePageSize
   };
 };
