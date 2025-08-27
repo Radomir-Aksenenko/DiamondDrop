@@ -251,7 +251,8 @@ const createMockOrder = (page: number, index: number): Order => {
   };
 };
 
-export const useOrdersAPI = () => {
+export const useOrdersAPI = (options?: { activeOnly?: boolean }) => {
+  const activeOnly = options?.activeOnly === true;
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -318,7 +319,7 @@ export const useOrdersAPI = () => {
       console.log('useOrdersAPI: Загрузка данных с реального API');
       
       const response = await fetch(
-        `https://battle-api.chasman.engineer/api/v1/orders?page=${page}&pageSize=${pageSize}&activeOnly=false`,
+        `https://battle-api.chasman.engineer/api/v1/orders?page=${page}&pageSize=${pageSize}&activeOnly=${activeOnly ? 'true' : 'false'}`,
         {
           method: 'GET',
           headers: {
@@ -394,7 +395,7 @@ export const useOrdersAPI = () => {
     } finally {
       setLoading(false);
     }
-  }, [pageSize, loading]);
+  }, [pageSize, loading, activeOnly]);
 
   // Загрузка первой страницы
   const loadInitial = useCallback(async () => {

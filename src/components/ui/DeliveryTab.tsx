@@ -17,6 +17,7 @@ const DELIVERY_BLOCKS_HEIGHT = 670; // Измените это значение 
 export default function DeliveryTab(): React.JSX.Element {
   // Хук для работы с API заказов (включает данные филиалов)
   const { orders, loading, hasMore, loadInitial, loadMore, isInitialized, branchesForDisplay, confirmOrder, pageSize } = useOrdersAPI();
+  const { pageSize: activePageSize } = useOrdersAPI({ activeOnly: true });
   // Хук для получения полных данных филиалов (только для модального окна)
   const { branches, loading: branchesLoading, error: branchesError } = useBranchesAPI();
   const observerRef = useRef<HTMLDivElement>(null);
@@ -242,7 +243,7 @@ export default function DeliveryTab(): React.JSX.Element {
   }, [orders, currentOrders, historyOrders]);
 
   // Подсчёт количества заказов (а не предметов)
-  const currentOrdersCount = pageSize;
+  const currentOrdersCount = activePageSize;
   const historyOrdersCount = pageSize;
 
   // Обработчики событий
