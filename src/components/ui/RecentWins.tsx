@@ -8,8 +8,8 @@ import useLiveWins, { LiveWinData } from '@/hooks/useLiveWins';
 
 export default function RecentWins() {
   const router = useRouter();
-  const { liveWins: preloadedWins } = usePreloadedData();
-  const { wins: liveWins, isConnected, error, forceRefresh } = useLiveWins({ initialData: preloadedWins });
+  const { liveWins: preloadedWins, refreshLiveWins } = usePreloadedData();
+  const { wins: liveWins, isConnected, error } = useLiveWins({ initialData: preloadedWins });
   const [displayWins, setDisplayWins] = useState<LiveWinData[]>(liveWins);
   const [animatingWins, setAnimatingWins] = useState<Set<string>>(new Set());
   const [isShifting, setIsShifting] = useState(false);
@@ -26,20 +26,15 @@ export default function RecentWins() {
     router.push(`/case/${caseId}`);
   };
 
-  // Эффект для принудительного обновления при монтировании компонента
+  // Эффект для обновления лайв-винов по API при каждом монтировании (возврат на главную)
   useEffect(() => {
-    const currentTime = Date.now();
-    const timeSinceMount = currentTime - mountTimeRef.current;
-    
-    // Если компонент был перемонтирован (например, при возвращении на главную страницу)
-    // и прошло менее 1 секунды с момента монтирования, принудительно обновляем данные
-    if (timeSinceMount < 1000 && forceRefresh) {
-      // Информационное логирование удалено
-      setTimeout(() => {
-        forceRefresh();
-      }, 100);
-    }
-  }, [forceRefresh]);
+    const doRefresh = async () => {
+      try {
+        await refreshLiveWins();
+      } catch {}
+    };
+    doRefresh();
+  }, [refreshLiveWins]);
 
   // Обновляем отображаемые выигрыши при получении новых данных из WebSocket
   useEffect(() => {

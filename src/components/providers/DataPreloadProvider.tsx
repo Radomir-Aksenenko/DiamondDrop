@@ -27,6 +27,7 @@ interface DataPreloadContextType extends PreloadedData {
   refreshBanners: () => Promise<void>;
   refreshUser: () => Promise<void>;
   refreshCases: () => Promise<void>;
+  refreshLiveWins: () => Promise<void>;
   refreshAllData: () => Promise<void>;
   updateBalanceLocally: (amount: number) => void;
   decreaseBalanceLocally: (amount: number) => void;
@@ -343,6 +344,16 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
     }
   }, [loadCases]);
 
+  // Функция обновления живых выигрышей через API
+  const refreshLiveWins = useCallback(async () => {
+    try {
+      const liveWinsData = await loadInitialLiveWins();
+      setLiveWins(liveWinsData);
+    } catch (err) {
+      console.error('Error updating live wins:', err);
+    }
+  }, [loadInitialLiveWins]);
+
   // Функция локального увеличения баланса
   const updateBalanceLocally = useCallback((amount: number) => {
     if (!user) {
@@ -428,6 +439,7 @@ export default function DataPreloadProvider({ children }: DataPreloadProviderPro
     refreshBanners,
     refreshUser,
     refreshCases,
+    refreshLiveWins,
     refreshAllData,
     updateBalanceLocally,
     decreaseBalanceLocally,
