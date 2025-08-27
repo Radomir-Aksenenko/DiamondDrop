@@ -127,17 +127,38 @@ export default function useLiveWins(options: UseLiveWinsOptions = {}) {
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const isMountedRef = useRef(true);
+  const pendingQueueRef = useRef<ManagerWinData[]>([]);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const scheduleNext = useCallback(() => {
+    if (timerRef.current) return;
+    timerRef.current = setTimeout(() => {
+      timerRef.current = null;
+      if (!isMountedRef.current) return;
+      const next = pendingQueueRef.current.shift();
+      if (next) {
+        setWins(prev => {
+          const existingIds = new Set(prev.map(w => w.id));
+          if (existingIds.has(next.id)) {
+            return prev;
+          }
+          return [next, ...prev].slice(0, 10);
+        });
+      }
+      if (pendingQueueRef.current.length > 0) {
+        scheduleNext();
+      }
+    }, 1000);
+  }, []);
 
   useEffect(() => {
     isMountedRef.current = true;
     const unsubscribe = liveWinsSocket.subscribe({
       onWin: (win: ManagerWinData) => {
         if (!isMountedRef.current) return;
-        setWins(prev => {
-          const existingIds = new Set(prev.map(w => w.id));
-          if (existingIds.has(win.id)) return prev;
-          return [win, ...prev].slice(0, 10);
-        });
+        // Кладём новое событие в очередь и запускаем обработчик с задержкой
+        pendingQueueRef.current.push(win);
+        scheduleNext();
       },
       onConnected: (connected) => {
         if (!isMountedRef.current) return;
@@ -152,6 +173,11 @@ export default function useLiveWins(options: UseLiveWinsOptions = {}) {
     return () => {
       isMountedRef.current = false;
       unsubscribe();
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+      pendingQueueRef.current = [];
     };
   }, []);
 
