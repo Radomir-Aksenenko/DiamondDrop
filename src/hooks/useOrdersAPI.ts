@@ -253,6 +253,7 @@ const createMockOrder = (page: number, index: number): Order => {
 
 export const useOrdersAPI = (options?: { activeOnly?: boolean }) => {
   const activeOnly = options?.activeOnly === true;
+  const pageSize = 15; // Количество заказов на страницу (обновлено под новый API)
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -265,7 +266,6 @@ export const useOrdersAPI = (options?: { activeOnly?: boolean }) => {
   // Интеграция с useBranchesAPI для получения координат
    const { branchesForDisplay } = useBranchesAPI();
 
-  const pageSize = 15; // Количество заказов на страницу (обновлено под новый API)
 
   // Функция для загрузки заказов
   const fetchOrders = useCallback(async (page: number, append: boolean = false) => {
