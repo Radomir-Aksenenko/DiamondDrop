@@ -25,10 +25,10 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
     );
   }
 
-  // Показываем компонент для мобильных устройств
-  if (isMobile) {
-    return <MobileNotSupported />;
-  }
+  // Убрана заглушка для мобильных устройств
+  // if (isMobile) {
+  //   return <MobileNotSupported />;
+  // }
 
   // Показываем обычный layout для десктопа
   return (
