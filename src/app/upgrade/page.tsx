@@ -45,6 +45,24 @@ const getPercentageStyle = (percentage: number) => {
   }
 };
 
+// Маппер цвета текста по редкости предмета
+const rarityTextColor = (rarity: CaseItem['rarity']) => {
+  switch (rarity) {
+    case 'Common':
+      return 'text-[#B0B0B0]';
+    case 'Uncommon':
+      return 'text-[#55FF55]';
+    case 'Rare':
+      return 'text-[#5555FF]';
+    case 'Epic':
+      return 'text-[#AA00AA]';
+    case 'Legendary':
+      return 'text-[#FFAA00]';
+    default:
+      return 'text-[#F9F8FC]';
+  }
+};
+
 const CircularProgress = ({ percentage, hasSelectedUpgradeItem = false }: CircularProgressProps) => {
   const radius = 82;
   const circumference = 2 * Math.PI * radius;
@@ -393,7 +411,7 @@ export default function UpgradePage() {
           amount: 1,
           price: 12,
           percentChance: 0,
-          rarity: 'uncommon',
+          rarity: 'Uncommon',
           isWithdrawable: true
         },
         {
@@ -404,7 +422,7 @@ export default function UpgradePage() {
           amount: 1,
           price: 18,
           percentChance: 0,
-          rarity: 'rare',
+          rarity: 'Rare',
           isWithdrawable: true
         },
         {
@@ -415,7 +433,7 @@ export default function UpgradePage() {
           amount: 1,
           price: 35,
           percentChance: 0,
-          rarity: 'epic',
+          rarity: 'Epic',
           isWithdrawable: true
         },
         {
@@ -426,7 +444,7 @@ export default function UpgradePage() {
           amount: 1,
           price: 64,
           percentChance: 0,
-          rarity: 'legendary',
+          rarity: 'Legendary',
           isWithdrawable: false
         },
         {
@@ -437,7 +455,7 @@ export default function UpgradePage() {
           amount: 1,
           price: 128,
           percentChance: 0,
-          rarity: 'mythic',
+          rarity: 'Legendary',
           isWithdrawable: false
         },
         {
@@ -448,7 +466,7 @@ export default function UpgradePage() {
           amount: 1,
           price: 15,
           percentChance: 0,
-          rarity: 'uncommon',
+          rarity: 'Uncommon',
           isWithdrawable: true
         },
         {
@@ -459,7 +477,7 @@ export default function UpgradePage() {
           amount: 3,
           price: 25,
           percentChance: 0,
-          rarity: 'rare',
+          rarity: 'Rare',
           isWithdrawable: true
         },
         {
@@ -470,7 +488,7 @@ export default function UpgradePage() {
           amount: 1,
           price: 96,
           percentChance: 0,
-          rarity: 'legendary',
+          rarity: 'Legendary',
           isWithdrawable: false
         },
         {
@@ -481,7 +499,7 @@ export default function UpgradePage() {
           amount: 1,
           price: 200,
           percentChance: 0,
-          rarity: 'mythic',
+          rarity: 'Legendary',
           isWithdrawable: false
         },
         {
@@ -492,7 +510,7 @@ export default function UpgradePage() {
           amount: 1,
           price: 45,
           percentChance: 0,
-          rarity: 'epic',
+          rarity: 'Epic',
           isWithdrawable: true
         },
         {
@@ -503,7 +521,7 @@ export default function UpgradePage() {
           amount: 1,
           price: 150,
           percentChance: 0,
-          rarity: 'mythic',
+          rarity: 'Legendary',
           isWithdrawable: false
         },
         {
@@ -514,7 +532,7 @@ export default function UpgradePage() {
           amount: 1,
           price: 75,
           percentChance: 0,
-          rarity: 'legendary',
+          rarity: 'Legendary',
           isWithdrawable: true
         }
       ];
@@ -677,15 +695,7 @@ export default function UpgradePage() {
                 <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-2xl font-bold opacity-30'>x{selectedUpgradeItem.amount}</p>
               </div>
               <div className='flex px-4 py-3 justify-between items-center self-stretch border-t border-[rgba(249,248,252,0.05)]'>
-                <p className={`text-center font-["Actay_Wide"] text-base font-bold ${
-                  selectedUpgradeItem.rarity === 'common' ? 'text-[#B0B0B0]' :
-                  selectedUpgradeItem.rarity === 'uncommon' ? 'text-[#55FF55]' :
-                  selectedUpgradeItem.rarity === 'rare' ? 'text-[#5555FF]' :
-                  selectedUpgradeItem.rarity === 'epic' ? 'text-[#AA00AA]' :
-                  selectedUpgradeItem.rarity === 'legendary' ? 'text-[#FFAA00]' :
-                  selectedUpgradeItem.rarity === 'mythic' ? 'text-[#EDD51D]' :
-                  'text-[#F9F8FC]'
-                }`}>{selectedUpgradeItem.name}</p>
+                <p className={`text-center font-["Actay_Wide"] text-base font-bold ${rarityTextColor(selectedUpgradeItem.rarity)}`}>{selectedUpgradeItem.name}</p>
                 <div>
                   <span className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold'>{selectedUpgradeItem.price}</span>
                   <span className='text-[rgba(249,248,252,0.50)] font-["Actay_Wide"] text-xs font-bold'> АР</span>
