@@ -383,32 +383,176 @@ export default function UpgradePage() {
   const fetchUpgradeItems = async (price: number) => {
     setLoadingUpgradeItems(true);
     try {
-      const response = await fetch(`https://battle-api.chasman.engineer/api/v1/upgrade/items?minPrice=${price}`, {
-        method: 'GET',
-        headers: {
-          'accept': '*/*',
-          'Authorization': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI2ODhjYWQ2YWJlNjU0MWU5ZTgzMWFiZTciLCJwZXJtaXNzaW9uIjoiT3duZXIiLCJuYmYiOjE3NTQzMjU0OTEsImV4cCI6MTc1NDMyOTA5MSwiaWF0IjoxNzU0MzI1NDkxLCJpc3MiOiJtci5yYWZhZWxsbyJ9.kjvs3RdU4ettjsnNjTEQH8VDxXQdETcUX6B7HdB08k4'
+      // Мок данные для разработки
+      const mockUpgradeItems: CaseItem[] = [
+        {
+          id: 'upgrade_iron_sword',
+          name: 'Железный меч',
+          description: 'Надежное оружие для начинающих воинов',
+          imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/iron_sword/icon',
+          amount: 1,
+          price: 12,
+          percentChance: 0,
+          rarity: 'uncommon',
+          isWithdrawable: true
+        },
+        {
+          id: 'upgrade_golden_helmet',
+          name: 'Золотой шлем',
+          description: 'Блестящая защита головы',
+          imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/golden_helmet/icon',
+          amount: 1,
+          price: 18,
+          percentChance: 0,
+          rarity: 'rare',
+          isWithdrawable: true
+        },
+        {
+          id: 'upgrade_diamond_pickaxe',
+          name: 'Алмазная кирка',
+          description: 'Инструмент для добычи самых ценных ресурсов',
+          imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/diamond_pickaxe/icon',
+          amount: 1,
+          price: 35,
+          percentChance: 0,
+          rarity: 'epic',
+          isWithdrawable: true
+        },
+        {
+          id: 'upgrade_enchanted_golden_apple',
+          name: 'Зачарованное золотое яблоко',
+          description: 'Легендарный фрукт с магическими свойствами',
+          imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/enchanted_golden_apple/icon',
+          amount: 1,
+          price: 64,
+          percentChance: 0,
+          rarity: 'legendary',
+          isWithdrawable: false
+        },
+        {
+          id: 'upgrade_netherite_sword',
+          name: 'Незеритовый меч',
+          description: 'Самое мощное оружие в мире',
+          imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/netherite_sword/icon',
+          amount: 1,
+          price: 128,
+          percentChance: 0,
+          rarity: 'mythic',
+          isWithdrawable: false
+        },
+        {
+          id: 'upgrade_bow',
+          name: 'Лук',
+          description: 'Дальнобойное оружие для охоты',
+          imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/bow/icon',
+          amount: 1,
+          price: 15,
+          percentChance: 0,
+          rarity: 'uncommon',
+          isWithdrawable: true
+        },
+        {
+          id: 'upgrade_ender_pearl',
+          name: 'Жемчуг Края',
+          description: 'Телепортационный артефакт',
+          imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/ender_pearl/icon',
+          amount: 3,
+          price: 25,
+          percentChance: 0,
+          rarity: 'rare',
+          isWithdrawable: true
+        },
+        {
+          id: 'upgrade_totem_of_undying',
+          name: 'Тотем бессмертия',
+          description: 'Спасает от смерти один раз',
+          imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/totem_of_undying/icon',
+          amount: 1,
+          price: 96,
+          percentChance: 0,
+          rarity: 'legendary',
+          isWithdrawable: false
+        },
+        {
+          id: 'upgrade_elytra',
+          name: 'Элитры',
+          description: 'Крылья для полета',
+          imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/elytra/icon',
+          amount: 1,
+          price: 200,
+          percentChance: 0,
+          rarity: 'mythic',
+          isWithdrawable: false
+        },
+        {
+          id: 'upgrade_diamond_block',
+          name: 'Алмазный блок',
+          description: 'Блок из чистых алмазов',
+          imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/diamond_block/icon',
+          amount: 1,
+          price: 45,
+          percentChance: 0,
+          rarity: 'epic',
+          isWithdrawable: true
+        },
+        {
+          id: 'upgrade_beacon',
+          name: 'Маяк',
+          description: 'Источник мощных эффектов',
+          imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/beacon/icon',
+          amount: 1,
+          price: 150,
+          percentChance: 0,
+          rarity: 'mythic',
+          isWithdrawable: false
+        },
+        {
+          id: 'upgrade_shulker_box',
+          name: 'Ящик шалкера',
+          description: 'Переносное хранилище',
+          imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/shulker_box/icon',
+          amount: 1,
+          price: 75,
+          percentChance: 0,
+          rarity: 'legendary',
+          isWithdrawable: true
         }
-      });
+      ];
+
+      // Имитируем задержку сети
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Фильтруем предметы по минимальной цене
+      const filteredItems = mockUpgradeItems.filter(item => item.price >= price);
+      setUpgradeItems(filteredItems);
+
+      // Для продакшена используем реальный API
+      // const response = await fetch(`https://battle-api.chasman.engineer/api/v1/upgrade/items?minPrice=${price}`, {
+      //   method: 'GET',
+      //   headers: {
+      //     'accept': '*/*',
+      //     'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI2ODhjYWQ2YWJlNjU0MWU5ZTgzMWFiZTciLCJwZXJtaXNzaW9uIjoiT3duZXIiLCJuYmYiOjE3NTQzMjU0OTEsImV4cCI6MTc1NDMyOTA5MSwiaWF0IjoxNzU0MzI1NDkxLCJpc3MiOiJtci5yYWZhZWxsbyJ9.kjvs3RdU4ettjsnNjTEQH8VDxXQdETcUX6B7HdB08k4`
+      //   }
+      // });
       
-      if (response.ok) {
-        const data = await response.json();
-        // Преобразуем данные в формат CaseItem
-        const items: CaseItem[] = data.map((item: { id: string; name: string; description?: string; imageUrl: string; amount: number; price: number; percentChance?: number; rarity: string; isWithdrawable: boolean }) => ({
-          id: item.id,
-          name: item.name,
-          description: item.description || '',
-          imageUrl: item.imageUrl,
-          amount: item.amount,
-          price: item.price,
-          percentChance: item.percentChance || 0,
-          rarity: item.rarity,
-          isWithdrawable: item.isWithdrawable
-        }));
-        setUpgradeItems(items);
-      } else {
-        console.error('Ошибка загрузки предметов:', response.statusText);
-      }
+      // if (response.ok) {
+      //   const data = await response.json();
+      //   // Преобразуем данные в формат CaseItem
+      //   const items: CaseItem[] = data.map((item: { id: string; name: string; description?: string; imageUrl: string; amount: number; price: number; percentChance?: number; rarity: string; isWithdrawable: boolean }) => ({
+      //     id: item.id,
+      //     name: item.name,
+      //     description: item.description || '',
+      //     imageUrl: item.imageUrl,
+      //     amount: item.amount,
+      //     price: item.price,
+      //     percentChance: item.percentChance || 0,
+      //     rarity: item.rarity,
+      //     isWithdrawable: item.isWithdrawable
+      //   }));
+      //   setUpgradeItems(items);
+      // } else {
+      //   console.error('Ошибка загрузки предметов:', response.statusText);
+      // }
     } catch (error) {
       console.error('Ошибка при запросе к API:', error);
     } finally {
@@ -424,10 +568,10 @@ export default function UpgradePage() {
     }
   }, [selectedItems, calculateTotalPrice, minPrice]);
 
-  // Загружаем предметы при изменении минимальной цены
+  // Загружаем предметы только один раз при монтировании компонента
   React.useEffect(() => {
-    fetchUpgradeItems(minPrice);
-  }, [minPrice]);
+    fetchUpgradeItems(10); // Загружаем с минимальной ценой 10 AR
+  }, []);
 
   const handleItemSelect = (inventoryItem: InventoryItem) => {
     if (selectedItems.length >= MAX_UPGRADE_ITEMS) {
@@ -522,17 +666,33 @@ export default function UpgradePage() {
         </div>
         
         <div className='flex pt-3 flex-col justify-between items-center flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)] min-h-0'>
-          <p className='text-white text-center font-["Actay_Wide"] text-base font-bold opacity-30'>Передмет, <br/>который хотите получить</p>
-          <div className='flex w-[160px] h-[160px] flex-col justify-end items-end aspect-square bg-[url(https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/netherite_ingot/icon)] bg-lightgray bg-center bg-cover bg-no-repeat'>
-            <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-2xl font-bold opacity-30'>x1</p>
-          </div>
-          <div className='flex px-4 py-3 justify-between items-center self-stretch border-t border-[rgba(249,248,252,0.05)]'>
-            <p className='text-[#EDD51D] text-center font-["Actay_Wide"] text-base font-bold'>Незеритовый слиток</p>
-            <div>
-              <span className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold'>999</span>
-              <span className='text-[rgba(249,248,252,0.50)] font-["Actay_Wide"] text-xs font-bold'> АР</span>
+          {!selectedUpgradeItem ? (
+            <div className='flex flex-col items-center justify-center h-full'>
+              <p className='text-white text-center font-["Actay_Wide"] text-base font-bold opacity-30'>Выберите предмет,<br/>который хотите получить</p>
             </div>
-          </div>
+          ) : (
+            <>
+              <p className='text-white text-center font-["Actay_Wide"] text-base font-bold opacity-30'>Предмет, <br/>который хотите получить</p>
+              <div className='flex w-[160px] h-[160px] flex-col justify-end items-end aspect-square bg-center bg-cover bg-no-repeat' style={{ backgroundImage: `url(${selectedUpgradeItem.imageUrl})` }}>
+                <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-2xl font-bold opacity-30'>x{selectedUpgradeItem.amount}</p>
+              </div>
+              <div className='flex px-4 py-3 justify-between items-center self-stretch border-t border-[rgba(249,248,252,0.05)]'>
+                <p className={`text-center font-["Actay_Wide"] text-base font-bold ${
+                  selectedUpgradeItem.rarity === 'common' ? 'text-[#B0B0B0]' :
+                  selectedUpgradeItem.rarity === 'uncommon' ? 'text-[#55FF55]' :
+                  selectedUpgradeItem.rarity === 'rare' ? 'text-[#5555FF]' :
+                  selectedUpgradeItem.rarity === 'epic' ? 'text-[#AA00AA]' :
+                  selectedUpgradeItem.rarity === 'legendary' ? 'text-[#FFAA00]' :
+                  selectedUpgradeItem.rarity === 'mythic' ? 'text-[#EDD51D]' :
+                  'text-[#F9F8FC]'
+                }`}>{selectedUpgradeItem.name}</p>
+                <div>
+                  <span className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold'>{selectedUpgradeItem.price}</span>
+                  <span className='text-[rgba(249,248,252,0.50)] font-["Actay_Wide"] text-xs font-bold'> АР</span>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -564,11 +724,8 @@ export default function UpgradePage() {
                  value={minPrice}
                  disabled={selectedItems.length === 0}
                  onChange={(e) => {
-                   const value = parseFloat(e.target.value) || 0;
-                   const totalPrice = calculateTotalPrice();
-                   if (value >= totalPrice) {
-                     setMinPrice(value);
-                   }
+                   const value = parseFloat(e.target.value) || 10;
+                   setMinPrice(Math.max(value, 10));
                  }}
                  onKeyDown={(e) => {
                    // Разрешаем только цифры, точку, запятую, backspace, delete, tab, enter, стрелки
@@ -576,7 +733,7 @@ export default function UpgradePage() {
                      e.preventDefault();
                    }
                  }}
-                 min={calculateTotalPrice()}
+                 min={10}
                  className={`w-16 bg-transparent font-["Actay_Wide"] text-base font-bold text-center border-none outline-none ${
                    selectedItems.length === 0 
                      ? 'text-[rgba(249,248,252,0.15)] cursor-not-allowed' 
