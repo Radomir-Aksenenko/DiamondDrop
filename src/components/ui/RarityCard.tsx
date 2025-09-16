@@ -374,7 +374,6 @@ export function ItemCard({
           flexDirection: 'row',
           justifyContent: 'space-between'
         }}
-        onClick={onClick}
       >
         {/* Иконка при наведении на всю карточку */}
         {onClick && (
@@ -546,7 +545,6 @@ export function ItemCard({
         flexDirection: 'column',
         justifyContent: 'space-between'
       }}
-      onClick={onClick}
     >
       {/* Иконка при наведении на всю карточку */}
        {onClick && (

@@ -332,7 +332,8 @@ function InventoryItemsList({ selectedItems, onItemSelect }: { selectedItems: Se
 
 export default function UpgradePage() {
   const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
-  const [minPrice, setMinPrice] = useState<number>(10);
+  const [minPrice, setMinPrice] = useState<number>(0);
+  const [isMinPriceManual, setIsMinPriceManual] = useState<boolean>(false);
   const [upgradeItems, setUpgradeItems] = useState<CaseItem[]>([]);
   const [loadingUpgradeItems, setLoadingUpgradeItems] = useState<boolean>(false);
   const [selectedUpgradeItem, setSelectedUpgradeItem] = useState<CaseItem | null>(null);
@@ -578,18 +579,29 @@ export default function UpgradePage() {
     }
   };
 
-  // Обновляем минимальную цену при изменении выбранных предметов
+  // Обновляем минимальную цену при изменении выбранных предметов (авто-режим)
   React.useEffect(() => {
-    const totalPrice = calculateTotalPrice();
-    if (totalPrice > minPrice) {
-      setMinPrice(totalPrice);
+    if (isMinPriceManual) return; // Пользователь ввёл вручную — не трогаем
+    const total = calculateTotalPrice();
+    if (selectedItems.length === 0) {
+      if (minPrice !== 0) setMinPrice(0);
+    } else {
+      if (minPrice !== total) setMinPrice(total);
     }
-  }, [selectedItems, calculateTotalPrice, minPrice]);
+  }, [selectedItems, calculateTotalPrice, isMinPriceManual]);
 
-  // Загружаем предметы только один раз при монтировании компонента
+  // Сбрасываем ручной режим и минимальную цену, когда все предметы удалены
   React.useEffect(() => {
-    fetchUpgradeItems(10); // Загружаем с минимальной ценой 10 AR
-  }, []);
+    if (selectedItems.length === 0) {
+      if (isMinPriceManual) setIsMinPriceManual(false);
+      if (minPrice !== 0) setMinPrice(0);
+    }
+  }, [selectedItems.length, isMinPriceManual, minPrice]);
+
+  // Подгружаем предметы при изменении минимальной цены
+  React.useEffect(() => {
+    fetchUpgradeItems(minPrice);
+  }, [minPrice]);
 
   const handleItemSelect = (inventoryItem: InventoryItem) => {
     if (selectedItems.length >= MAX_UPGRADE_ITEMS) {
@@ -674,7 +686,7 @@ export default function UpgradePage() {
               </div>
               <div className='flex w-[104px] h-[36px] px-2 py-[6px] pb-[6px] justify-center items-center gap-2 rounded-lg bg-[rgba(17,171,71,0.10)]'>
                 <span className='text-[#11AB47] font-["Actay_Wide"] text-base font-bold overflow-hidden text-ellipsis line-clamp-1' style={{ display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 1, textOverflow: 'ellipsis' }}>+ {calculateExactPayback()}</span>
-                <span className='overflow-hidden text-[#11AB47] font-["Actay_Wide"] text-sm font-bold leading-normal' style={{ display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 1, textOverflow: 'ellipsis' }}> АР</span>
+                <span className='overflow-hidden text[#11AB47] font-["Actay_Wide"] text-sm font-bold leading-normal' style={{ display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 1, textOverflow: 'ellipsis' }}> АР</span>
               </div>
             </div>
             <div className='flex px-4 py-[10px] flex-col justify-center items-center gap-2 self-stretch rounded-lg bg-[#5C5ADC]'>
@@ -724,33 +736,35 @@ export default function UpgradePage() {
            </div>
            <InventoryItemsList selectedItems={selectedItems} onItemSelect={handleItemSelect} />
          </div>
-        <div className='flex box-border h-full flex-col items-center gap-3 flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)] min-h-0 overflow-hidden'>
+        <div className='flex box-border h-full flex-col items-center gap-3 flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)] min_h-0 overflow-hidden'>
           <div className='flex h-[52px] px-4 justify-between items-center self-stretch border-b border-[rgba(249,248,252,0.05)]'>
              <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold'>Выберите предмет</p>
              <div className='flex px-2 justify-center items-center gap-[10px] border-b border-[rgba(249,248,252,0.30)]'>
                <span className='text-[rgba(249,248,252,0.50)] text-center font-["Actay_Wide"] text-base font-bold'>от</span>
                <input
-                 type=''
-                 value={minPrice}
-                 disabled={selectedItems.length === 0}
-                 onChange={(e) => {
-                   const value = parseFloat(e.target.value) || 10;
-                   setMinPrice(Math.max(value, 10));
-                 }}
-                 onKeyDown={(e) => {
-                   // Разрешаем только цифры, точку, запятую, backspace, delete, tab, enter, стрелки
-                   if (!/[0-9.,]/.test(e.key) && !['Backspace', 'Delete', 'Tab', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
-                     e.preventDefault();
-                   }
-                 }}
-                 min={10}
-                 className={`w-16 bg-transparent font-["Actay_Wide"] text-base font-bold text-center border-none outline-none ${
-                   selectedItems.length === 0 
-                     ? 'text-[rgba(249,248,252,0.15)] cursor-not-allowed' 
-                     : 'text-[rgba(249,248,252,0.30)]'
-                 }`}
-                 style={{ appearance: 'textfield' }}
-               />
+                  type='number'
+                  value={minPrice}
+                  disabled={selectedItems.length === 0}
+                  onChange={(e) => {
+                    setIsMinPriceManual(true);
+                    const value = parseFloat(e.target.value);
+                    const normalized = isNaN(value) ? 0 : value;
+                    setMinPrice(Math.max(normalized, 0));
+                  }}
+                  onKeyDown={(e) => {
+                    // Разрешаем только цифры, точку, запятую, backspace, delete, tab, enter, стрелки
+                    if (!/[0-9.,]/.test(e.key) && !['Backspace', 'Delete', 'Tab', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+                      e.preventDefault();
+                    }
+                  }}
+                  min={0}
+                  className={`w-16 bg-transparent font-["Actay_Wide"] text-base font-bold text-center border-none outline-none ${
+                    selectedItems.length === 0 
+                      ? 'text-[rgba(249,248,252,0.15)] cursor-not-allowed' 
+                      : 'text-[rgba(249,248,252,0.30)]'
+                  }`}
+                  style={{ appearance: 'textfield' }}
+                />
                <span className='text-[rgba(249,248,252,0.50)] text-center font-["Actay_Wide"] text-base font-bold'>АР</span>
              </div>
            </div>
