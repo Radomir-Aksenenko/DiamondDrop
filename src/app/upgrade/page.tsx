@@ -351,9 +351,10 @@ export default function UpgradePage() {
   const [selectedUpgradeItem, setSelectedUpgradeItem] = useState<CaseItem | null>(null);
   const [isSpinning, setIsSpinning] = useState<boolean>(false);
   const [currentRotation, setCurrentRotation] = useState<number>(90); // Начальный угол 90 градусов
+  const [upgradeResult, setUpgradeResult] = useState<any>(null);
 
   // Получаем RTP коэффициент из API
-  const { rtp } = useUpgradeAPI();
+  const { rtp, executeUpgrade, upgradeLoading, upgradeError } = useUpgradeAPI();
 
   // Функция для расчета общей суммы выбранных предметов
   const calculateTotalPrice = useCallback(() => {
@@ -413,12 +414,13 @@ export default function UpgradePage() {
   };
 
   // Обработчик клика по кнопке "Прокачать"
-  const handleUpgradeClick = () => {
-    if (!selectedUpgradeItem || selectedItems.length === 0 || isSpinning) {
+  const handleUpgradeClick = async () => {
+    if (!selectedUpgradeItem || selectedItems.length === 0 || isSpinning || upgradeLoading) {
       return;
     }
 
     setIsSpinning(true);
+    setUpgradeResult(null);
     
     // Генерируем случайное смещение в пределах полного оборота (как в кейсах)
     const randomOffset = Math.random() * 360; // Случайное смещение от 0 до 360 градусов
@@ -431,10 +433,21 @@ export default function UpgradePage() {
     const newRotation = currentRotation + totalRotation;
     setCurrentRotation(newRotation);
     
+    // Подготавливаем данные для API
+    const upgradeData = {
+      selectedItemIds: selectedItems.map(item => item.inventoryItem.item.id),
+      targetItemId: selectedUpgradeItem.id
+    };
+    
+    // Выполняем запрос к API
+    const result = await executeUpgrade(upgradeData);
+    
     // Останавливаем анимацию через 3 секунды (длительность анимации)
     setTimeout(() => {
       setIsSpinning(false);
-      // Здесь можно добавить логику определения результата апгрейда
+      if (result) {
+        setUpgradeResult(result);
+      }
     }, 3000);
   };
 
@@ -731,12 +744,29 @@ export default function UpgradePage() {
                 <span className='overflow-hidden text[#11AB47] font-["Actay_Wide"] text-sm font-bold leading-normal' style={{ display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 1, textOverflow: 'ellipsis' }}> АР</span>
               </div>
             </div>
-            <div 
-              className='flex px-4 py-[10px] flex-col justify-center items-center gap-2 self-stretch rounded-lg bg-[#5C5ADC] cursor-pointer hover:bg-[#4A48C4] transition-colors'
-              onClick={handleUpgradeClick}
-            >
-              <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold'>Прокачать</p>
-            </div>
+            {(() => {
+              const isDisabled = !selectedUpgradeItem || selectedItems.length === 0 || isSpinning || upgradeLoading;
+              return (
+                <div 
+                  className={`flex px-4 py-[10px] flex-col justify-center items-center gap-2 self-stretch rounded-lg transition-all duration-200 ${
+                    isDisabled
+                      ? 'bg-gray-500 cursor-not-allowed opacity-60 pointer-events-none'
+                      : 'bg-[#5C5ADC] cursor-pointer hover:bg-[#4A48C4] hover:scale-[1.02] active:scale-[0.98]'
+                  }`}
+                  onClick={isDisabled ? undefined : handleUpgradeClick}
+                >
+                  <p className={`text-center font-['Actay_Wide'] text-base font-bold transition-colors ${
+                    isDisabled
+                      ? 'text-gray-400'
+                      : 'text-[#F9F8FC]'
+                  }`}>
+                    {isSpinning || upgradeLoading ? 'Прокачиваем...' : 'Прокачать'}
+                  </p>
+                </div>
+              );
+            })()}
+
+
           </div>
         </div>
         

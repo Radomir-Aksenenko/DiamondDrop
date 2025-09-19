@@ -5,10 +5,40 @@ import { getAuthToken } from '@/lib/auth';
 import { API_BASE_URL, isDevelopment, DEV_CONFIG } from '@/lib/config';
 
 /**
- * Интерфейс ответа API для апгрейда
+ * Интерфейс ответа API для получения RTP
  */
 interface UpgradeResponse {
   rtp: number;
+}
+
+/**
+ * Интерфейс запроса на выполнение апгрейда
+ */
+interface UpgradeRequest {
+  selectedItemIds: string[];
+  targetItemId: string;
+}
+
+/**
+ * Интерфейс предмета в ответе апгрейда
+ */
+interface UpgradeItem {
+  id: string;
+  name: string;
+  description: string;
+  imageUrl: string;
+  amount: number;
+  price: number;
+  percentChance: number;
+  rarity: string;
+}
+
+/**
+ * Интерфейс ответа API для выполнения апгрейда
+ */
+interface UpgradeExecuteResponse {
+  success: boolean;
+  item: UpgradeItem | null;
 }
 
 /**
@@ -19,6 +49,8 @@ export default function useUpgradeAPI() {
   const [rtp, setRtp] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [upgradeLoading, setUpgradeLoading] = useState<boolean>(false);
+  const [upgradeError, setUpgradeError] = useState<string | null>(null);
 
   /**
    * Загружает данные апгрейда из API
@@ -76,6 +108,75 @@ export default function useUpgradeAPI() {
   }, []);
 
   /**
+   * Выполняет апгрейд ресурсов
+   * @param {UpgradeRequest} upgradeData - Данные для апгрейда
+   * @returns {Promise<UpgradeExecuteResponse | null>} Результат апгрейда
+   */
+  const executeUpgrade = useCallback(async (upgradeData: UpgradeRequest): Promise<UpgradeExecuteResponse | null> => {
+    try {
+      setUpgradeLoading(true);
+      setUpgradeError(null);
+
+      // Проверяем, что мы в продакшене
+      if (isDevelopment) {
+        console.log('Апгрейд API доступен только в продакшене');
+        
+        // В dev режиме возвращаем моковый ответ
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        const mockResponse: UpgradeExecuteResponse = {
+          success: Math.random() > 0.5, // 50% шанс успеха
+          item: Math.random() > 0.5 ? {
+            id: "mock-item-id",
+            name: "Тестовый предмет",
+            description: "Описание тестового предмета",
+            imageUrl: "https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/diamond/icon",
+            amount: 1,
+            price: 100,
+            percentChance: 0,
+            rarity: "Epic"
+          } : null
+        };
+        
+        return mockResponse;
+      }
+
+      const token = getAuthToken();
+      if (!token) {
+        throw new Error('Токен авторизации не найден');
+      }
+
+      const response = await fetch(
+        `${API_BASE_URL}/api/v1/upgrade`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'accept': '*/*',
+            'Authorization': token,
+          },
+          body: JSON.stringify(upgradeData)
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Ошибка API: ${response.status} ${response.statusText}`);
+      }
+
+      const result: UpgradeExecuteResponse = await response.json();
+      return result;
+      
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Неизвестная ошибка при выполнении апгрейда';
+      setUpgradeError(errorMessage);
+      console.error('Ошибка выполнения апгрейда:', errorMessage);
+      return null;
+    } finally {
+      setUpgradeLoading(false);
+    }
+  }, []);
+
+  /**
    * Обновляет данные апгрейда
    */
   const refresh = useCallback(() => {
@@ -91,6 +192,9 @@ export default function useUpgradeAPI() {
     rtp,
     loading,
     error,
-    refresh
+    refresh,
+    executeUpgrade,
+    upgradeLoading,
+    upgradeError
   };
 }
