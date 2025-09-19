@@ -39,21 +39,6 @@ interface WSWinData {
   item: WSItem;
 }
 
-// Интерфейс для сообщения WebSocket с данными выигрыша
-interface WSWinMessage {
-  type: 'message';
-  channel: 'LiveWins';
-  data: WSWinData;
-}
-
-// Интерфейс для сообщения KeepAlive
-interface WSKeepAliveMessage {
-  type: 'KeepAlive';
-  timestamp: number;
-}
-
-// Общий тип для всех сообщений WebSocket (не используется напрямую)
-
 // Интерфейс для обработанных данных выигрыша
 export interface LiveWinData {
   id: string;
@@ -70,7 +55,7 @@ export interface LiveWinData {
   caseName: string;
 }
 
-// Функция для преобразования редкости из API в тип компонента
+// Функция для маппинга редкости из строки в тип
 const mapRarityToType = (rarity: string): RarityType => {
   switch (rarity.toLowerCase()) {
     case 'common':
@@ -88,35 +73,7 @@ const mapRarityToType = (rarity: string): RarityType => {
   }
 };
 
-// Функция для преобразования данных WebSocket в формат компонента
-const transformWSData = (wsData: WSWinData, messageCounter: number): LiveWinData => {
-  // Декодируем Unicode символы в именах
-  const decodeUnicode = (str: string): string => {
-    try {
-      return JSON.parse(`"${str}"`);
-    } catch {
-      return str;
-    }
-  };
 
-  // Создаем более уникальный ID с использованием счетчика сообщений
-  const uniqueId = `ws-${wsData.user.Id}-${wsData.item.Id}-${wsData.case.Id}-${Date.now()}-${messageCounter}-${Math.random().toString(36).substr(2, 9)}`;
-
-  return {
-    id: uniqueId,
-    playerName: wsData.user.Username,
-    playerAvatarUrl: wsData.user.Username ? `https://avatar.spoverlay.ru/face/${encodeURIComponent(wsData.user.Username)}?w=128` : null,
-    rarity: mapRarityToType(wsData.item.Rarity),
-    percentage: `${wsData.item.PercentChance.toFixed(2)}%`,
-    itemImage: wsData.item.ImageUrl || 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/cobblestone/icon',
-    itemName: decodeUnicode(wsData.item.Name),
-    apValue: parseFloat(wsData.item.Price.toFixed(1)), // Сохраняем дробные значения до десятых
-    amount: wsData.item.Amount || 1, // Извлекаем количество из данных
-    timestamp: new Date(),
-    caseId: wsData.case.Id,
-    caseName: decodeUnicode(wsData.case.Name)
-  };
-};
 
 interface UseLiveWinsOptions {
   initialData?: LiveWinData[];
@@ -179,7 +136,7 @@ export default function useLiveWins(options: UseLiveWinsOptions = {}) {
       }
       pendingQueueRef.current = [];
     };
-  }, []);
+  }, [scheduleNext]);
 
   const reconnect = useCallback(() => {
     liveWinsSocket.forceRefresh();

@@ -1,7 +1,6 @@
 'use client';
 
 import { useIsMobile } from '@/hooks/useIsMobile';
-import MobileNotSupported from '@/components/ui/MobileNotSupported';
 import Header from '@/components/layout/Header';
 import BroadcastBanner from '@/components/ui/BroadcastBanner';
 import { ReactNode } from 'react';
@@ -14,7 +13,7 @@ interface ClientLayoutProps {
  * Клиентский компонент layout с определением мобильных устройств
  */
 export default function ClientLayout({ children }: ClientLayoutProps) {
-  const { isMobile, isLoading } = useIsMobile();
+  const { isLoading } = useIsMobile();
 
   // Показываем загрузку пока определяем тип устройства
   if (isLoading) {

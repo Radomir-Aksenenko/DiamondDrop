@@ -351,10 +351,9 @@ export default function UpgradePage() {
   const [selectedUpgradeItem, setSelectedUpgradeItem] = useState<CaseItem | null>(null);
   const [isSpinning, setIsSpinning] = useState<boolean>(false);
   const [currentRotation, setCurrentRotation] = useState<number>(90); // Начальный угол 90 градусов
-  const [upgradeResult, setUpgradeResult] = useState<any>(null);
 
   // Получаем RTP коэффициент из API
-  const { rtp, executeUpgrade, upgradeLoading, upgradeError } = useUpgradeAPI();
+  const { rtp, executeUpgrade, upgradeLoading } = useUpgradeAPI();
 
   // Функция для расчета общей суммы выбранных предметов
   const calculateTotalPrice = useCallback(() => {
@@ -420,12 +419,11 @@ export default function UpgradePage() {
     }
 
     setIsSpinning(true);
-    setUpgradeResult(null);
     
     // Генерируем случайное смещение в пределах полного оборота (как в кейсах)
     const randomOffset = Math.random() * 360; // Случайное смещение от 0 до 360 градусов
     
-    // Добавляем минимум 2-3 полных оборота для эффектности + случайное смещение
+    // Добавляем минимум 2-3 полных оборотов для эффектности + случайное смещение
     const minRotations = 2 + Math.random(); // От 2 до 3 оборотов
     const totalRotation = minRotations * 360 + randomOffset;
     
@@ -445,9 +443,6 @@ export default function UpgradePage() {
     // Останавливаем анимацию через 3 секунды (длительность анимации)
     setTimeout(() => {
       setIsSpinning(false);
-      if (result) {
-        setUpgradeResult(result);
-      }
     }, 3000);
   };
 
@@ -641,7 +636,7 @@ export default function UpgradePage() {
     } else {
       if (minPrice !== total) setMinPrice(total);
     }
-  }, [selectedItems, calculateTotalPrice, isMinPriceManual]);
+  }, [selectedItems, calculateTotalPrice, isMinPriceManual, minPrice]);
 
   // Сбрасываем ручной режим и минимальную цену, когда все предметы удалены
   React.useEffect(() => {

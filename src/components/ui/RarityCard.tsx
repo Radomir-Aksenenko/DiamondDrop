@@ -86,7 +86,6 @@ export default function RarityCard({
   playerName,
   playerAvatarUrl,
   showPlayerOnHover = false,
-  onPlayerClick,
   onCardClick
 }: RarityCardProps) {
   const [isHovered, setIsHovered] = React.useState(false);

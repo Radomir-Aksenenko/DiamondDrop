@@ -74,7 +74,7 @@ export default function RecentWins() {
         <div className={`flex gap-4 overflow-x-auto no-scrollbar ${
           isShifting ? 'shift-right' : ''
         } transition-transform-smooth`}>
-          {displayWins.map((win, index) => (
+          {displayWins.map((win) => (
             <div 
               key={win.id} 
               className={`flex-shrink-0 transition-all duration-500 ease-out ${
