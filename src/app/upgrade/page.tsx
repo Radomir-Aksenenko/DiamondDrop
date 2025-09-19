@@ -23,6 +23,8 @@ interface SelectedItem {
 interface CircularProgressProps {
   percentage: number;
   hasSelectedUpgradeItem?: boolean;
+  isSpinning?: boolean;
+  currentRotation?: number;
 }
 
 // Функция для определения цвета и текста в зависимости от процента
@@ -49,21 +51,21 @@ const getPercentageStyle = (percentage: number) => {
 const rarityTextColor = (rarity: CaseItem['rarity']) => {
   switch (rarity) {
     case 'Common':
-      return 'text-[#B0B0B0]';
+      return 'text-[#9CA3AF]';
     case 'Uncommon':
-      return 'text-[#55FF55]';
+      return 'text-[#618AF3]';
     case 'Rare':
-      return 'text-[#5555FF]';
+      return 'text-[#11AB47]';
     case 'Epic':
-      return 'text-[#AA00AA]';
+      return 'text-[#A855F7]';
     case 'Legendary':
-      return 'text-[#FFAA00]';
+      return 'text-[#F59E0B]';
     default:
       return 'text-[#F9F8FC]';
   }
 };
 
-const CircularProgress = ({ percentage, hasSelectedUpgradeItem = false }: CircularProgressProps) => {
+const CircularProgress = ({ percentage, hasSelectedUpgradeItem = false, isSpinning = false, currentRotation = 90 }: CircularProgressProps) => {
   const radius = 82;
   const circumference = 2 * Math.PI * radius;
   const strokeDasharray = `${(percentage / 100) * circumference} ${circumference}`;
@@ -96,6 +98,16 @@ const CircularProgress = ({ percentage, hasSelectedUpgradeItem = false }: Circul
           strokeWidth="8"
           strokeLinecap="butt"
           strokeDasharray={strokeDasharray}
+        />
+        {/* Треугольник в верхней части круга */}
+        <polygon
+          points="86,8 92,15 80,15"
+          fill="#F9F8FC"
+          style={{
+            transformOrigin: '86px 86px',
+            transform: `rotate(${currentRotation}deg)`,
+            transition: isSpinning ? 'transform 3s cubic-bezier(0.23, 1, 0.32, 1)' : 'none'
+          }}
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -337,6 +349,8 @@ export default function UpgradePage() {
   const [upgradeItems, setUpgradeItems] = useState<CaseItem[]>([]);
   const [loadingUpgradeItems, setLoadingUpgradeItems] = useState<boolean>(false);
   const [selectedUpgradeItem, setSelectedUpgradeItem] = useState<CaseItem | null>(null);
+  const [isSpinning, setIsSpinning] = useState<boolean>(false);
+  const [currentRotation, setCurrentRotation] = useState<number>(90); // Начальный угол 90 градусов
 
   // Получаем RTP коэффициент из API
   const { rtp } = useUpgradeAPI();
@@ -396,6 +410,32 @@ export default function UpgradePage() {
   // Обработчик удаления предмета из апгрейда
   const handleUpgradeItemRemove = () => {
     setSelectedUpgradeItem(null);
+  };
+
+  // Обработчик клика по кнопке "Прокачать"
+  const handleUpgradeClick = () => {
+    if (!selectedUpgradeItem || selectedItems.length === 0 || isSpinning) {
+      return;
+    }
+
+    setIsSpinning(true);
+    
+    // Генерируем случайное смещение в пределах полного оборота (как в кейсах)
+    const randomOffset = Math.random() * 360; // Случайное смещение от 0 до 360 градусов
+    
+    // Добавляем минимум 2-3 полных оборота для эффектности + случайное смещение
+    const minRotations = 2 + Math.random(); // От 2 до 3 оборотов
+    const totalRotation = minRotations * 360 + randomOffset;
+    
+    // Новая позиция = текущая позиция + общее вращение
+    const newRotation = currentRotation + totalRotation;
+    setCurrentRotation(newRotation);
+    
+    // Останавливаем анимацию через 3 секунды (длительность анимации)
+    setTimeout(() => {
+      setIsSpinning(false);
+      // Здесь можно добавить логику определения результата апгрейда
+    }, 3000);
   };
 
   // Функция для загрузки предметов по API
@@ -677,6 +717,8 @@ export default function UpgradePage() {
             <CircularProgress 
               percentage={calculateUpgradeSuccessPercentage()} 
               hasSelectedUpgradeItem={selectedUpgradeItem !== null}
+              isSpinning={isSpinning}
+              currentRotation={currentRotation}
             />
           </div>
           <div className='flex flex-col items-start gap-2 self-stretch'>
@@ -689,7 +731,10 @@ export default function UpgradePage() {
                 <span className='overflow-hidden text[#11AB47] font-["Actay_Wide"] text-sm font-bold leading-normal' style={{ display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 1, textOverflow: 'ellipsis' }}> АР</span>
               </div>
             </div>
-            <div className='flex px-4 py-[10px] flex-col justify-center items-center gap-2 self-stretch rounded-lg bg-[#5C5ADC]'>
+            <div 
+              className='flex px-4 py-[10px] flex-col justify-center items-center gap-2 self-stretch rounded-lg bg-[#5C5ADC] cursor-pointer hover:bg-[#4A48C4] transition-colors'
+              onClick={handleUpgradeClick}
+            >
               <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold'>Прокачать</p>
             </div>
           </div>

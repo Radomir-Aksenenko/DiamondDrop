@@ -136,6 +136,15 @@ img {
   }
 }
 
+@keyframes spin-upgrade {
+  from {
+    transform: rotate(90deg);
+  }
+  to {
+    transform: rotate(450deg);
+  }
+}
+
 .animate-spin-slow {
   animation: spin-slow 3s linear infinite;
 }
@@ -154,6 +163,10 @@ img {
 
 .animate-smooth-shift {
   transition: transform 0.5s ease-out, opacity 0.3s ease-out;
+}
+
+.animate-spin-upgrade {
+  animation: spin-upgrade 3s ease-out;
 }
 
 .animate-container-shift {
