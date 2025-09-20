@@ -25,6 +25,7 @@ interface CircularProgressProps {
   hasSelectedUpgradeItem?: boolean;
   isSpinning?: boolean;
   currentRotation?: number;
+  animationDuration?: number;
 }
 
 // Функция для определения цвета и текста в зависимости от процента
@@ -65,7 +66,7 @@ const rarityTextColor = (rarity: CaseItem['rarity']) => {
   }
 };
 
-const CircularProgress = ({ percentage, hasSelectedUpgradeItem = false, isSpinning = false, currentRotation = 90 }: CircularProgressProps) => {
+const CircularProgress = ({ percentage, hasSelectedUpgradeItem = false, isSpinning = false, currentRotation = 90, animationDuration = 3000 }: CircularProgressProps) => {
   const radius = 82;
   const circumference = 2 * Math.PI * radius;
   const strokeDasharray = `${(percentage / 100) * circumference} ${circumference}`;
@@ -106,7 +107,7 @@ const CircularProgress = ({ percentage, hasSelectedUpgradeItem = false, isSpinni
           style={{
             transformOrigin: '86px 86px',
             transform: `rotate(${currentRotation}deg)`,
-            transition: isSpinning ? 'transform 3s cubic-bezier(0.23, 1, 0.32, 1)' : 'none'
+            transition: isSpinning ? `transform ${animationDuration}ms cubic-bezier(0.23, 1, 0.32, 1)` : 'none'
           }}
         />
       </svg>
@@ -361,6 +362,7 @@ export default function UpgradePage() {
   const [selectedUpgradeItem, setSelectedUpgradeItem] = useState<CaseItem | null>(null);
   const [isSpinning, setIsSpinning] = useState<boolean>(false);
   const [currentRotation, setCurrentRotation] = useState<number>(90); // Начальный угол 90 градусов
+  const [animationDuration, setAnimationDuration] = useState<number>(3000); // Длительность анимации в мс
 
   // Получаем данные из API
   const { 
@@ -450,69 +452,74 @@ export default function UpgradePage() {
     // Получаем текущий процент успеха для расчета позиций
     const currentPercentage = calculateUpgradeSuccessPercentage();
     
-    // Рассчитываем вращение в зависимости от результата
-    let randomOffset: number;
-    let minRotations: number;
+    // Рассчитываем целевую позицию в зависимости от результата
+    let targetPosition: number;
     
     if (!result || !result.success) {
-      // При неудаче: останавливаемся НЕ на цветной части
-      // SVG повернут на -90°, поэтому цветная часть начинается с 0° (верх SVG = право после поворота)
-      // Треугольник начинает с 90° (верх после поворота SVG)
+      // При неудаче: целевая позиция в серой части
       // Цветная часть: от 90° до (90° + currentPercentage% от 360°)
-      const coloredSectionStart = 90; // Начало цветной части (верх)
-      const coloredSectionEnd = 90 + (currentPercentage / 100) * 360; // Конец цветной части
+      const coloredSectionEnd = 90 + (currentPercentage / 100) * 360;
       
-      // Серая часть: от конца цветной части до начала (с учетом полного круга)
-      let graySectionStart = coloredSectionEnd + 10; // Отступ от цветной части
-      let graySectionEnd = 90 + 360 - 10; // До начала цветной части (следующий круг)
+      // Серая часть начинается после цветной части
+      const graySectionStart = coloredSectionEnd + 20; // Больший отступ для надежности
+      const graySectionEnd = 90 + 360 - 20; // До начала цветной части
       
-      // Если серая часть переходит через 360°, корректируем
-      if (graySectionStart >= 360) {
-        graySectionStart -= 360;
-      }
-      if (graySectionEnd >= 360) {
-        graySectionEnd -= 360;
-      }
+      // Нормализуем углы
+      const normalizedStart = graySectionStart % 360;
+      const normalizedEnd = graySectionEnd % 360;
       
-      // Случайная позиция в серой части
-      if (graySectionStart < graySectionEnd) {
-        randomOffset = graySectionStart + Math.random() * (graySectionEnd - graySectionStart);
+      // Выбираем случайную позицию в серой части
+      if (normalizedStart < normalizedEnd) {
+        targetPosition = normalizedStart + Math.random() * (normalizedEnd - normalizedStart);
       } else {
         // Серая часть переходит через 0°
-        const range1 = 360 - graySectionStart;
-        const range2 = graySectionEnd;
+        const range1 = 360 - normalizedStart;
+        const range2 = normalizedEnd;
         const totalRange = range1 + range2;
         const randomValue = Math.random() * totalRange;
         
         if (randomValue < range1) {
-          randomOffset = graySectionStart + randomValue;
+          targetPosition = normalizedStart + randomValue;
         } else {
-          randomOffset = randomValue - range1;
+          targetPosition = randomValue - range1;
         }
       }
-      
-      minRotations = 2 + Math.random(); // От 2 до 3 оборотов
     } else {
-      // При успехе: останавливаемся на цветной части
-      const coloredSectionStart = 90; // Начало цветной части
-      const coloredSectionEnd = 90 + (currentPercentage / 100) * 360; // Конец цветной части
+      // При успехе: целевая позиция в цветной части
+      const coloredSectionStart = 90;
+      const coloredSectionEnd = 90 + (currentPercentage / 100) * 360;
       
       // Случайная позиция в цветной части
-      randomOffset = coloredSectionStart + Math.random() * (coloredSectionEnd - coloredSectionStart);
-      minRotations = 2 + Math.random(); // От 2 до 3 оборотов
+      const margin = Math.min(10, (coloredSectionEnd - coloredSectionStart) * 0.1);
+      targetPosition = coloredSectionStart + margin + Math.random() * (coloredSectionEnd - coloredSectionStart - 2 * margin);
     }
     
-    // Добавляем минимум 2-3 полных оборотов для эффектности + рассчитанное смещение
-    const totalRotation = minRotations * 360 + randomOffset;
+    // Рассчитываем количество полных оборотов (минимум 3 для эффектности)
+    const minFullRotations = 3;
+    const maxFullRotations = 5;
+    const fullRotations = minFullRotations + Math.random() * (maxFullRotations - minFullRotations);
     
-    // Новая позиция = текущая позиция + общее вращение
-    const newRotation = currentRotation + totalRotation;
+    // Рассчитываем общее вращение
+    const totalRotation = fullRotations * 360 + (targetPosition - (currentRotation % 360));
+    
+    // Корректируем если получается отрицательное значение
+    const finalRotation = totalRotation < 0 ? totalRotation + 360 : totalRotation;
+    
+    // Рассчитываем динамическую длительность анимации
+    // Базовая скорость: 120 градусов в секунду
+    const baseSpeed = 120; // градусов/сек
+    const calculatedDuration = Math.max(2000, Math.min(5000, (finalRotation / baseSpeed) * 1000));
+    
+    setAnimationDuration(calculatedDuration);
+    
+    // Устанавливаем новую позицию
+    const newRotation = currentRotation + finalRotation;
     setCurrentRotation(newRotation);
     
-    // Останавливаем анимацию через 3 секунды (длительность анимации)
+    // Останавливаем анимацию через рассчитанное время
     setTimeout(() => {
       setIsSpinning(false);
-    }, 3000);
+    }, calculatedDuration);
   };
 
   // Функция для преобразования UpgradeInventoryItem в CaseItem
@@ -655,6 +662,7 @@ export default function UpgradePage() {
               hasSelectedUpgradeItem={selectedUpgradeItem !== null}
               isSpinning={isSpinning}
               currentRotation={currentRotation}
+              animationDuration={animationDuration}
             />
           </div>
           <div className='flex flex-col items-start gap-2 self-stretch'>
