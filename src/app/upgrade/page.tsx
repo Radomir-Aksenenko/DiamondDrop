@@ -147,6 +147,7 @@ const CircularProgress = ({ percentage, hasSelectedUpgradeItem = false, isSpinni
 function CaseItemsList({ 
   items, 
   loading, 
+  error,
   selectedUpgradeItem, 
   onItemSelect, 
   onItemRemove,
@@ -156,6 +157,7 @@ function CaseItemsList({
 }: { 
   items: CaseItem[], 
   loading: boolean,
+  error?: string | null,
   selectedUpgradeItem: CaseItem | null,
   onItemSelect: (item: CaseItem) => void,
   onItemRemove: () => void,
@@ -183,6 +185,16 @@ function CaseItemsList({
     return (
       <div className='flex-1 flex items-center justify-center'>
         <div className='w-6 h-6 border-2 border-[#F9F8FC]/20 border-t-[#F9F8FC] rounded-full animate-spin'></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className='flex-1 flex items-center justify-center'>
+        <p className='text-red-400 text-center font-["Actay_Wide"] text-sm'>
+          Ошибка загрузки предметов:<br />{error}
+        </p>
       </div>
     );
   }
@@ -346,14 +358,20 @@ export default function UpgradePage() {
   const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
   const [minPrice, setMinPrice] = useState<number>(0);
   const [isMinPriceManual, setIsMinPriceManual] = useState<boolean>(false);
-  const [upgradeItems, setUpgradeItems] = useState<CaseItem[]>([]);
-  const [loadingUpgradeItems, setLoadingUpgradeItems] = useState<boolean>(false);
   const [selectedUpgradeItem, setSelectedUpgradeItem] = useState<CaseItem | null>(null);
   const [isSpinning, setIsSpinning] = useState<boolean>(false);
   const [currentRotation, setCurrentRotation] = useState<number>(90); // Начальный угол 90 градусов
 
-  // Получаем RTP коэффициент из API
-  const { rtp, executeUpgrade, upgradeLoading } = useUpgradeAPI();
+  // Получаем данные из API
+  const { 
+    rtp, 
+    executeUpgrade, 
+    upgradeLoading, 
+    upgradeItems, 
+    upgradeItemsLoading, 
+    upgradeItemsError, 
+    fetchUpgradeItems 
+  } = useUpgradeAPI();
 
   // Функция для расчета общей суммы выбранных предметов
   const calculateTotalPrice = useCallback(() => {
@@ -446,186 +464,30 @@ export default function UpgradePage() {
     }, 3000);
   };
 
-  // Функция для загрузки предметов по API
-  const fetchUpgradeItems = async (price: number) => {
-    setLoadingUpgradeItems(true);
-    try {
-      // Мок данные для разработки
-      const mockUpgradeItems: CaseItem[] = [
-        {
-          id: 'upgrade_iron_sword',
-          name: 'Железный меч',
-          description: 'Надежное оружие для начинающих воинов',
-          imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/iron_sword/icon',
-          amount: 1,
-          price: 12,
-          percentChance: 0,
-          rarity: 'Uncommon',
-          isWithdrawable: true
-        },
-        {
-          id: 'upgrade_golden_helmet',
-          name: 'Золотой шлем',
-          description: 'Блестящая защита головы',
-          imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/golden_helmet/icon',
-          amount: 1,
-          price: 18,
-          percentChance: 0,
-          rarity: 'Rare',
-          isWithdrawable: true
-        },
-        {
-          id: 'upgrade_diamond_pickaxe',
-          name: 'Алмазная кирка',
-          description: 'Инструмент для добычи самых ценных ресурсов',
-          imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/diamond_pickaxe/icon',
-          amount: 1,
-          price: 35,
-          percentChance: 0,
-          rarity: 'Epic',
-          isWithdrawable: true
-        },
-        {
-          id: 'upgrade_enchanted_golden_apple',
-          name: 'Зачарованное золотое яблоко',
-          description: 'Легендарный фрукт с магическими свойствами',
-          imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/enchanted_golden_apple/icon',
-          amount: 1,
-          price: 64,
-          percentChance: 0,
-          rarity: 'Legendary',
-          isWithdrawable: false
-        },
-        {
-          id: 'upgrade_netherite_sword',
-          name: 'Незеритовый меч',
-          description: 'Самое мощное оружие в мире',
-          imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/netherite_sword/icon',
-          amount: 1,
-          price: 128,
-          percentChance: 0,
-          rarity: 'Legendary',
-          isWithdrawable: false
-        },
-        {
-          id: 'upgrade_bow',
-          name: 'Лук',
-          description: 'Дальнобойное оружие для охоты',
-          imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/bow/icon',
-          amount: 1,
-          price: 15,
-          percentChance: 0,
-          rarity: 'Uncommon',
-          isWithdrawable: true
-        },
-        {
-          id: 'upgrade_ender_pearl',
-          name: 'Жемчуг Края',
-          description: 'Телепортационный артефакт',
-          imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/ender_pearl/icon',
-          amount: 3,
-          price: 25,
-          percentChance: 0,
-          rarity: 'Rare',
-          isWithdrawable: true
-        },
-        {
-          id: 'upgrade_totem_of_undying',
-          name: 'Тотем бессмертия',
-          description: 'Спасает от смерти один раз',
-          imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/totem_of_undying/icon',
-          amount: 1,
-          price: 96,
-          percentChance: 0,
-          rarity: 'Legendary',
-          isWithdrawable: false
-        },
-        {
-          id: 'upgrade_elytra',
-          name: 'Элитры',
-          description: 'Крылья для полета',
-          imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/elytra/icon',
-          amount: 1,
-          price: 200,
-          percentChance: 0,
-          rarity: 'Legendary',
-          isWithdrawable: false
-        },
-        {
-          id: 'upgrade_diamond_block',
-          name: 'Алмазный блок',
-          description: 'Блок из чистых алмазов',
-          imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/diamond_block/icon',
-          amount: 1,
-          price: 45,
-          percentChance: 0,
-          rarity: 'Epic',
-          isWithdrawable: true
-        },
-        {
-          id: 'upgrade_beacon',
-          name: 'Маяк',
-          description: 'Источник мощных эффектов',
-          imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/beacon/icon',
-          amount: 1,
-          price: 150,
-          percentChance: 0,
-          rarity: 'Legendary',
-          isWithdrawable: false
-        },
-        {
-          id: 'upgrade_shulker_box',
-          name: 'Ящик шалкера',
-          description: 'Переносное хранилище',
-          imageUrl: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/shulker_box/icon',
-          amount: 1,
-          price: 75,
-          percentChance: 0,
-          rarity: 'Legendary',
-          isWithdrawable: true
-        }
-      ];
+  // Функция для преобразования UpgradeInventoryItem в CaseItem
+  const convertUpgradeItemToCaseItem = useCallback((upgradeInventoryItem: any): CaseItem => {
+    return {
+      id: upgradeInventoryItem.item.id,
+      name: upgradeInventoryItem.item.name,
+      description: upgradeInventoryItem.item.description || '',
+      imageUrl: upgradeInventoryItem.item.imageUrl,
+      amount: upgradeInventoryItem.amount,
+      price: upgradeInventoryItem.item.price,
+      percentChance: upgradeInventoryItem.item.percentChance || 0,
+      rarity: upgradeInventoryItem.item.rarity,
+      isWithdrawable: true // По умолчанию true для предметов апгрейда
+    };
+  }, []);
 
-      // Имитируем задержку сети
-      await new Promise(resolve => setTimeout(resolve, 500));
+  // Преобразуем данные из API в формат CaseItem
+  const convertedUpgradeItems = React.useMemo(() => {
+    return upgradeItems.map(convertUpgradeItemToCaseItem);
+  }, [upgradeItems, convertUpgradeItemToCaseItem]);
 
-      // Фильтруем предметы по минимальной цене
-      const filteredItems = mockUpgradeItems.filter(item => item.price >= price);
-      setUpgradeItems(filteredItems);
-
-      // Для продакшена используем реальный API
-      // const response = await fetch(`https://battle-api.chasman.engineer/api/v1/upgrade/items?minPrice=${price}`, {
-      //   method: 'GET',
-      //   headers: {
-      //     'accept': '*/*',
-      //     'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI2ODhjYWQ2YWJlNjU0MWU5ZTgzMWFiZTciLCJwZXJtaXNzaW9uIjoiT3duZXIiLCJuYmYiOjE3NTQzMjU0OTEsImV4cCI6MTc1NDMyOTA5MSwiaWF0IjoxNzU0MzI1NDkxLCJpc3MiOiJtci5yYWZhZWxsbyJ9.kjvs3RdU4ettjsnNjTEQH8VDxXQdETcUX6B7HdB08k4`
-      //   }
-      // });
-      
-      // if (response.ok) {
-      //   const data = await response.json();
-      //   // Преобразуем данные в формат CaseItem
-      //   const items: CaseItem[] = data.map((item: { id: string; name: string; description?: string; imageUrl: string; amount: number; price: number; percentChance?: number; rarity: string; isWithdrawable: boolean }) => ({
-      //     id: item.id,
-      //     name: item.name,
-      //     description: item.description || '',
-      //     imageUrl: item.imageUrl,
-      //     amount: item.amount,
-      //     price: item.price,
-      //     percentChance: item.percentChance || 0,
-      //     rarity: item.rarity,
-      //     isWithdrawable: item.isWithdrawable
-      //   }));
-      //   setUpgradeItems(items);
-      // } else {
-      //   console.error('Ошибка загрузки предметов:', response.statusText);
-      // }
-    } catch (error) {
-      console.error('Ошибка при запросе к API:', error);
-    } finally {
-      setLoadingUpgradeItems(false);
-    }
-  };
+  // Загружаем предметы для апгрейда при изменении минимальной цены
+  React.useEffect(() => {
+    fetchUpgradeItems(minPrice);
+  }, [minPrice, fetchUpgradeItems]);
 
   // Обновляем минимальную цену при изменении выбранных предметов (авто-режим)
   React.useEffect(() => {
@@ -839,8 +701,9 @@ export default function UpgradePage() {
              </div>
            </div>
            <CaseItemsList 
-             items={upgradeItems} 
-             loading={loadingUpgradeItems}
+             items={convertedUpgradeItems} 
+             loading={upgradeItemsLoading}
+             error={upgradeItemsError}
              selectedUpgradeItem={selectedUpgradeItem}
              onItemSelect={handleUpgradeItemSelect}
              onItemRemove={handleUpgradeItemRemove}
