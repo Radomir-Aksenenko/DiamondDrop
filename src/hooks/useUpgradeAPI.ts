@@ -173,7 +173,7 @@ export default function useUpgradeAPI() {
       }
 
       const response = await fetch(
-        `${API_BASE_URL}/api/v1/upgrade/items?min_price=${minPrice}`,
+        `${API_BASE_URL}/upgrade/items?min_price=${minPrice}`,
         {
           method: 'GET',
           headers: {
