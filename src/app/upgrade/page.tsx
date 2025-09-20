@@ -452,75 +452,92 @@ export default function UpgradePage() {
     // Получаем текущий процент успеха для расчета позиций
     const currentPercentage = calculateUpgradeSuccessPercentage();
     
+    // === НОВАЯ СИСТЕМА РАСЧЕТА НА ОСНОВЕ 10000 ЧАСТЕЙ ===
+    const TOTAL_PARTS = 10000; // Разделяем круг на 10000 частей (0.01% точность)
+    const DEGREES_PER_PART = 360 / TOTAL_PARTS; // 0.036° на часть
+    
+    // Рассчитываем размеры зон в частях
+    const coloredSectionSizeParts = Math.round((currentPercentage / 100) * TOTAL_PARTS);
+    const graySectionSizeParts = TOTAL_PARTS - coloredSectionSizeParts;
+    
+    // Начальная позиция цветной секции (90° = 2500 частей)
+    const coloredSectionStartParts = Math.round(90 / DEGREES_PER_PART); // 2500 частей
+    const coloredSectionEndParts = coloredSectionStartParts + coloredSectionSizeParts;
+    
     // Рассчитываем целевую позицию в зависимости от результата
-    let targetPosition: number;
+    let targetPositionParts: number;
     
     if (!result || !result.success) {
       // При неудаче: целевая позиция в серой части
-      // Цветная часть: от 90° до (90° + currentPercentage% от 360°)
-      const coloredSectionStart = 90;
-      const coloredSectionEnd = 90 + (currentPercentage / 100) * 360;
       
-      // Серая часть: от конца цветной части до начала следующего круга
-      // Добавляем безопасный отступ 30° от цветной части
-      const safeOffset = 30;
-      let graySectionStart = coloredSectionEnd + safeOffset;
-      let graySectionEnd = coloredSectionStart + 360 - safeOffset; // Начало цветной части следующего круга
+      // Безопасный отступ от цветной части (30° = ~833 части)
+      const safeOffsetParts = Math.round(30 / DEGREES_PER_PART);
       
-      // Нормализуем углы к диапазону 0-360
-      graySectionStart = graySectionStart % 360;
-      graySectionEnd = graySectionEnd % 360;
+      // Серая часть начинается после цветной + отступ
+      let graySectionStartParts = coloredSectionEndParts + safeOffsetParts;
+      let graySectionEndParts = coloredSectionStartParts + TOTAL_PARTS - safeOffsetParts;
+      
+      // Нормализуем к диапазону 0-TOTAL_PARTS
+      graySectionStartParts = graySectionStartParts % TOTAL_PARTS;
+      graySectionEndParts = graySectionEndParts % TOTAL_PARTS;
       
       // Выбираем случайную позицию в серой части
-      if (graySectionStart < graySectionEnd) {
-        // Простой случай: серая часть не переходит через 0°
-        const grayRange = graySectionEnd - graySectionStart;
-        targetPosition = graySectionStart + Math.random() * grayRange;
+      if (graySectionStartParts < graySectionEndParts) {
+        // Простой случай: серая часть не переходит через 0
+        const grayRangeParts = graySectionEndParts - graySectionStartParts;
+        targetPositionParts = graySectionStartParts + Math.floor(Math.random() * grayRangeParts);
       } else {
-        // Сложный случай: серая часть переходит через 0°
-        // Разделяем на два диапазона: [graySectionStart, 360] и [0, graySectionEnd]
-        const range1 = 360 - graySectionStart; // От начала до 360°
-        const range2 = graySectionEnd; // От 0° до конца
-        const totalRange = range1 + range2;
-        const randomValue = Math.random() * totalRange;
+        // Сложный случай: серая часть переходит через 0
+        const range1Parts = TOTAL_PARTS - graySectionStartParts;
+        const range2Parts = graySectionEndParts;
+        const totalRangeParts = range1Parts + range2Parts;
+        const randomValueParts = Math.floor(Math.random() * totalRangeParts);
         
-        if (randomValue < range1) {
-          // Попадаем в первый диапазон
-          targetPosition = graySectionStart + randomValue;
+        if (randomValueParts < range1Parts) {
+          targetPositionParts = graySectionStartParts + randomValueParts;
         } else {
-          // Попадаем во второй диапазон
-          targetPosition = randomValue - range1;
+          targetPositionParts = randomValueParts - range1Parts;
         }
       }
       
       // Дополнительная проверка: убеждаемся что не попали в цветную часть
-      const normalizedTarget = ((targetPosition % 360) + 360) % 360;
-      const normalizedColorStart = ((coloredSectionStart % 360) + 360) % 360;
-      const normalizedColorEnd = ((coloredSectionEnd % 360) + 360) % 360;
+      const normalizedTargetParts = ((targetPositionParts % TOTAL_PARTS) + TOTAL_PARTS) % TOTAL_PARTS;
+      const normalizedColorStartParts = ((coloredSectionStartParts % TOTAL_PARTS) + TOTAL_PARTS) % TOTAL_PARTS;
+      const normalizedColorEndParts = ((coloredSectionEndParts % TOTAL_PARTS) + TOTAL_PARTS) % TOTAL_PARTS;
       
-      // Если случайно попали в цветную часть, принудительно ставим в середину серой части
-      if (normalizedColorStart <= normalizedColorEnd) {
-        // Цветная часть не переходит через 0°
-        if (normalizedTarget >= normalizedColorStart && normalizedTarget <= normalizedColorEnd) {
-          targetPosition = (graySectionStart + graySectionEnd) / 2;
-          if (targetPosition >= 360) targetPosition -= 360;
+      if (normalizedColorStartParts <= normalizedColorEndParts) {
+        // Цветная часть не переходит через 0
+        if (normalizedTargetParts >= normalizedColorStartParts && normalizedTargetParts <= normalizedColorEndParts) {
+          targetPositionParts = Math.floor((graySectionStartParts + graySectionEndParts) / 2);
+          if (targetPositionParts >= TOTAL_PARTS) targetPositionParts -= TOTAL_PARTS;
         }
       } else {
-        // Цветная часть переходит через 0°
-        if (normalizedTarget >= normalizedColorStart || normalizedTarget <= normalizedColorEnd) {
-          targetPosition = (graySectionStart + graySectionEnd) / 2;
-          if (targetPosition >= 360) targetPosition -= 360;
+        // Цветная часть переходит через 0
+        if (normalizedTargetParts >= normalizedColorStartParts || normalizedTargetParts <= normalizedColorEndParts) {
+          targetPositionParts = Math.floor((graySectionStartParts + graySectionEndParts) / 2);
+          if (targetPositionParts >= TOTAL_PARTS) targetPositionParts -= TOTAL_PARTS;
         }
       }
     } else {
       // При успехе: целевая позиция в цветной части
-      const coloredSectionStart = 90;
-      const coloredSectionEnd = 90 + (currentPercentage / 100) * 360;
       
-      // Случайная позиция в цветной части
-      const margin = Math.min(10, (coloredSectionEnd - coloredSectionStart) * 0.1);
-      targetPosition = coloredSectionStart + margin + Math.random() * (coloredSectionEnd - coloredSectionStart - 2 * margin);
+      // Отступ от краев цветной части (минимум 10° или 10% от размера)
+      const marginParts = Math.min(
+        Math.round(10 / DEGREES_PER_PART), // 10° в частях
+        Math.floor(coloredSectionSizeParts * 0.1) // 10% от размера цветной части
+      );
+      
+      const availableRangeParts = coloredSectionSizeParts - 2 * marginParts;
+      if (availableRangeParts > 0) {
+        targetPositionParts = coloredSectionStartParts + marginParts + Math.floor(Math.random() * availableRangeParts);
+      } else {
+        // Если цветная часть слишком мала, берем центр
+        targetPositionParts = coloredSectionStartParts + Math.floor(coloredSectionSizeParts / 2);
+      }
     }
+    
+    // Конвертируем обратно в градусы
+    const targetPosition = targetPositionParts * DEGREES_PER_PART;
     
     // Рассчитываем количество полных оборотов (минимум 3 для эффектности)
     const minFullRotations = 3;
@@ -542,15 +559,18 @@ export default function UpgradePage() {
     const totalRotation = fullRotations * 360 + rotationDifference;
     
     // Отладочная информация
-    console.log('=== АНИМАЦИЯ ОТЛАДКА ===');
+    console.log('=== АНИМАЦИЯ ОТЛАДКА (10000 ЧАСТЕЙ) ===');
     console.log('Результат:', result?.success ? 'УСПЕХ' : 'НЕУДАЧА');
     console.log('Процент успеха:', currentPercentage + '%');
-    console.log('Текущая позиция:', normalizedCurrentRotation + '°');
-    console.log('Целевая позиция:', targetPosition + '°');
+    console.log('Цветная секция (части):', coloredSectionSizeParts, '/', TOTAL_PARTS, `(${(coloredSectionSizeParts/TOTAL_PARTS*100).toFixed(2)}%)`);
+    console.log('Серая секция (части):', graySectionSizeParts, '/', TOTAL_PARTS, `(${(graySectionSizeParts/TOTAL_PARTS*100).toFixed(2)}%)`);
+    console.log('Целевая позиция (части):', targetPositionParts);
+    console.log('Целевая позиция (градусы):', targetPosition.toFixed(2) + '°');
+    console.log('Текущая позиция:', normalizedCurrentRotation.toFixed(2) + '°');
     console.log('Полных оборотов:', fullRotations.toFixed(1));
-    console.log('Разность до цели:', rotationDifference + '°');
-    console.log('Общее вращение:', totalRotation + '°');
-    console.log('========================');
+    console.log('Разность до цели:', rotationDifference.toFixed(2) + '°');
+    console.log('Общее вращение:', totalRotation.toFixed(2) + '°');
+    console.log('========================================');
     
     // Рассчитываем динамическую длительность анимации
     // Базовая скорость: 120 градусов в секунду
