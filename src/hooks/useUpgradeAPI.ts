@@ -53,7 +53,7 @@ export interface UpgradeInventoryItem {
  * Интерфейс ответа API для получения предметов апгрейда
  */
 // API returns direct array of items
-type UpgradeItemsResponse = UpgradeInventoryItem[];
+// (removed) type UpgradeItemsResponse = UpgradeInventoryItem[];
 
 /**
  * Хук для получения данных апгрейда из API
@@ -158,44 +158,65 @@ export default function useUpgradeAPI() {
 
       // Читаем как текст и затем парсим JSON вручную, чтобы уметь диагностировать ошибки парсинга
       const rawText = await response.text();
-      let json: any = [];
+      let json: unknown = [];
       try {
         json = rawText ? JSON.parse(rawText) : [];
-      } catch (e) {
+      } catch {
         throw new Error('Некорректный JSON в ответе API');
       }
 
-      // Приводим ответ к массиву элементов
-      const rawItems: any[] = Array.isArray(json)
-        ? json
-        : (Array.isArray(json?.items) ? json.items : []);
+      // Приводим ответ к массиву элементов (поддерживаем как прямой массив, так и объект-обёртку { items: [] })
+      type ItemsWrapper = { items?: unknown };
+      const wrapper = json as ItemsWrapper;
+      const rawItems: unknown[] = Array.isArray(json)
+        ? (json as unknown[])
+        : (Array.isArray(wrapper.items) ? (wrapper.items as unknown[]) : []);
 
-      // Нормализация полей и защита от разночтений (snake_case/camelCase, кавычки в URL и т.п.)
-      const validRarities = ['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary'];
+      // Вспомогательные функции для безопасного чтения значений
+      const isRecord = (v: unknown): v is Record<string, unknown> => v !== null && typeof v === 'object';
+      const readString = (v: unknown, fallback = ''): string => typeof v === 'string' ? v : (v == null ? fallback : String(v));
+      const readNumber = (v: unknown, fallback = 0): number => (typeof v === 'number' && Number.isFinite(v)) ? v : Number(v ?? fallback);
+
+      const toUpgradeInventoryItem = (entry: unknown): UpgradeInventoryItem | null => {
+        const entryObj = isRecord(entry) ? entry : null;
+        const itemCandidate: unknown = (entryObj && 'item' in entryObj) ? (entryObj as Record<string, unknown>).item : entry;
+        if (!isRecord(itemCandidate)) return null;
+
+        const id = readString(itemCandidate['id']);
+        if (!id) return null;
+
+        const imageUrlRaw = readString((itemCandidate as Record<string, unknown>)['imageUrl'] ?? (itemCandidate as Record<string, unknown>)['image_url'], '');
+        const imageUrl = imageUrlRaw.replace(/[`"]/g, '').trim();
+
+        const rarityRaw = readString((itemCandidate as Record<string, unknown>)['rarity'], 'Common');
+        const validRarities = ['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary'] as const;
+        const rarity = (validRarities as readonly string[]).includes(rarityRaw) ? rarityRaw : 'Common';
+
+        const amountFromEntry = entryObj && 'amount' in entryObj ? entryObj['amount'] : undefined;
+        const amount = readNumber(amountFromEntry ?? (itemCandidate as Record<string, unknown>)['amount'] ?? 0);
+        const price = readNumber((itemCandidate as Record<string, unknown>)['price'], 0);
+        const percentChance = readNumber((itemCandidate as Record<string, unknown>)['percentChance'] ?? (itemCandidate as Record<string, unknown>)['percent_chance'], 0);
+        const name = readString((itemCandidate as Record<string, unknown>)['name']);
+        const description = readString((itemCandidate as Record<string, unknown>)['description'], '');
+
+        return {
+          item: {
+            id,
+            name,
+            description,
+            imageUrl,
+            amount: readNumber((itemCandidate as Record<string, unknown>)['amount'] ?? 1),
+            price,
+            percentChance,
+            rarity,
+          },
+          amount,
+        };
+      };
+
       const normalized: UpgradeInventoryItem[] = rawItems
-        .map((entry: any) => {
-          const rawItem = entry?.item ?? entry;
-          if (!rawItem || !rawItem.id) return null;
-
-          const img = String(rawItem.imageUrl ?? rawItem.image_url ?? '').replace(/[`"]/g, '').trim();
-          const rarityRaw = String(rawItem.rarity ?? 'Common');
-          const rarity = validRarities.includes(rarityRaw) ? rarityRaw : 'Common';
-
-          return {
-            item: {
-              id: String(rawItem.id),
-              name: String(rawItem.name ?? ''),
-              description: rawItem.description == null ? '' : String(rawItem.description),
-              imageUrl: img,
-              amount: Number(rawItem.amount ?? 1),
-              price: Number(rawItem.price ?? 0),
-              percentChance: Number(rawItem.percentChance ?? rawItem.percent_chance ?? 0),
-              rarity,
-            },
-            amount: Number(entry?.amount ?? rawItem.amount ?? 0),
-          } as UpgradeInventoryItem;
-        })
-        .filter((it: any): it is UpgradeInventoryItem => it !== null);
+        .map(toUpgradeInventoryItem)
+        .filter((it): it is UpgradeInventoryItem => it !== null);
 
       setUpgradeItems(normalized);
     } catch (err) {
