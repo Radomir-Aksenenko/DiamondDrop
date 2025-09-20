@@ -133,73 +133,71 @@ export default function useUpgradeAPI() {
       setUpgradeItemsLoading(true);
       setUpgradeItemsError(null);
 
-      // В dev режиме используем моковые данные — отключено, читаем реальные данные с API
-      // if (isDevelopment && DEV_CONFIG.skipAuth) {
-      //   setTimeout(() => {
-      //     const mockItems: UpgradeInventoryItem[] = [
-      //       {
-      //         item: {
-      //           id: "mock-upgrade-item-1",
-      //           name: "Алмазный меч",
-      //           description: "Острота V",
-      //           imageUrl: "https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/diamond_sword/icon",
-      //           amount: 1,
-      //           price: 150,
-      //           percentChance: 0,
-      //           rarity: "Legendary"
-      //         },
-      //         amount: 1
-      //       },
-      //       {
-      //         item: {
-      //           id: "mock-upgrade-item-2",
-      //           name: "Зачарованная книга",
-      //           description: "Неразрушимость III",
-      //           imageUrl: "https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/enchanted_book/icon",
-      //           amount: 1,
-      //           price: 200,
-      //           percentChance: 0,
-      //           rarity: "Epic"
-      //         },
-      //         amount: 3
-      //       }
-      //     ];
-      //     setUpgradeItems(mockItems);
-      //     setUpgradeItemsLoading(false);
-      //   }, 300);
-      //   return;
-      // }
       const token = getAuthToken();
-      
       if (!token) {
+        setUpgradeItemsError('Токен авторизации не найден');
         setUpgradeItems([]);
         return;
       }
 
-      const response = await fetch(
-        `${API_BASE_URL}/upgrade/items?min_price=${minPrice}`,
-        {
-          method: 'GET',
-          headers: {
-            'accept': '*/*',
-            'Authorization': token,
-          },
-        }
-      );
+      // Формируем URL безопасно
+      const url = new URL(`${API_BASE_URL}/upgrade/items`);
+      url.searchParams.set('min_price', String(minPrice));
+
+      const response = await fetch(url.toString(), {
+        method: 'GET',
+        headers: {
+          'accept': 'application/json',
+          'Authorization': token,
+        },
+      });
 
       if (!response.ok) {
         throw new Error(`Ошибка API: ${response.status} ${response.statusText}`);
       }
 
-      const data: UpgradeItemsResponse = await response.json();
-      
-      // API returns direct array of items
-      if (Array.isArray(data)) {
-        setUpgradeItems(data);
-      } else {
-        setUpgradeItems([]);
+      // Читаем как текст и затем парсим JSON вручную, чтобы уметь диагностировать ошибки парсинга
+      const rawText = await response.text();
+      let json: any = [];
+      try {
+        json = rawText ? JSON.parse(rawText) : [];
+      } catch (e) {
+        throw new Error('Некорректный JSON в ответе API');
       }
-      
+
+      // Приводим ответ к массиву элементов
+      const rawItems: any[] = Array.isArray(json)
+        ? json
+        : (Array.isArray(json?.items) ? json.items : []);
+
+      // Нормализация полей и защита от разночтений (snake_case/camelCase, кавычки в URL и т.п.)
+      const validRarities = ['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary'];
+      const normalized: UpgradeInventoryItem[] = rawItems
+        .map((entry: any) => {
+          const rawItem = entry?.item ?? entry;
+          if (!rawItem || !rawItem.id) return null;
+
+          const img = String(rawItem.imageUrl ?? rawItem.image_url ?? '').replace(/[`"]/g, '').trim();
+          const rarityRaw = String(rawItem.rarity ?? 'Common');
+          const rarity = validRarities.includes(rarityRaw) ? rarityRaw : 'Common';
+
+          return {
+            item: {
+              id: String(rawItem.id),
+              name: String(rawItem.name ?? ''),
+              description: rawItem.description == null ? '' : String(rawItem.description),
+              imageUrl: img,
+              amount: Number(rawItem.amount ?? 1),
+              price: Number(rawItem.price ?? 0),
+              percentChance: Number(rawItem.percentChance ?? rawItem.percent_chance ?? 0),
+              rarity,
+            },
+            amount: Number(entry?.amount ?? rawItem.amount ?? 0),
+          } as UpgradeInventoryItem;
+        })
+        .filter((it: any): it is UpgradeInventoryItem => it !== null);
+
+      setUpgradeItems(normalized);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Неизвестная ошибка';
       setUpgradeItemsError(errorMessage);
