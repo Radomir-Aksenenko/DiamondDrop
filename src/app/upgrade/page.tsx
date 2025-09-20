@@ -456,22 +456,49 @@ export default function UpgradePage() {
     
     if (!result || !result.success) {
       // При неудаче: останавливаемся НЕ на цветной части
-      // Цветная часть занимает currentPercentage% от окружности, начиная с верха (0°)
-      // Нужно остановиться на сером участке
-      const coloredSectionEnd = (currentPercentage / 100) * 360; // Конец цветной части в градусах
-      const graySectionStart = coloredSectionEnd + 10; // Начало серой части с небольшим отступом
-      const graySectionEnd = 360 - 10; // Конец серой части (почти полный круг)
+      // SVG повернут на -90°, поэтому цветная часть начинается с 0° (верх SVG = право после поворота)
+      // Треугольник начинает с 90° (верх после поворота SVG)
+      // Цветная часть: от 90° до (90° + currentPercentage% от 360°)
+      const coloredSectionStart = 90; // Начало цветной части (верх)
+      const coloredSectionEnd = 90 + (currentPercentage / 100) * 360; // Конец цветной части
+      
+      // Серая часть: от конца цветной части до начала (с учетом полного круга)
+      let graySectionStart = coloredSectionEnd + 10; // Отступ от цветной части
+      let graySectionEnd = 90 + 360 - 10; // До начала цветной части (следующий круг)
+      
+      // Если серая часть переходит через 360°, корректируем
+      if (graySectionStart >= 360) {
+        graySectionStart -= 360;
+      }
+      if (graySectionEnd >= 360) {
+        graySectionEnd -= 360;
+      }
       
       // Случайная позиция в серой части
-      randomOffset = graySectionStart + Math.random() * (graySectionEnd - graySectionStart);
+      if (graySectionStart < graySectionEnd) {
+        randomOffset = graySectionStart + Math.random() * (graySectionEnd - graySectionStart);
+      } else {
+        // Серая часть переходит через 0°
+        const range1 = 360 - graySectionStart;
+        const range2 = graySectionEnd;
+        const totalRange = range1 + range2;
+        const randomValue = Math.random() * totalRange;
+        
+        if (randomValue < range1) {
+          randomOffset = graySectionStart + randomValue;
+        } else {
+          randomOffset = randomValue - range1;
+        }
+      }
+      
       minRotations = 2 + Math.random(); // От 2 до 3 оборотов
     } else {
       // При успехе: останавливаемся на цветной части
-      const coloredSectionStart = 0;
-      const coloredSectionEnd = (currentPercentage / 100) * 360;
+      const coloredSectionStart = 90; // Начало цветной части
+      const coloredSectionEnd = 90 + (currentPercentage / 100) * 360; // Конец цветной части
       
       // Случайная позиция в цветной части
-      randomOffset = coloredSectionStart + Math.random() * coloredSectionEnd;
+      randomOffset = coloredSectionStart + Math.random() * (coloredSectionEnd - coloredSectionStart);
       minRotations = 2 + Math.random(); // От 2 до 3 оборотов
     }
     
