@@ -28,6 +28,11 @@ export const useInventoryAPI = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [isInitialized, setIsInitialized] = useState(false);
+  
+  // Состояние для инвентаря доступного для апгрейда
+  const [upgradeInventory, setUpgradeInventory] = useState<InventoryItem[]>([]);
+  const [upgradeInventoryLoading, setUpgradeInventoryLoading] = useState(false);
+  const [upgradeInventoryError, setUpgradeInventoryError] = useState<string | null>(null);
 
   const pageSize = 20; // Количество предметов на страницу
 

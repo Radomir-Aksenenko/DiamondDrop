@@ -42,6 +42,14 @@ interface UpgradeExecuteResponse {
 }
 
 /**
+ * Интерфейс предмета в инвентаре для апгрейда
+ */
+interface UpgradeInventoryItem {
+  item: UpgradeItem;
+  amount: number;
+}
+
+/**
  * Хук для получения данных апгрейда из API
  * @returns {Object} Объект с RTP коэффициентом, состоянием загрузки и ошибкой
  */
@@ -51,6 +59,9 @@ export default function useUpgradeAPI() {
   const [error, setError] = useState<string | null>(null);
   const [upgradeLoading, setUpgradeLoading] = useState<boolean>(false);
   const [upgradeError, setUpgradeError] = useState<string | null>(null);
+  const [upgradeItems, setUpgradeItems] = useState<UpgradeInventoryItem[]>([]);
+  const [upgradeItemsLoading, setUpgradeItemsLoading] = useState<boolean>(false);
+  const [upgradeItemsError, setUpgradeItemsError] = useState<string | null>(null);
 
   /**
    * Загружает данные апгрейда из API
@@ -78,7 +89,7 @@ export default function useUpgradeAPI() {
       }
 
       const response = await fetch(
-        `${API_BASE_URL}/upgrade`,
+        `${API_BASE_URL}/api/v1/upgrade`,
         {
           method: 'GET',
           headers: {
@@ -104,6 +115,88 @@ export default function useUpgradeAPI() {
       setRtp(80);
     } finally {
       setLoading(false);
+    }
+  }, []);
+
+  /**
+   * Загружает предметы доступные для апгрейда
+   * @param {number} minPrice - Минимальная цена предметов для фильтрации
+   */
+  const fetchUpgradeItems = useCallback(async (minPrice: number = 0) => {
+    try {
+      setUpgradeItemsLoading(true);
+      setUpgradeItemsError(null);
+
+      // В dev режиме используем моковые данные
+      if (isDevelopment && DEV_CONFIG.skipAuth) {
+        // Имитируем задержку сети
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        // Моковые предметы для апгрейда
+        const mockItems: UpgradeInventoryItem[] = [
+          {
+            item: {
+              id: "mock-upgrade-item-1",
+              name: "Алмазный меч",
+              description: "Острота V",
+              imageUrl: "https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/diamond_sword/icon",
+              amount: 1,
+              price: 150,
+              percentChance: 0,
+              rarity: "Legendary"
+            },
+            amount: 1
+          },
+          {
+            item: {
+              id: "mock-upgrade-item-2",
+              name: "Зачарованная книга",
+              description: "Неразрушимость III",
+              imageUrl: "https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/enchanted_book/icon",
+              amount: 1,
+              price: 200,
+              percentChance: 0,
+              rarity: "Epic"
+            },
+            amount: 3
+          }
+        ];
+        
+        setUpgradeItems(mockItems);
+        return;
+      }
+
+      const token = getAuthToken();
+      if (!token) {
+        setUpgradeItems([]);
+        return;
+      }
+
+      const response = await fetch(
+        `${API_BASE_URL}/api/v1/upgrade/items?min_price=${minPrice}`,
+        {
+          method: 'GET',
+          headers: {
+            'accept': '*/*',
+            'Authorization': token,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Ошибка API: ${response.status} ${response.statusText}`);
+      }
+
+      const data: UpgradeInventoryItem[] = await response.json();
+      setUpgradeItems(data);
+      
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Неизвестная ошибка';
+      setUpgradeItemsError(errorMessage);
+      console.error('Ошибка загрузки предметов для апгрейда:', errorMessage);
+      setUpgradeItems([]);
+    } finally {
+      setUpgradeItemsLoading(false);
     }
   }, []);
 
@@ -195,6 +288,10 @@ export default function useUpgradeAPI() {
     refresh,
     executeUpgrade,
     upgradeLoading,
-    upgradeError
+    upgradeError,
+    upgradeItems,
+    upgradeItemsLoading,
+    upgradeItemsError,
+    fetchUpgradeItems
   };
 }
