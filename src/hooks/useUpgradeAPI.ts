@@ -270,16 +270,18 @@ export default function useUpgradeAPI() {
 
       const response = await (async () => {
         const url = new URL(`${API_BASE_URL}/upgrade`);
-        // Передаём выбранные предметы как одну строку, разделённую запятыми, согласно требованию
+        // Добавляем параметры в URL согласно требованию
         url.searchParams.set('SelectedItemIds', upgradeData.selectedItemIds.join(','));
         url.searchParams.set('TargetItemId', upgradeData.targetItemId);
     
         return fetch(url.toString(), {
-          method: 'GET',
+          method: 'POST',
           headers: {
+            'Content-Type': 'application/json',
             'accept': 'application/json',
             'Authorization': token,
           },
+          body: JSON.stringify(upgradeData)
         });
       })();
     
