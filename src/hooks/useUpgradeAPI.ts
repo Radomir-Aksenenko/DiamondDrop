@@ -50,6 +50,14 @@ export interface UpgradeInventoryItem {
 }
 
 /**
+ * Интерфейс ответа API для получения предметов апгрейда
+ */
+interface UpgradeItemsResponse {
+  success: boolean;
+  items: UpgradeInventoryItem[];
+}
+
+/**
  * Хук для получения данных апгрейда из API
  * @returns {Object} Объект с RTP коэффициентом, состоянием загрузки и ошибкой
  */
@@ -127,8 +135,11 @@ export default function useUpgradeAPI() {
       setUpgradeItemsLoading(true);
       setUpgradeItemsError(null);
 
+      console.log('fetchUpgradeItems:', { isDevelopment, skipAuth: DEV_CONFIG.skipAuth });
+
       // В dev режиме используем моковые данные
       if (isDevelopment && DEV_CONFIG.skipAuth) {
+        console.log('Using mock data for upgrade items');
         // Имитируем задержку сети
         await new Promise(resolve => setTimeout(resolve, 300));
         
@@ -167,11 +178,14 @@ export default function useUpgradeAPI() {
       }
 
       const token = getAuthToken();
+      console.log('Token check:', { token: token ? 'present' : 'missing' });
       if (!token) {
+        console.log('No token, setting empty upgrade items');
         setUpgradeItems([]);
         return;
       }
 
+      console.log('Making API call to:', `${API_BASE_URL}/upgrade/items?min_price=${minPrice}`);
       const response = await fetch(
         `${API_BASE_URL}/upgrade/items?min_price=${minPrice}`,
         {
@@ -187,8 +201,13 @@ export default function useUpgradeAPI() {
         throw new Error(`Ошибка API: ${response.status} ${response.statusText}`);
       }
 
-      const data: UpgradeInventoryItem[] = await response.json();
-      setUpgradeItems(data);
+      const data: UpgradeItemsResponse = await response.json();
+      
+      if (data.success && data.items) {
+        setUpgradeItems(data.items);
+      } else {
+        setUpgradeItems([]);
+      }
       
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Неизвестная ошибка';
