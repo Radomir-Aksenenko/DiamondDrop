@@ -458,30 +458,58 @@ export default function UpgradePage() {
     if (!result || !result.success) {
       // При неудаче: целевая позиция в серой части
       // Цветная часть: от 90° до (90° + currentPercentage% от 360°)
+      const coloredSectionStart = 90;
       const coloredSectionEnd = 90 + (currentPercentage / 100) * 360;
       
-      // Серая часть начинается после цветной части
-      const graySectionStart = coloredSectionEnd + 20; // Больший отступ для надежности
-      const graySectionEnd = 90 + 360 - 20; // До начала цветной части
+      // Серая часть: от конца цветной части до начала следующего круга
+      // Добавляем безопасный отступ 30° от цветной части
+      const safeOffset = 30;
+      let graySectionStart = coloredSectionEnd + safeOffset;
+      let graySectionEnd = coloredSectionStart + 360 - safeOffset; // Начало цветной части следующего круга
       
-      // Нормализуем углы
-      const normalizedStart = graySectionStart % 360;
-      const normalizedEnd = graySectionEnd % 360;
+      // Нормализуем углы к диапазону 0-360
+      graySectionStart = graySectionStart % 360;
+      graySectionEnd = graySectionEnd % 360;
       
       // Выбираем случайную позицию в серой части
-      if (normalizedStart < normalizedEnd) {
-        targetPosition = normalizedStart + Math.random() * (normalizedEnd - normalizedStart);
+      if (graySectionStart < graySectionEnd) {
+        // Простой случай: серая часть не переходит через 0°
+        const grayRange = graySectionEnd - graySectionStart;
+        targetPosition = graySectionStart + Math.random() * grayRange;
       } else {
-        // Серая часть переходит через 0°
-        const range1 = 360 - normalizedStart;
-        const range2 = normalizedEnd;
+        // Сложный случай: серая часть переходит через 0°
+        // Разделяем на два диапазона: [graySectionStart, 360] и [0, graySectionEnd]
+        const range1 = 360 - graySectionStart; // От начала до 360°
+        const range2 = graySectionEnd; // От 0° до конца
         const totalRange = range1 + range2;
         const randomValue = Math.random() * totalRange;
         
         if (randomValue < range1) {
-          targetPosition = normalizedStart + randomValue;
+          // Попадаем в первый диапазон
+          targetPosition = graySectionStart + randomValue;
         } else {
+          // Попадаем во второй диапазон
           targetPosition = randomValue - range1;
+        }
+      }
+      
+      // Дополнительная проверка: убеждаемся что не попали в цветную часть
+      const normalizedTarget = ((targetPosition % 360) + 360) % 360;
+      const normalizedColorStart = ((coloredSectionStart % 360) + 360) % 360;
+      const normalizedColorEnd = ((coloredSectionEnd % 360) + 360) % 360;
+      
+      // Если случайно попали в цветную часть, принудительно ставим в середину серой части
+      if (normalizedColorStart <= normalizedColorEnd) {
+        // Цветная часть не переходит через 0°
+        if (normalizedTarget >= normalizedColorStart && normalizedTarget <= normalizedColorEnd) {
+          targetPosition = (graySectionStart + graySectionEnd) / 2;
+          if (targetPosition >= 360) targetPosition -= 360;
+        }
+      } else {
+        // Цветная часть переходит через 0°
+        if (normalizedTarget >= normalizedColorStart || normalizedTarget <= normalizedColorEnd) {
+          targetPosition = (graySectionStart + graySectionEnd) / 2;
+          if (targetPosition >= 360) targetPosition -= 360;
         }
       }
     } else {
@@ -499,21 +527,40 @@ export default function UpgradePage() {
     const maxFullRotations = 5;
     const fullRotations = minFullRotations + Math.random() * (maxFullRotations - minFullRotations);
     
-    // Рассчитываем общее вращение
-    const totalRotation = fullRotations * 360 + (targetPosition - (currentRotation % 360));
+    // Нормализуем текущую позицию к диапазону 0-360
+    const normalizedCurrentRotation = ((currentRotation % 360) + 360) % 360;
     
-    // Корректируем если получается отрицательное значение
-    const finalRotation = totalRotation < 0 ? totalRotation + 360 : totalRotation;
+    // Рассчитываем разность до целевой позиции
+    let rotationDifference = targetPosition - normalizedCurrentRotation;
+    
+    // Если разность отрицательная, добавляем полный оборот
+    if (rotationDifference < 0) {
+      rotationDifference += 360;
+    }
+    
+    // Общее вращение = полные обороты + разность до цели
+    const totalRotation = fullRotations * 360 + rotationDifference;
+    
+    // Отладочная информация
+    console.log('=== АНИМАЦИЯ ОТЛАДКА ===');
+    console.log('Результат:', result?.success ? 'УСПЕХ' : 'НЕУДАЧА');
+    console.log('Процент успеха:', currentPercentage + '%');
+    console.log('Текущая позиция:', normalizedCurrentRotation + '°');
+    console.log('Целевая позиция:', targetPosition + '°');
+    console.log('Полных оборотов:', fullRotations.toFixed(1));
+    console.log('Разность до цели:', rotationDifference + '°');
+    console.log('Общее вращение:', totalRotation + '°');
+    console.log('========================');
     
     // Рассчитываем динамическую длительность анимации
     // Базовая скорость: 120 градусов в секунду
     const baseSpeed = 120; // градусов/сек
-    const calculatedDuration = Math.max(2000, Math.min(5000, (finalRotation / baseSpeed) * 1000));
+    const calculatedDuration = Math.max(2000, Math.min(5000, (totalRotation / baseSpeed) * 1000));
     
     setAnimationDuration(calculatedDuration);
     
     // Устанавливаем новую позицию
-    const newRotation = currentRotation + finalRotation;
+    const newRotation = currentRotation + totalRotation;
     setCurrentRotation(newRotation);
     
     // Останавливаем анимацию через рассчитанное время
