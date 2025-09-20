@@ -467,8 +467,8 @@ export default function UpgradePage() {
   // Функция для преобразования UpgradeInventoryItem в CaseItem
   const convertUpgradeItemToCaseItem = useCallback((upgradeInventoryItem: UpgradeInventoryItem): CaseItem => {
     // Приводим rarity к правильному типу, с fallback на 'Common'
-    const validRarities = ['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary'] as const;
-    const rarity = validRarities.includes(upgradeInventoryItem.item.rarity as any) 
+    const validRarities: readonly string[] = ['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary'];
+    const rarity = validRarities.includes(upgradeInventoryItem.item.rarity) 
       ? upgradeInventoryItem.item.rarity as 'Common' | 'Uncommon' | 'Rare' | 'Epic' | 'Legendary'
       : 'Common';
 
