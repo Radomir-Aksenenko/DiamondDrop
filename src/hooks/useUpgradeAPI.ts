@@ -95,7 +95,7 @@ export default function useUpgradeAPI() {
       }
 
       const response = await fetch(
-        `${API_BASE_URL}/api/v1/upgrade`,
+        `${API_BASE_URL}/upgrade`,
         {
           method: 'GET',
           headers: {
@@ -133,44 +133,42 @@ export default function useUpgradeAPI() {
       setUpgradeItemsLoading(true);
       setUpgradeItemsError(null);
 
-      // В dev режиме используем моковые данные
-      if (isDevelopment && DEV_CONFIG.skipAuth) {
-        // Возвращаем моковые данные в development режиме
-        setTimeout(() => {
-          const mockItems: UpgradeInventoryItem[] = [
-            {
-              item: {
-                id: "mock-upgrade-item-1",
-                name: "Алмазный меч",
-                description: "Острота V",
-                imageUrl: "https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/diamond_sword/icon",
-                amount: 1,
-                price: 150,
-                percentChance: 0,
-                rarity: "Legendary"
-              },
-              amount: 1
-            },
-            {
-              item: {
-                id: "mock-upgrade-item-2",
-                name: "Зачарованная книга",
-                description: "Неразрушимость III",
-                imageUrl: "https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/enchanted_book/icon",
-                amount: 1,
-                price: 200,
-                percentChance: 0,
-                rarity: "Epic"
-              },
-              amount: 3
-            }
-          ];
-          setUpgradeItems(mockItems);
-          setUpgradeItemsLoading(false);
-        }, 300);
-        return;
-      }
-
+      // В dev режиме используем моковые данные — отключено, читаем реальные данные с API
+      // if (isDevelopment && DEV_CONFIG.skipAuth) {
+      //   setTimeout(() => {
+      //     const mockItems: UpgradeInventoryItem[] = [
+      //       {
+      //         item: {
+      //           id: "mock-upgrade-item-1",
+      //           name: "Алмазный меч",
+      //           description: "Острота V",
+      //           imageUrl: "https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/diamond_sword/icon",
+      //           amount: 1,
+      //           price: 150,
+      //           percentChance: 0,
+      //           rarity: "Legendary"
+      //         },
+      //         amount: 1
+      //       },
+      //       {
+      //         item: {
+      //           id: "mock-upgrade-item-2",
+      //           name: "Зачарованная книга",
+      //           description: "Неразрушимость III",
+      //           imageUrl: "https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/enchanted_book/icon",
+      //           amount: 1,
+      //           price: 200,
+      //           percentChance: 0,
+      //           rarity: "Epic"
+      //         },
+      //         amount: 3
+      //       }
+      //     ];
+      //     setUpgradeItems(mockItems);
+      //     setUpgradeItemsLoading(false);
+      //   }, 300);
+      //   return;
+      // }
       const token = getAuthToken();
       
       if (!token) {
@@ -223,8 +221,8 @@ export default function useUpgradeAPI() {
       setUpgradeError(null);
 
       // Проверяем, что мы в продакшене
-      if (isDevelopment) {
-        console.log('Апгрейд API доступен только в продакшене');
+      if (isDevelopment && DEV_CONFIG.skipAuth) {
+        console.log('Апгрейд API доступен только при отключённом skipAuth в dev или в продакшене');
         
         // В dev режиме возвращаем моковый ответ
         await new Promise(resolve => setTimeout(resolve, 2000));
@@ -252,7 +250,7 @@ export default function useUpgradeAPI() {
       }
 
       const response = await fetch(
-        `${API_BASE_URL}/api/v1/upgrade`,
+        `${API_BASE_URL}/upgrade`,
         {
           method: 'POST',
           headers: {
