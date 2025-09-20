@@ -52,10 +52,8 @@ export interface UpgradeInventoryItem {
 /**
  * Интерфейс ответа API для получения предметов апгрейда
  */
-interface UpgradeItemsResponse {
-  success: boolean;
-  items: UpgradeInventoryItem[];
-}
+// API returns direct array of items
+type UpgradeItemsResponse = UpgradeInventoryItem[];
 
 /**
  * Хук для получения данных апгрейда из API
@@ -135,57 +133,51 @@ export default function useUpgradeAPI() {
       setUpgradeItemsLoading(true);
       setUpgradeItemsError(null);
 
-      console.log('fetchUpgradeItems:', { isDevelopment, skipAuth: DEV_CONFIG.skipAuth });
-
       // В dev режиме используем моковые данные
       if (isDevelopment && DEV_CONFIG.skipAuth) {
-        console.log('Using mock data for upgrade items');
-        // Имитируем задержку сети
-        await new Promise(resolve => setTimeout(resolve, 300));
-        
-        // Моковые предметы для апгрейда
-        const mockItems: UpgradeInventoryItem[] = [
-          {
-            item: {
-              id: "mock-upgrade-item-1",
-              name: "Алмазный меч",
-              description: "Острота V",
-              imageUrl: "https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/diamond_sword/icon",
-              amount: 1,
-              price: 150,
-              percentChance: 0,
-              rarity: "Legendary"
+        // Возвращаем моковые данные в development режиме
+        setTimeout(() => {
+          const mockItems: UpgradeInventoryItem[] = [
+            {
+              item: {
+                id: "mock-upgrade-item-1",
+                name: "Алмазный меч",
+                description: "Острота V",
+                imageUrl: "https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/diamond_sword/icon",
+                amount: 1,
+                price: 150,
+                percentChance: 0,
+                rarity: "Legendary"
+              },
+              amount: 1
             },
-            amount: 1
-          },
-          {
-            item: {
-              id: "mock-upgrade-item-2",
-              name: "Зачарованная книга",
-              description: "Неразрушимость III",
-              imageUrl: "https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/enchanted_book/icon",
-              amount: 1,
-              price: 200,
-              percentChance: 0,
-              rarity: "Epic"
-            },
-            amount: 3
-          }
-        ];
-        
-        setUpgradeItems(mockItems);
+            {
+              item: {
+                id: "mock-upgrade-item-2",
+                name: "Зачарованная книга",
+                description: "Неразрушимость III",
+                imageUrl: "https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/enchanted_book/icon",
+                amount: 1,
+                price: 200,
+                percentChance: 0,
+                rarity: "Epic"
+              },
+              amount: 3
+            }
+          ];
+          setUpgradeItems(mockItems);
+          setUpgradeItemsLoading(false);
+        }, 300);
         return;
       }
 
       const token = getAuthToken();
-      console.log('Token check:', { token: token ? 'present' : 'missing' });
+      
       if (!token) {
-        console.log('No token, setting empty upgrade items');
         setUpgradeItems([]);
         return;
       }
 
-      console.log('Making API call to:', `${API_BASE_URL}/upgrade/items?min_price=${minPrice}`);
       const response = await fetch(
         `${API_BASE_URL}/upgrade/items?min_price=${minPrice}`,
         {
@@ -203,8 +195,9 @@ export default function useUpgradeAPI() {
 
       const data: UpgradeItemsResponse = await response.json();
       
-      if (data.success && data.items) {
-        setUpgradeItems(data.items);
+      // API returns direct array of items
+      if (Array.isArray(data)) {
+        setUpgradeItems(data);
       } else {
         setUpgradeItems([]);
       }
