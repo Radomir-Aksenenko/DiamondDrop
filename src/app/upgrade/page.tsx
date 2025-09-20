@@ -465,21 +465,28 @@ export default function UpgradePage() {
   };
 
   // Функция для преобразования UpgradeInventoryItem в CaseItem
-  const convertUpgradeItemToCaseItem = useCallback((upgradeInventoryItem: UpgradeInventoryItem): CaseItem => {
+  const convertUpgradeItemToCaseItem = useCallback((upgradeInventoryItem: UpgradeInventoryItem): CaseItem | null => {
+    // Проверяем, что upgradeInventoryItem и его item существуют
+    if (!upgradeInventoryItem || !upgradeInventoryItem.item) {
+      return null;
+    }
+
+    const item = upgradeInventoryItem.item;
+    
     // Приводим rarity к правильному типу, с fallback на 'Common'
     const validRarities: readonly string[] = ['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary'];
-    const rarity = validRarities.includes(upgradeInventoryItem.item.rarity) 
-      ? upgradeInventoryItem.item.rarity as 'Common' | 'Uncommon' | 'Rare' | 'Epic' | 'Legendary'
+    const rarity = item.rarity && validRarities.includes(item.rarity) 
+      ? item.rarity as 'Common' | 'Uncommon' | 'Rare' | 'Epic' | 'Legendary'
       : 'Common';
 
     return {
-      id: upgradeInventoryItem.item.id,
-      name: upgradeInventoryItem.item.name,
-      description: upgradeInventoryItem.item.description || '',
-      imageUrl: upgradeInventoryItem.item.imageUrl,
-      amount: upgradeInventoryItem.amount,
-      price: upgradeInventoryItem.item.price,
-      percentChance: upgradeInventoryItem.item.percentChance || 0,
+      id: item.id || '',
+      name: item.name || '',
+      description: item.description || '',
+      imageUrl: item.imageUrl || '',
+      amount: upgradeInventoryItem.amount || 0,
+      price: item.price || 0,
+      percentChance: item.percentChance || 0,
       rarity: rarity,
       isWithdrawable: true // По умолчанию true для предметов апгрейда
     };
@@ -487,7 +494,9 @@ export default function UpgradePage() {
 
   // Преобразуем данные из API в формат CaseItem
   const convertedUpgradeItems = React.useMemo(() => {
-    return upgradeItems.map(convertUpgradeItemToCaseItem);
+    return upgradeItems
+      .map(convertUpgradeItemToCaseItem)
+      .filter((item): item is CaseItem => item !== null);
   }, [upgradeItems, convertUpgradeItemToCaseItem]);
 
   // Загружаем предметы для апгрейда при изменении минимальной цены
