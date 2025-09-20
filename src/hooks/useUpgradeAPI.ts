@@ -44,7 +44,7 @@ interface UpgradeExecuteResponse {
 /**
  * Интерфейс предмета в инвентаре для апгрейда
  */
-interface UpgradeInventoryItem {
+export interface UpgradeInventoryItem {
   item: UpgradeItem;
   amount: number;
 }

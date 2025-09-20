@@ -4,7 +4,7 @@ import React, { useState, useCallback } from 'react';
 import { useInventoryAPI, InventoryItem } from '@/hooks/useInventoryAPI';
 import { ItemCard } from '@/components/ui/RarityCard';
 import { CaseItem } from '@/hooks/useCasesAPI';
-import useUpgradeAPI from '@/hooks/useUpgradeAPI';
+import useUpgradeAPI, { UpgradeInventoryItem } from '@/hooks/useUpgradeAPI';
 
 // Константа процента удалена как неиспользуемая
 
@@ -456,7 +456,7 @@ export default function UpgradePage() {
     };
     
     // Выполняем запрос к API
-    const result = await executeUpgrade(upgradeData);
+    await executeUpgrade(upgradeData);
     
     // Останавливаем анимацию через 3 секунды (длительность анимации)
     setTimeout(() => {
@@ -465,7 +465,13 @@ export default function UpgradePage() {
   };
 
   // Функция для преобразования UpgradeInventoryItem в CaseItem
-  const convertUpgradeItemToCaseItem = useCallback((upgradeInventoryItem: any): CaseItem => {
+  const convertUpgradeItemToCaseItem = useCallback((upgradeInventoryItem: UpgradeInventoryItem): CaseItem => {
+    // Приводим rarity к правильному типу, с fallback на 'Common'
+    const validRarities = ['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary'] as const;
+    const rarity = validRarities.includes(upgradeInventoryItem.item.rarity as any) 
+      ? upgradeInventoryItem.item.rarity as 'Common' | 'Uncommon' | 'Rare' | 'Epic' | 'Legendary'
+      : 'Common';
+
     return {
       id: upgradeInventoryItem.item.id,
       name: upgradeInventoryItem.item.name,
@@ -474,7 +480,7 @@ export default function UpgradePage() {
       amount: upgradeInventoryItem.amount,
       price: upgradeInventoryItem.item.price,
       percentChance: upgradeInventoryItem.item.percentChance || 0,
-      rarity: upgradeInventoryItem.item.rarity,
+      rarity: rarity,
       isWithdrawable: true // По умолчанию true для предметов апгрейда
     };
   }, []);
@@ -511,7 +517,7 @@ export default function UpgradePage() {
   // Подгружаем предметы при изменении минимальной цены
   React.useEffect(() => {
     fetchUpgradeItems(minPrice);
-  }, [minPrice]);
+  }, [minPrice, fetchUpgradeItems]);
 
   const handleItemSelect = (inventoryItem: InventoryItem) => {
     if (selectedItems.length >= MAX_UPGRADE_ITEMS) {
