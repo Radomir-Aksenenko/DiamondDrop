@@ -438,17 +438,6 @@ export default function UpgradePage() {
 
     setIsSpinning(true);
     
-    // Генерируем случайное смещение в пределах полного оборота (как в кейсах)
-    const randomOffset = Math.random() * 360; // Случайное смещение от 0 до 360 градусов
-    
-    // Добавляем минимум 2-3 полных оборотов для эффектности + случайное смещение
-    const minRotations = 2 + Math.random(); // От 2 до 3 оборотов
-    const totalRotation = minRotations * 360 + randomOffset;
-    
-    // Новая позиция = текущая позиция + общее вращение
-    const newRotation = currentRotation + totalRotation;
-    setCurrentRotation(newRotation);
-    
     // Подготавливаем данные для API
     const upgradeData = {
       selectedItemIds: selectedItems.map(item => item.inventoryItem.item.id),
@@ -456,7 +445,42 @@ export default function UpgradePage() {
     };
     
     // Выполняем запрос к API
-    await executeUpgrade(upgradeData);
+    const result = await executeUpgrade(upgradeData);
+    
+    // Получаем текущий процент успеха для расчета позиций
+    const currentPercentage = calculateUpgradeSuccessPercentage();
+    
+    // Рассчитываем вращение в зависимости от результата
+    let randomOffset: number;
+    let minRotations: number;
+    
+    if (!result || !result.success) {
+      // При неудаче: останавливаемся НЕ на цветной части
+      // Цветная часть занимает currentPercentage% от окружности, начиная с верха (0°)
+      // Нужно остановиться на сером участке
+      const coloredSectionEnd = (currentPercentage / 100) * 360; // Конец цветной части в градусах
+      const graySectionStart = coloredSectionEnd + 10; // Начало серой части с небольшим отступом
+      const graySectionEnd = 360 - 10; // Конец серой части (почти полный круг)
+      
+      // Случайная позиция в серой части
+      randomOffset = graySectionStart + Math.random() * (graySectionEnd - graySectionStart);
+      minRotations = 2 + Math.random(); // От 2 до 3 оборотов
+    } else {
+      // При успехе: останавливаемся на цветной части
+      const coloredSectionStart = 0;
+      const coloredSectionEnd = (currentPercentage / 100) * 360;
+      
+      // Случайная позиция в цветной части
+      randomOffset = coloredSectionStart + Math.random() * coloredSectionEnd;
+      minRotations = 2 + Math.random(); // От 2 до 3 оборотов
+    }
+    
+    // Добавляем минимум 2-3 полных оборотов для эффектности + рассчитанное смещение
+    const totalRotation = minRotations * 360 + randomOffset;
+    
+    // Новая позиция = текущая позиция + общее вращение
+    const newRotation = currentRotation + totalRotation;
+    setCurrentRotation(newRotation);
     
     // Останавливаем анимацию через 3 секунды (длительность анимации)
     setTimeout(() => {
