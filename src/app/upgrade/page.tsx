@@ -636,10 +636,7 @@ export default function UpgradePage() {
     if (selectedItems.length === 0) {
       if (minPrice !== 0) setMinPrice(0);
     } else {
-      // Устанавливаем minPrice чуть больше суммы выбранных предметов
-      // чтобы исключить предметы с ценой меньше или равной этой сумме
-      const newMinPrice = total + 0.01;
-      if (minPrice !== newMinPrice) setMinPrice(newMinPrice);
+      if (minPrice !== total) setMinPrice(total);
     }
   }, [selectedItems, calculateTotalPrice, isMinPriceManual, minPrice]);
 
