@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { useInventoryAPI, InventoryItem } from '@/hooks/useInventoryAPI';
 import { ItemCard } from '@/components/ui/RarityCard';
 import { CaseItem } from '@/hooks/useCasesAPI';
@@ -261,8 +261,25 @@ function CaseItemsList({
 }
 
 // Компонент для отображения списка предметов инвентаря
-function InventoryItemsList({ selectedItems, onItemSelect }: { selectedItems: SelectedItem[], onItemSelect: (item: InventoryItem) => void }) {
-  const { items, loading, error } = useInventoryAPI();
+function InventoryItemsList({ selectedItems, onItemSelect, inventoryUpdateRef }: { 
+  selectedItems: SelectedItem[], 
+  onItemSelect: (item: InventoryItem) => void,
+  inventoryUpdateRef?: React.MutableRefObject<{
+    updateItemAmounts: (updates: { itemId: string; amountChange: number }[]) => void;
+    addItemToInventory: (newItem: InventoryItem) => void;
+  } | null>
+}) {
+  const { items, loading, error, updateItemAmounts, addItemToInventory } = useInventoryAPI();
+  
+  // Передаем функции обновления родительскому компоненту через ref
+  React.useEffect(() => {
+    if (inventoryUpdateRef) {
+      inventoryUpdateRef.current = {
+        updateItemAmounts,
+        addItemToInventory
+      };
+    }
+  }, [updateItemAmounts, addItemToInventory, inventoryUpdateRef]);
 
   // Сортируем предметы по цене (по убыванию)
   const sortedItems = React.useMemo(() => {
@@ -270,19 +287,17 @@ function InventoryItemsList({ selectedItems, onItemSelect }: { selectedItems: Se
   }, [items]);
 
   // Преобразуем InventoryItem в CaseItem для совместимости с ItemCard
-  const convertToCaseItem = (inventoryItem: InventoryItem): CaseItem => {
-    return {
-      id: inventoryItem.item.id,
-      name: inventoryItem.item.name,
-      description: inventoryItem.item.description || '',
-      imageUrl: inventoryItem.item.imageUrl,
-      amount: inventoryItem.item.amount,
-      price: inventoryItem.item.price,
-      percentChance: inventoryItem.item.percentChance,
-      rarity: inventoryItem.item.rarity,
-      isWithdrawable: inventoryItem.item.isWithdrawable
-    };
-  };
+  const convertToCaseItem = (inventoryItem: InventoryItem): CaseItem => ({
+    id: inventoryItem.item.id,
+    name: inventoryItem.item.name,
+    description: inventoryItem.item.description || null,
+    imageUrl: inventoryItem.item.imageUrl || null,
+    amount: inventoryItem.amount,
+    price: inventoryItem.item.price,
+    percentChance: inventoryItem.item.percentChance || 0,
+    rarity: inventoryItem.item.rarity,
+    isWithdrawable: inventoryItem.item.isWithdrawable
+  });
 
   if (loading && items.length === 0) {
     return (
@@ -363,6 +378,12 @@ export default function UpgradePage() {
   const [isSpinning, setIsSpinning] = useState<boolean>(false);
   const [currentRotation, setCurrentRotation] = useState<number>(90); // Начальный угол 90 градусов
   const [animationDuration, setAnimationDuration] = useState<number>(3000); // Длительность анимации в мс
+  
+  // Ref для функций обновления инвентаря
+  const inventoryUpdateFunctions = useRef<{
+    updateItemAmounts: (updates: { itemId: string; amountChange: number }[]) => void;
+    addItemToInventory: (newItem: InventoryItem) => void;
+  } | null>(null);
 
   // Получаем данные из API
   const { 
@@ -452,131 +473,161 @@ export default function UpgradePage() {
     // Получаем текущий процент успеха для расчета позиций
     const currentPercentage = calculateUpgradeSuccessPercentage();
     
-    // === НОВАЯ СИСТЕМА РАСЧЕТА НА ОСНОВЕ 10000 ЧАСТЕЙ ===
-    const TOTAL_PARTS = 10000; // Разделяем круг на 10000 частей (0.01% точность)
-    const DEGREES_PER_PART = 360 / TOTAL_PARTS; // 0.036° на часть
+    // === ГАРАНТИРОВАННАЯ СИСТЕМА ПОЗИЦИОНИРОВАНИЯ ===
+    console.log('=== НАЧАЛО АНИМАЦИИ ===');
+    console.log('Результат от сервера:', result?.success ? 'УСПЕХ' : 'НЕУДАЧА');
+    console.log('Процент успеха:', currentPercentage + '%');
     
-    // Рассчитываем размеры зон в частях
-    const coloredSectionSizeParts = Math.round((currentPercentage / 100) * TOTAL_PARTS);
-    const graySectionSizeParts = TOTAL_PARTS - coloredSectionSizeParts;
+    // Определяем зоны в градусах (начинаем с 90° как в дизайне)
+    const coloredSectionStart = 90; // Начало цветной секции
+    const coloredSectionSize = (currentPercentage / 100) * 360; // Размер цветной секции в градусах
+    const coloredSectionEnd = coloredSectionStart + coloredSectionSize;
     
-    // Начальная позиция цветной секции (90° = 2500 частей)
-    const coloredSectionStartParts = Math.round(90 / DEGREES_PER_PART); // 2500 частей
-    const coloredSectionEndParts = coloredSectionStartParts + coloredSectionSizeParts;
+    // Нормализуем конец цветной секции
+    const normalizedColoredEnd = coloredSectionEnd > 360 ? coloredSectionEnd - 360 : coloredSectionEnd;
     
-    // Рассчитываем целевую позицию в зависимости от результата
-    let targetPositionParts: number;
+    let targetPosition: number;
     
     if (!result || !result.success) {
-      // При неудаче: целевая позиция в серой части
+      // === НЕУДАЧА: ГАРАНТИРОВАННО В СЕРОЙ ЗОНЕ ===
+      console.log('Режим: НЕУДАЧА - выбираем серую зону');
       
-      // Безопасный отступ от цветной части (30° = ~833 части)
-      const safeOffsetParts = Math.round(30 / DEGREES_PER_PART);
+      // Создаем массив всех серых позиций (исключаем цветную зону + отступы)
+      const safeOffset = 15; // Безопасный отступ в градусах
+      const grayPositions: number[] = [];
       
-      // Серая часть начинается после цветной + отступ
-      let graySectionStartParts = coloredSectionEndParts + safeOffsetParts;
-      let graySectionEndParts = coloredSectionStartParts + TOTAL_PARTS - safeOffsetParts;
-      
-      // Нормализуем к диапазону 0-TOTAL_PARTS
-      graySectionStartParts = graySectionStartParts % TOTAL_PARTS;
-      graySectionEndParts = graySectionEndParts % TOTAL_PARTS;
-      
-      // Выбираем случайную позицию в серой части
-      if (graySectionStartParts < graySectionEndParts) {
-        // Простой случай: серая часть не переходит через 0
-        const grayRangeParts = graySectionEndParts - graySectionStartParts;
-        targetPositionParts = graySectionStartParts + Math.floor(Math.random() * grayRangeParts);
-      } else {
-        // Сложный случай: серая часть переходит через 0
-        const range1Parts = TOTAL_PARTS - graySectionStartParts;
-        const range2Parts = graySectionEndParts;
-        const totalRangeParts = range1Parts + range2Parts;
-        const randomValueParts = Math.floor(Math.random() * totalRangeParts);
+      // Если цветная секция не переходит через 0°
+      if (coloredSectionEnd <= 360) {
+        // Серая зона 1: от 0° до начала цветной (с отступом)
+        const grayStart1 = 0;
+        const grayEnd1 = Math.max(0, coloredSectionStart - safeOffset);
+        if (grayEnd1 > grayStart1) {
+          for (let i = grayStart1; i <= grayEnd1; i += 0.5) {
+            grayPositions.push(i);
+          }
+        }
         
-        if (randomValueParts < range1Parts) {
-          targetPositionParts = graySectionStartParts + randomValueParts;
-        } else {
-          targetPositionParts = randomValueParts - range1Parts;
-        }
-      }
-      
-      // Дополнительная проверка: убеждаемся что не попали в цветную часть
-      const normalizedTargetParts = ((targetPositionParts % TOTAL_PARTS) + TOTAL_PARTS) % TOTAL_PARTS;
-      const normalizedColorStartParts = ((coloredSectionStartParts % TOTAL_PARTS) + TOTAL_PARTS) % TOTAL_PARTS;
-      const normalizedColorEndParts = ((coloredSectionEndParts % TOTAL_PARTS) + TOTAL_PARTS) % TOTAL_PARTS;
-      
-      if (normalizedColorStartParts <= normalizedColorEndParts) {
-        // Цветная часть не переходит через 0
-        if (normalizedTargetParts >= normalizedColorStartParts && normalizedTargetParts <= normalizedColorEndParts) {
-          targetPositionParts = Math.floor((graySectionStartParts + graySectionEndParts) / 2);
-          if (targetPositionParts >= TOTAL_PARTS) targetPositionParts -= TOTAL_PARTS;
+        // Серая зона 2: от конца цветной (с отступом) до 360°
+        const grayStart2 = Math.min(360, coloredSectionEnd + safeOffset);
+        const grayEnd2 = 360;
+        if (grayEnd2 > grayStart2) {
+          for (let i = grayStart2; i <= grayEnd2; i += 0.5) {
+            grayPositions.push(i);
+          }
         }
       } else {
-        // Цветная часть переходит через 0
-        if (normalizedTargetParts >= normalizedColorStartParts || normalizedTargetParts <= normalizedColorEndParts) {
-          targetPositionParts = Math.floor((graySectionStartParts + graySectionEndParts) / 2);
-          if (targetPositionParts >= TOTAL_PARTS) targetPositionParts -= TOTAL_PARTS;
+        // Цветная секция переходит через 0° - серая зона в середине
+        const grayStart = Math.min(360, normalizedColoredEnd + safeOffset);
+        const grayEnd = Math.max(0, coloredSectionStart - safeOffset);
+        
+        for (let i = grayStart; i <= grayEnd + 360; i += 0.5) {
+          const normalizedPos = i > 360 ? i - 360 : i;
+          if (normalizedPos >= grayStart || normalizedPos <= grayEnd) {
+            grayPositions.push(normalizedPos);
+          }
         }
       }
+      
+      // Выбираем случайную позицию из серых
+      if (grayPositions.length > 0) {
+        const randomIndex = Math.floor(Math.random() * grayPositions.length);
+        targetPosition = grayPositions[randomIndex];
+        console.log('Доступных серых позиций:', grayPositions.length);
+        console.log('Выбранная серая позиция:', targetPosition.toFixed(1) + '°');
+      } else {
+        // Аварийный вариант: противоположная сторона от цветной секции
+        targetPosition = (coloredSectionStart + 180) % 360;
+        console.log('АВАРИЙНЫЙ режим: позиция', targetPosition.toFixed(1) + '°');
+      }
+      
     } else {
-      // При успехе: целевая позиция в цветной части
+      // === УСПЕХ: ГАРАНТИРОВАННО В ЦВЕТНОЙ ЗОНЕ ===
+      console.log('Режим: УСПЕХ - выбираем цветную зону');
       
-      // Отступ от краев цветной части (минимум 10° или 10% от размера)
-      const marginParts = Math.min(
-        Math.round(10 / DEGREES_PER_PART), // 10° в частях
-        Math.floor(coloredSectionSizeParts * 0.1) // 10% от размера цветной части
-      );
+      // Создаем массив всех цветных позиций (с отступами от краев)
+      const marginOffset = Math.min(5, coloredSectionSize * 0.1); // Отступ от краев цветной зоны
+      const coloredPositions: number[] = [];
       
-      const availableRangeParts = coloredSectionSizeParts - 2 * marginParts;
-      if (availableRangeParts > 0) {
-        targetPositionParts = coloredSectionStartParts + marginParts + Math.floor(Math.random() * availableRangeParts);
+      const safeColorStart = coloredSectionStart + marginOffset;
+      const safeColorEnd = coloredSectionEnd - marginOffset;
+      
+      if (safeColorEnd > safeColorStart && coloredSectionEnd <= 360) {
+        // Простой случай: цветная зона не переходит через 0°
+        for (let i = safeColorStart; i <= safeColorEnd; i += 0.5) {
+          coloredPositions.push(i);
+        }
+      } else if (coloredSectionEnd > 360) {
+        // Цветная зона переходит через 0°
+        // Часть 1: от safeColorStart до 360°
+        for (let i = safeColorStart; i <= 360; i += 0.5) {
+          coloredPositions.push(i);
+        }
+        // Часть 2: от 0° до normalizedColoredEnd - marginOffset
+        const safeNormalizedEnd = normalizedColoredEnd - marginOffset;
+        for (let i = 0; i <= safeNormalizedEnd; i += 0.5) {
+          coloredPositions.push(i);
+        }
       } else {
-        // Если цветная часть слишком мала, берем центр
-        targetPositionParts = coloredSectionStartParts + Math.floor(coloredSectionSizeParts / 2);
+        // Очень маленькая цветная зона - берем центр
+        const centerPosition = coloredSectionStart + (coloredSectionSize / 2);
+        coloredPositions.push(centerPosition > 360 ? centerPosition - 360 : centerPosition);
+      }
+      
+      // Выбираем случайную позицию из цветных
+      if (coloredPositions.length > 0) {
+        const randomIndex = Math.floor(Math.random() * coloredPositions.length);
+        targetPosition = coloredPositions[randomIndex];
+        console.log('Доступных цветных позиций:', coloredPositions.length);
+        console.log('Выбранная цветная позиция:', targetPosition.toFixed(1) + '°');
+      } else {
+        // Аварийный вариант: центр цветной секции
+        targetPosition = coloredSectionStart + (coloredSectionSize / 2);
+        if (targetPosition > 360) targetPosition -= 360;
+        console.log('АВАРИЙНЫЙ режим: центр цветной зоны', targetPosition.toFixed(1) + '°');
       }
     }
     
-    // Конвертируем обратно в градусы
-    const targetPosition = targetPositionParts * DEGREES_PER_PART;
-    
-    // Рассчитываем количество полных оборотов (минимум 3 для эффектности)
-    const minFullRotations = 3;
-    const maxFullRotations = 5;
-    const fullRotations = minFullRotations + Math.random() * (maxFullRotations - minFullRotations);
-    
-    // Нормализуем текущую позицию к диапазону 0-360
+    // === РАСЧЕТ АНИМАЦИИ ===
+    // Нормализуем текущую позицию
     const normalizedCurrentRotation = ((currentRotation % 360) + 360) % 360;
     
-    // Рассчитываем разность до целевой позиции
+    // Рассчитываем количество полных оборотов для эффектности
+    const minFullRotations = 4; // Увеличиваем минимум для большей зрелищности
+    const maxFullRotations = 7;
+    const fullRotations = minFullRotations + Math.random() * (maxFullRotations - minFullRotations);
+    
+    // Рассчитываем кратчайший путь до целевой позиции
     let rotationDifference = targetPosition - normalizedCurrentRotation;
     
-    // Если разность отрицательная, добавляем полный оборот
-    if (rotationDifference < 0) {
+    // Корректируем направление вращения для плавности
+    if (rotationDifference > 180) {
+      rotationDifference -= 360;
+    } else if (rotationDifference < -180) {
       rotationDifference += 360;
     }
     
-    // Общее вращение = полные обороты + разность до цели
+    // Всегда вращаем по часовой стрелке для консистентности
+    if (rotationDifference <= 0) {
+      rotationDifference += 360;
+    }
+    
+    // Общее вращение = полные обороты + путь до цели
     const totalRotation = fullRotations * 360 + rotationDifference;
     
-    // Отладочная информация
-    console.log('=== АНИМАЦИЯ ОТЛАДКА (10000 ЧАСТЕЙ) ===');
-    console.log('Результат:', result?.success ? 'УСПЕХ' : 'НЕУДАЧА');
-    console.log('Процент успеха:', currentPercentage + '%');
-    console.log('Цветная секция (части):', coloredSectionSizeParts, '/', TOTAL_PARTS, `(${(coloredSectionSizeParts/TOTAL_PARTS*100).toFixed(2)}%)`);
-    console.log('Серая секция (части):', graySectionSizeParts, '/', TOTAL_PARTS, `(${(graySectionSizeParts/TOTAL_PARTS*100).toFixed(2)}%)`);
-    console.log('Целевая позиция (части):', targetPositionParts);
-    console.log('Целевая позиция (градусы):', targetPosition.toFixed(2) + '°');
-    console.log('Текущая позиция:', normalizedCurrentRotation.toFixed(2) + '°');
+    // Динамическая длительность анимации
+    const baseSpeed = 150; // градусов/сек (увеличиваем скорость)
+    const calculatedDuration = Math.max(3000, Math.min(6000, (totalRotation / baseSpeed) * 1000));
+    
+    console.log('Цветная зона:', coloredSectionStart.toFixed(1) + '° - ' + coloredSectionEnd.toFixed(1) + '°');
+    console.log('Текущая позиция:', normalizedCurrentRotation.toFixed(1) + '°');
+    console.log('Целевая позиция:', targetPosition.toFixed(1) + '°');
     console.log('Полных оборотов:', fullRotations.toFixed(1));
-    console.log('Разность до цели:', rotationDifference.toFixed(2) + '°');
-    console.log('Общее вращение:', totalRotation.toFixed(2) + '°');
-    console.log('========================================');
-    
-    // Рассчитываем динамическую длительность анимации
-    // Базовая скорость: 120 градусов в секунду
-    const baseSpeed = 120; // градусов/сек
-    const calculatedDuration = Math.max(2000, Math.min(5000, (totalRotation / baseSpeed) * 1000));
-    
+    console.log('Путь до цели:', rotationDifference.toFixed(1) + '°');
+    console.log('Общее вращение:', totalRotation.toFixed(1) + '°');
+    console.log('Длительность анимации:', (calculatedDuration / 1000).toFixed(1) + 'с');
+    console.log('=== КОНЕЦ РАСЧЕТОВ ===');
+
+    // Устанавливаем длительность анимации
     setAnimationDuration(calculatedDuration);
     
     // Устанавливаем новую позицию
@@ -586,6 +637,40 @@ export default function UpgradePage() {
     // Останавливаем анимацию через рассчитанное время
     setTimeout(() => {
       setIsSpinning(false);
+      
+      // Обновляем инвентарь после завершения анимации
+      if (inventoryUpdateFunctions.current) {
+        // Уменьшаем количество потраченных предметов
+        const itemUpdates = selectedItems.map(selectedItem => ({
+          itemId: selectedItem.inventoryItem.item.id,
+          amountChange: -selectedItem.selectedAmount
+        }));
+        
+        inventoryUpdateFunctions.current.updateItemAmounts(itemUpdates);
+        
+        // Если апгрейд успешен, добавляем выигранный предмет
+        if (result && result.success && selectedUpgradeItem) {
+          const wonItem: InventoryItem = {
+            item: {
+              id: selectedUpgradeItem.id,
+              name: selectedUpgradeItem.name,
+              description: selectedUpgradeItem.description || null,
+              imageUrl: selectedUpgradeItem.imageUrl || '',
+              amount: selectedUpgradeItem.amount,
+              price: selectedUpgradeItem.price,
+              percentChance: selectedUpgradeItem.percentChance,
+              rarity: selectedUpgradeItem.rarity,
+              isWithdrawable: selectedUpgradeItem.isWithdrawable
+            },
+            amount: 1 // Добавляем 1 экземпляр выигранного предмета
+          };
+          
+          inventoryUpdateFunctions.current.addItemToInventory(wonItem);
+        }
+      }
+      
+      // Очищаем выбранные предметы
+      setSelectedItems([]);
     }, calculatedDuration);
   };
 
@@ -807,7 +892,11 @@ export default function UpgradePage() {
                </div>
              </div>
            </div>
-           <InventoryItemsList selectedItems={selectedItems} onItemSelect={handleItemSelect} />
+           <InventoryItemsList 
+             selectedItems={selectedItems} 
+             onItemSelect={handleItemSelect}
+             inventoryUpdateRef={inventoryUpdateFunctions}
+           />
          </div>
         <div className='flex box-border h-full flex-col items-center gap-3 flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)] min_h-0 overflow-hidden'>
           <div className='flex h-[52px] px-4 justify-between items-center self-stretch border-b border-[rgba(249,248,252,0.05)]'>

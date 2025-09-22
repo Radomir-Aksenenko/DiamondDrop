@@ -452,6 +452,47 @@ export const useInventoryAPI = () => {
     }
   }, [currentPage, pageSize]);
 
+  // Функция для локального обновления количества предметов
+  const updateItemAmounts = useCallback((updates: { itemId: string; amountChange: number }[]) => {
+    setItems(prevItems => {
+      return prevItems.map(inventoryItem => {
+        const update = updates.find(u => u.itemId === inventoryItem.item.id);
+        if (update) {
+          const newAmount = inventoryItem.amount + update.amountChange;
+          // Если количество становится 0 или меньше, удаляем предмет из инвентаря
+          if (newAmount <= 0) {
+            return null;
+          }
+          return {
+            ...inventoryItem,
+            amount: newAmount
+          };
+        }
+        return inventoryItem;
+      }).filter(Boolean) as InventoryItem[];
+    });
+  }, []);
+
+  // Функция для добавления нового предмета в инвентарь
+  const addItemToInventory = useCallback((newItem: InventoryItem) => {
+    setItems(prevItems => {
+      // Проверяем, есть ли уже такой предмет в инвентаре
+      const existingItemIndex = prevItems.findIndex(item => item.item.id === newItem.item.id);
+      
+      if (existingItemIndex >= 0) {
+        // Если предмет уже есть, увеличиваем его количество
+        return prevItems.map((item, index) => 
+          index === existingItemIndex 
+            ? { ...item, amount: item.amount + newItem.amount }
+            : item
+        );
+      } else {
+        // Если предмета нет, добавляем его в начало списка
+        return [newItem, ...prevItems];
+      }
+    });
+  }, []);
+
   // Начальная загрузка
   useEffect(() => {
     if (!isInitialized) {
@@ -470,5 +511,7 @@ export const useInventoryAPI = () => {
     loadMore,
     refresh,
     softRefresh,
+    updateItemAmounts,
+    addItemToInventory,
   };
 };
