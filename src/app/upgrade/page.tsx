@@ -292,7 +292,7 @@ function InventoryItemsList({ selectedItems, onItemSelect, inventoryUpdateRef }:
     name: inventoryItem.item.name,
     description: inventoryItem.item.description || null,
     imageUrl: inventoryItem.item.imageUrl || null,
-    amount: inventoryItem.amount,
+    amount: inventoryItem.item.amount, // Количество единиц в ОДНОМ предмете для x на иконке
     price: inventoryItem.item.price,
     percentChance: inventoryItem.item.percentChance || 0,
     rarity: inventoryItem.item.rarity,
@@ -351,7 +351,7 @@ function InventoryItemsList({ selectedItems, onItemSelect, inventoryUpdateRef }:
               <div key={inventoryItem.item.id} className="relative group">
                 <ItemCard
                   item={convertToCaseItem(inventoryItem)}
-                  amount={availableAmount}
+                  amount={inventoryItem.amount}
                   orientation="horizontal"
                   className="hover:brightness-110 transition-all"
                   fullWidth
@@ -621,7 +621,7 @@ export default function UpgradePage() {
       name: item.name || '',
       description: item.description || '',
       imageUrl: item.imageUrl || '',
-      amount: upgradeInventoryItem.amount || 0,
+      amount: item.amount || 0, // Количество единиц в одном предмете для оверлея x
       price: item.price || 0,
       percentChance: item.percentChance || 0,
       rarity: rarity,
@@ -664,6 +664,14 @@ export default function UpgradePage() {
   React.useEffect(() => {
     fetchUpgradeItems(minPrice);
   }, [minPrice, fetchUpgradeItems]);
+
+  // Если пользователь полностью очистил окно апгрейда (нет выбранных предметов),
+  // то сбрасываем также и целевой предмет для улучшения
+  React.useEffect(() => {
+    if (selectedItems.length === 0 && selectedUpgradeItem) {
+      setSelectedUpgradeItem(null);
+    }
+  }, [selectedItems.length, selectedUpgradeItem]);
 
   const handleItemSelect = (inventoryItem: InventoryItem) => {
     if (selectedItems.length >= MAX_UPGRADE_ITEMS) {
