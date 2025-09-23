@@ -473,120 +473,46 @@ export default function UpgradePage() {
     // Получаем текущий процент успеха для расчета позиций
     const currentPercentage = calculateUpgradeSuccessPercentage();
     
-    // === ГАРАНТИРОВАННАЯ СИСТЕМА ПОЗИЦИОНИРОВАНИЯ ===
+    // === ДЕТЕРМИНИРОВАННАЯ СИСТЕМА ПОЗИЦИОНИРОВАНИЯ (ЦЕНТР ЗОН) ===
     console.log('=== НАЧАЛО АНИМАЦИИ ===');
     console.log('Результат от сервера:', result?.success ? 'УСПЕХ' : 'НЕУДАЧА');
     console.log('Процент успеха:', currentPercentage + '%');
-    
-    // Определяем зоны в градусах (начинаем с 90° как в дизайне)
-    const coloredSectionStart = 90; // Начало цветной секции
-    const coloredSectionSize = (currentPercentage / 100) * 360; // Размер цветной секции в градусах
-    const coloredSectionEnd = coloredSectionStart + coloredSectionSize;
-    
-    // Нормализуем конец цветной секции
-    const normalizedColoredEnd = coloredSectionEnd > 360 ? coloredSectionEnd - 360 : coloredSectionEnd;
-    
+
+    // Геометрия зон: цветная дуга всегда начинается с 90° (верх)
+    const coloredSectionStart = 90; // Начало цветной секции (направление указателя по умолчанию)
+    const coloredSectionSize = Math.max(0, Math.min(360, (currentPercentage / 100) * 360)); // Размер цветной секции
+
+    // Центры зон
+    const coloredCenter = (coloredSectionStart + coloredSectionSize / 2) % 360;
+    const grayCenter = (coloredCenter + 180) % 360; // Центр серой зоны всегда противоположен цветной
+
     let targetPosition: number;
-    
-    if (!result || !result.success) {
-      // === НЕУДАЧА: ГАРАНТИРОВАННО В СЕРОЙ ЗОНЕ ===
-      console.log('Режим: НЕУДАЧА - выбираем серую зону');
-      
-      // Создаем массив всех серых позиций (исключаем цветную зону + отступы)
-      const safeOffset = 15; // Безопасный отступ в градусах
-      const grayPositions: number[] = [];
-      
-      // Если цветная секция не переходит через 0°
-      if (coloredSectionEnd <= 360) {
-        // Серая зона 1: от 0° до начала цветной (с отступом)
-        const grayStart1 = 0;
-        const grayEnd1 = Math.max(0, coloredSectionStart - safeOffset);
-        if (grayEnd1 > grayStart1) {
-          for (let i = grayStart1; i <= grayEnd1; i += 0.5) {
-            grayPositions.push(i);
-          }
-        }
-        
-        // Серая зона 2: от конца цветной (с отступом) до 360°
-        const grayStart2 = Math.min(360, coloredSectionEnd + safeOffset);
-        const grayEnd2 = 360;
-        if (grayEnd2 > grayStart2) {
-          for (let i = grayStart2; i <= grayEnd2; i += 0.5) {
-            grayPositions.push(i);
-          }
-        }
-      } else {
-        // Цветная секция переходит через 0° - серая зона в середине
-        const grayStart = Math.min(360, normalizedColoredEnd + safeOffset);
-        const grayEnd = Math.max(0, coloredSectionStart - safeOffset);
-        
-        for (let i = grayStart; i <= grayEnd + 360; i += 0.5) {
-          const normalizedPos = i > 360 ? i - 360 : i;
-          if (normalizedPos >= grayStart || normalizedPos <= grayEnd) {
-            grayPositions.push(normalizedPos);
-          }
-        }
-      }
-      
-      // Выбираем случайную позицию из серых
-      if (grayPositions.length > 0) {
-        const randomIndex = Math.floor(Math.random() * grayPositions.length);
-        targetPosition = grayPositions[randomIndex];
-        console.log('Доступных серых позиций:', grayPositions.length);
-        console.log('Выбранная серая позиция:', targetPosition.toFixed(1) + '°');
-      } else {
-        // Аварийный вариант: противоположная сторона от цветной секции
-        targetPosition = (coloredSectionStart + 180) % 360;
-        console.log('АВАРИЙНЫЙ режим: позиция', targetPosition.toFixed(1) + '°');
-      }
-      
+
+    if (result && result.success && coloredSectionSize > 0) {
+      // УСПЕХ: всегда в цветной зоне (центр +/- безопасный джиттер)
+      const safeMargin = Math.min(10, Math.max(3, coloredSectionSize * 0.1));
+      const maxJitter = Math.max(0, coloredSectionSize / 2 - safeMargin);
+      const jitter = maxJitter > 0 ? (Math.random() * 2 - 1) * maxJitter : 0;
+      targetPosition = (coloredCenter + jitter + 360) % 360;
+      console.log('Режим: УСПЕХ');
+      console.log('Цветная дуга (°):', coloredSectionSize.toFixed(1));
+      console.log('Центр цветной зоны:', coloredCenter.toFixed(1) + '°');
+      console.log('Джиттер:', jitter.toFixed(1) + '°');
+      console.log('Целевая позиция (цвет):', targetPosition.toFixed(1) + '°');
     } else {
-      // === УСПЕХ: ГАРАНТИРОВАННО В ЦВЕТНОЙ ЗОНЕ ===
-      console.log('Режим: УСПЕХ - выбираем цветную зону');
-      
-      // Создаем массив всех цветных позиций (с отступами от краев)
-      const marginOffset = Math.min(5, coloredSectionSize * 0.1); // Отступ от краев цветной зоны
-      const coloredPositions: number[] = [];
-      
-      const safeColorStart = coloredSectionStart + marginOffset;
-      const safeColorEnd = coloredSectionEnd - marginOffset;
-      
-      if (safeColorEnd > safeColorStart && coloredSectionEnd <= 360) {
-        // Простой случай: цветная зона не переходит через 0°
-        for (let i = safeColorStart; i <= safeColorEnd; i += 0.5) {
-          coloredPositions.push(i);
-        }
-      } else if (coloredSectionEnd > 360) {
-        // Цветная зона переходит через 0°
-        // Часть 1: от safeColorStart до 360°
-        for (let i = safeColorStart; i <= 360; i += 0.5) {
-          coloredPositions.push(i);
-        }
-        // Часть 2: от 0° до normalizedColoredEnd - marginOffset
-        const safeNormalizedEnd = normalizedColoredEnd - marginOffset;
-        for (let i = 0; i <= safeNormalizedEnd; i += 0.5) {
-          coloredPositions.push(i);
-        }
-      } else {
-        // Очень маленькая цветная зона - берем центр
-        const centerPosition = coloredSectionStart + (coloredSectionSize / 2);
-        coloredPositions.push(centerPosition > 360 ? centerPosition - 360 : centerPosition);
-      }
-      
-      // Выбираем случайную позицию из цветных
-      if (coloredPositions.length > 0) {
-        const randomIndex = Math.floor(Math.random() * coloredPositions.length);
-        targetPosition = coloredPositions[randomIndex];
-        console.log('Доступных цветных позиций:', coloredPositions.length);
-        console.log('Выбранная цветная позиция:', targetPosition.toFixed(1) + '°');
-      } else {
-        // Аварийный вариант: центр цветной секции
-        targetPosition = coloredSectionStart + (coloredSectionSize / 2);
-        if (targetPosition > 360) targetPosition -= 360;
-        console.log('АВАРИЙНЫЙ режим: центр цветной зоны', targetPosition.toFixed(1) + '°');
-      }
+      // НЕУДАЧА: всегда в серой зоне (центр +/- безопасный джиттер)
+      const graySize = 360 - coloredSectionSize;
+      const safeMargin = Math.min(15, Math.max(5, graySize * 0.1));
+      const maxJitter = Math.max(0, graySize / 2 - safeMargin);
+      const jitter = maxJitter > 0 ? (Math.random() * 2 - 1) * maxJitter : 0;
+      targetPosition = (grayCenter + jitter + 360) % 360;
+      console.log('Режим: НЕУДАЧА');
+      console.log('Серая дуга (°):', graySize.toFixed(1));
+      console.log('Центр серой зоны:', grayCenter.toFixed(1) + '°');
+      console.log('Джиттер:', jitter.toFixed(1) + '°');
+      console.log('Целевая позиция (серый):', targetPosition.toFixed(1) + '°');
     }
-    
+
     // === РАСЧЕТ АНИМАЦИИ ===
     // Нормализуем текущую позицию
     const normalizedCurrentRotation = ((currentRotation % 360) + 360) % 360;
@@ -618,7 +544,8 @@ export default function UpgradePage() {
     const baseSpeed = 150; // градусов/сек (увеличиваем скорость)
     const calculatedDuration = Math.max(3000, Math.min(6000, (totalRotation / baseSpeed) * 1000));
     
-    console.log('Цветная зона:', coloredSectionStart.toFixed(1) + '° - ' + coloredSectionEnd.toFixed(1) + '°');
+    const coloredSectionEndForLog = (coloredSectionStart + coloredSectionSize) % 360;
+    console.log('Цветная зона:', `${coloredSectionStart.toFixed(1)}° - ${coloredSectionEndForLog.toFixed(1)}° (размер: ${coloredSectionSize.toFixed(1)}°)`);
     console.log('Текущая позиция:', normalizedCurrentRotation.toFixed(1) + '°');
     console.log('Целевая позиция:', targetPosition.toFixed(1) + '°');
     console.log('Полных оборотов:', fullRotations.toFixed(1));
