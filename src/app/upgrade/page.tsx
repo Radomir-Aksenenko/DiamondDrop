@@ -5,6 +5,7 @@ import { useInventoryAPI, InventoryItem } from '@/hooks/useInventoryAPI';
 import { ItemCard } from '@/components/ui/RarityCard';
 import { CaseItem } from '@/hooks/useCasesAPI';
 import useUpgradeAPI, { UpgradeInventoryItem } from '@/hooks/useUpgradeAPI';
+import Link from 'next/link'
 
 // Константа процента удалена как неиспользуемая
 
@@ -204,24 +205,24 @@ function CaseItemsList({
   if (!hasSelectedItems) {
     return (
       <div className='flex-1 flex items-center justify-center'>
-        <p className='text-[#F9F8FC] opacity-50 text-center font-["Actay_Wide"] text-base'>
-          Сначала выберите предметы<br />из инвентаря
-        </p>
+        <p className='text-[#5C5B60] text-center font-["Actay_Wide"] text-base'>Выберите до 8 предметов<br/>для апгрейда</p>
       </div>
     );
   }
 
-  if (items.length === 0) {
+  // Фильтруем предметы на основе минимальной цены и выбранного предмета для улучшения
+  const filteredItems = sortedItems.filter(item => item.price >= Math.max(calculateTotalPrice(), 0));
+
+  if (filteredItems.length === 0 && hasSelectedItems) {
     return (
       <div className='flex-1 flex items-center justify-center'>
-        <p className='text-[#F9F8FC] opacity-50 text-center'>Нет доступных предметов</p>
+        <p className='text-[#5C5B60] text-center font-["Actay_Wide"] text-base'>Нет доступных предметов<br/>для данной цены</p>
       </div>
     );
   }
 
   return (
     <div className='flex px-4 flex-col items-stretch gap-2 flex-1 self-stretch min-h-0'>
-      {/* Область со скроллом для сетки предметов */}
       <div 
         className="flex-1 w-full overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-[#F9F8FC]/20 scrollbar-track-[rgba(249,248,252,0.05)] hover:scrollbar-thumb-[#F9F8FC]/40 transition-colors"
         style={{
@@ -236,23 +237,26 @@ function CaseItemsList({
           div::-webkit-scrollbar-thumb { background: rgba(249, 248, 252, 0.2); border-radius: 2px; }
           div::-webkit-scrollbar-thumb:hover { background: rgba(249, 248, 252, 0.3); }
         `}</style>
-        <div className='grid grid-cols-3 gap-2'>
-          {sortedItems.map((item, index) => (
-            <ItemCard
-              key={`${item.id}-${index}`}
-              item={item}
-              amount={calculateItemUpgradePercentage(item.price)} // Используем правильный расчет процента
-              fullWidth={true}
-              hoverIcon='plus'
-              onClick={() => {
-                if (!selectedUpgradeItem) {
-                  onItemSelect(item);
-                }
-              }}
-              showPercentage={true}
-              isSelected={selectedUpgradeItem?.id === item.id}
-              onRemove={selectedUpgradeItem?.id === item.id ? onItemRemove : undefined}
-            />
+        <div className="grid grid-cols-2 auto-rows-[120px] gap-3">
+          {filteredItems.map((item) => (
+            <div key={item.id} className="relative group">
+              <ItemCard
+                item={item}
+                amount={calculateItemUpgradePercentage(item.price)}
+                orientation="vertical"
+                className="hover:brightness-110 transition-all"
+                fullWidth
+                isSelected={selectedUpgradeItem?.id === item.id}
+                onRemove={selectedUpgradeItem?.id === item.id ? onItemRemove : undefined}
+                onClick={() => {
+                  if (selectedUpgradeItem?.id === item.id) {
+                    onItemRemove();
+                  } else {
+                    onItemSelect(item);
+                  }
+                }}
+              />
+            </div>
           ))}
         </div>
       </div>
@@ -319,8 +323,11 @@ function InventoryItemsList({ selectedItems, onItemSelect, inventoryUpdateRef }:
 
   if (items.length === 0) {
     return (
-      <div className='flex px-4 flex-col items-center justify-center gap-2 flex-1 self-stretch'>
-        <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-sm opacity-50'>Инвентарь пуст</p>
+      <div className='flex px-4 flex-col items-center justify-center gap-4 flex-1 self-stretch'>
+        <p className='text-[#5C5B60] text-center font-["Actay_Wide"] text-base'>Предметы можно найти <Link href="/case" className="text-[#5C5ADC] underline">в кейсах</Link></p>
+        <Link href="/case" className="inline-flex">
+          <button className='px-6 py-3 rounded-xl bg-[rgba(249,248,252,0.05)] text-[#F9F8FC] font-["Actay_Wide"] text-base hover:bg-[rgba(249,248,252,0.1)] transition'>Перейти</button>
+        </Link>
       </div>
     );
   }
@@ -351,7 +358,7 @@ function InventoryItemsList({ selectedItems, onItemSelect, inventoryUpdateRef }:
               <div key={inventoryItem.item.id} className="relative group">
                 <ItemCard
                   item={convertToCaseItem(inventoryItem)}
-                  amount={inventoryItem.amount}
+                  amount={availableAmount}
                   orientation="horizontal"
                   className="hover:brightness-110 transition-all"
                   fullWidth
@@ -703,7 +710,7 @@ export default function UpgradePage() {
       <div className='flex justify-center items-stretch gap-2 self-stretch min-h-0 h-[300px]'>
         <div className='flex flex-col justify-center items-center flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)] p-4 min-h-0 max-h-full overflow-hidden'>
           {selectedItems.length === 0 ? (
-            <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base opacity-50'>Выберите до 8 предметов<br/>для апгрейда</p>
+            <p className='text-[#5C5B60] text-center font-["Actay_Wide"] text-base'>Выберите до 8 предметов<br/>для апгрейда</p>
           ) : (
             <div className="flex flex-col gap-2 w-full">
               <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-sm opacity-70 mb-2'>Выбрано предметов: {selectedItems.length}/{MAX_UPGRADE_ITEMS}</p>
@@ -791,11 +798,11 @@ export default function UpgradePage() {
         <div className='flex pt-3 flex-col justify-between items-center flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)] min-h-0'>
           {!selectedUpgradeItem ? (
             <div className='flex flex-col items-center justify-center h-full'>
-              <p className='text-white text-center font-["Actay_Wide"] text-base font-bold opacity-30'>Выберите предмет,<br/>который хотите получить</p>
+              <p className='text-[#5C5B60] text-center font-["Actay_Wide"] text-base font-bold'>Выберите предмет,<br/>который хотите получить</p>
             </div>
           ) : (
             <>
-              <p className='text-white text-center font-["Actay_Wide"] text-base font-bold opacity-30'>Предмет, <br/>который хотите получить</p>
+              <p className='text-[#5C5B60] text-center font-["Actay_Wide"] text-base font-bold'>Предмет, <br/>который хотите получить</p>
               <div className='flex w-[160px] h-[160px] flex-col justify-end items-end aspect-square bg-center bg-cover bg-no-repeat' style={{ backgroundImage: `url(${selectedUpgradeItem.imageUrl})` }}>
                 <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-2xl font-bold opacity-30'>x{selectedUpgradeItem.amount}</p>
               </div>
