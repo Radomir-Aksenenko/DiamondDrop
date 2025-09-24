@@ -152,15 +152,32 @@ function CaseItemsList({
   error,
   selectedUpgradeItem, 
   onItemSelect, 
-  onItemRemove
+  onItemRemove,
+  calculateTotalPrice,
+  rtp,
+  hasSelectedItems
 }: { 
   items: CaseItem[], 
   loading: boolean,
   error?: string | null,
   selectedUpgradeItem: CaseItem | null,
   onItemSelect: (item: CaseItem) => void,
-  onItemRemove: () => void
+  onItemRemove: () => void,
+  calculateTotalPrice: () => number,
+  rtp: number,
+  hasSelectedItems: boolean
 }) {
+  // Функция для расчета процента успешного апгрейда для конкретного предмета
+  const calculateItemUpgradePercentage = (upgradeItemPrice: number) => {
+    const totalUserItemsPrice = calculateTotalPrice();
+    
+    if (upgradeItemPrice === 0 || rtp === 0) {
+      return 0;
+    }
+    
+    const percentage = (totalUserItemsPrice / upgradeItemPrice) * rtp;
+    return Math.ceil(percentage); // Округляем вверх до целого числа
+  };
   // Сортируем предметы по цене (по возрастанию для правого блока)
   const sortedItems = React.useMemo(() => {
     return [...items].sort((a, b) => a.price - b.price);
@@ -184,8 +201,25 @@ function CaseItemsList({
     );
   }
 
-  // Всегда показываем список доступных предметов для апгрейда (без зависимости от выбранных предметов слева)
-  const filteredItems = sortedItems;
+  // Если нет выбранных предметов из инвентаря, показываем сообщение
+  if (!hasSelectedItems) {
+    return (
+      <div className='flex-1 flex items-center justify-center'>
+        <p className='text-[#5C5B60] text-center font-["Actay_Wide"] text-base'>Выберите до 8 предметов<br/>для апгрейда</p>
+      </div>
+    );
+  }
+
+  // Фильтруем предметы на основе минимальной цены и выбранного предмета для улучшения
+  const filteredItems = sortedItems.filter(item => item.price >= Math.max(calculateTotalPrice(), 0));
+
+  if (filteredItems.length === 0 && hasSelectedItems) {
+    return (
+      <div className='flex-1 flex items-center justify-center'>
+        <p className='text-[#5C5B60] text-center font-["Actay_Wide"] text-base'>Нет доступных предметов<br/>для данной цены</p>
+      </div>
+    );
+  }
 
   return (
     <div className='flex px-4 flex-col items-stretch gap-2 flex-1 self-stretch min-h-0'>
@@ -203,15 +237,16 @@ function CaseItemsList({
           div::-webkit-scrollbar-thumb { background: rgba(249, 248, 252, 0.2); border-radius: 2px; }
           div::-webkit-scrollbar-thumb:hover { background: rgba(249, 248, 252, 0.3); }
         `}</style>
-        <div className="grid grid-cols-2 auto-rows-[120px] gap-3">
+        <div className="grid grid-cols-2 auto-rows-[76px] gap-3">
           {filteredItems.map((item) => (
             <div key={item.id} className="relative group">
               <ItemCard
                 item={item}
-                amount={item.amount}
-                orientation="vertical"
+                amount={calculateItemUpgradePercentage(item.price)}
+                orientation="horizontal"
                 className="hover:brightness-110 transition-all"
                 fullWidth
+                showPercentage
                 isSelected={selectedUpgradeItem?.id === item.id}
                 onRemove={selectedUpgradeItem?.id === item.id ? onItemRemove : undefined}
                 onClick={() => {
@@ -845,6 +880,9 @@ export default function UpgradePage() {
              selectedUpgradeItem={selectedUpgradeItem}
              onItemSelect={handleUpgradeItemSelect}
              onItemRemove={handleUpgradeItemRemove}
+             calculateTotalPrice={calculateTotalPrice}
+             rtp={rtp}
+             hasSelectedItems={selectedItems.length > 0}
            />
          </div>
        </div>

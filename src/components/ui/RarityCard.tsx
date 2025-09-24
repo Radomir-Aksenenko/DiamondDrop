@@ -547,32 +547,66 @@ export function ItemCard({
     >
       {/* Иконка при наведении на всю карточку */}
        {onClick && (
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg bg-black/20 z-10">
-            {hoverIcon === 'plus' ? (
-              <div className="w-8 h-8 bg-[#5C5ADC] rounded-full flex items-center justify-center">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M8 3V13M3 8H13" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-                </svg>
-              </div>
+          <div 
+            className={`absolute inset-0 flex items-center justify-center transition-opacity duration-200 rounded-lg z-10 ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+            style={fullWidth ? {
+              background: isSelected && onRemove ? 'rgba(35, 35, 40, 0.90)' : 'rgba(13, 13, 17, 0.70)',
+              backdropFilter: 'blur(2px)'
+            } : {
+              background: 'rgba(0, 0, 0, 0.5)'
+            }}
+            onClick={(e) => {
+              if (isSelected && onRemove) {
+                e.stopPropagation();
+                onRemove();
+              } else if (onClick) {
+                onClick();
+              }
+            }}
+          >
+            {isSelected ? (
+              onRemove ? (
+                // Минус для удаления
+                <div className="w-8 h-8 bg-[#232328] rounded-full flex items-center justify-center group-hover:bg-[#232328]">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 8H13" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+                  </svg>
+                </div>
+              ) : (
+                // Галочка для выбранного предмета
+                <div className="w-8 h-8 bg-[#5C5ADC] rounded-full flex items-center justify-center">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 8L6 11L13 4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              )
             ) : (
-              <svg 
-                width="32" 
-                height="32" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                xmlns="http://www.w3.org/2000/svg"
-                className="text-white/80 drop-shadow-lg"
-              >
-                <path 
-                  d="M21 21L16.514 16.506M19 10.5C19 15.194 15.194 19 10.5 19C5.806 19 2 15.194 2 10.5C2 5.806 5.806 2 10.5 2C15.194 2 19 5.806 19 10.5Z" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                />
-              </svg>
+              hoverIcon === 'plus' ? (
+                <div className="w-8 h-8 bg-[#5C5ADC] rounded-full flex items-center justify-center">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M8 3V13M3 8H13" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+                  </svg>
+                </div>
+              ) : (
+                <svg 
+                  width="32" 
+                  height="32" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="text-white/80 drop-shadow-lg"
+                >
+                  <path 
+                    d="M21 21L16.514 16.506M19 10.5C19 15.194 15.194 19 10.5 19C5.806 19 2 15.194 2 10.5C2 5.806 5.806 2 10.5 2C15.194 2 19 5.806 19 10.5Z" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              )
             )}
-        </div>
+          </div>
       )}
       {/* Верхняя часть - цена и количество штук */}
       <div className="flex flex-col items-center justify-center text-center">
