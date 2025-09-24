@@ -237,7 +237,7 @@ function CaseItemsList({
           div::-webkit-scrollbar-thumb { background: rgba(249, 248, 252, 0.2); border-radius: 2px; }
           div::-webkit-scrollbar-thumb:hover { background: rgba(249, 248, 252, 0.3); }
         `}</style>
-        <div className="grid grid-cols-2 auto-rows-[76px] gap-3">
+        <div className="grid grid-cols-3 auto-rows-[76px] gap-3">
           {filteredItems.map((item) => (
             <div key={item.id} className="relative group">
               <ItemCard
