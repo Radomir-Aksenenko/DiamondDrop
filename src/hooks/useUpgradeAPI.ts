@@ -150,7 +150,7 @@ export default function useUpgradeAPI() {
 
       // Формируем URL безопасно
       const url = new URL(`${API_BASE_URL}/upgrade/items`);
-      url.searchParams.set('min_price', String(minPrice));
+      url.searchParams.set('minprice', String(minPrice));
 
       const response = await fetch(url.toString(), {
         method: 'GET',
