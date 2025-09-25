@@ -12,10 +12,18 @@ interface UpgradeResponse {
 }
 
 /**
+ * Интерфейс элемента для апгрейда
+ */
+interface UpgradeSelectedItem {
+  id: string;
+  amount: number;
+}
+
+/**
  * Интерфейс запроса на выполнение апгрейда
  */
 interface UpgradeRequest {
-  selectedItemIds: string[];
+  selectedItemIds: UpgradeSelectedItem[];
   targetItemId: string;
 }
 
@@ -268,22 +276,15 @@ export default function useUpgradeAPI() {
         throw new Error('Токен авторизации не найден');
       }
 
-      const response = await (async () => {
-        const url = new URL(`${API_BASE_URL}/upgrade`);
-        // Добавляем параметры в URL согласно требованию
-        url.searchParams.set('SelectedItemIds', upgradeData.selectedItemIds.join(','));
-        url.searchParams.set('TargetItemId', upgradeData.targetItemId);
-    
-        return fetch(url.toString(), {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'accept': 'application/json',
-            'Authorization': token,
-          },
-          body: JSON.stringify(upgradeData)
-        });
-      })();
+      const response = await fetch(`${API_BASE_URL}/upgrade`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'accept': 'application/json',
+          'Authorization': token,
+        },
+        body: JSON.stringify(upgradeData)
+      });
     
       if (!response.ok) {
         throw new Error(`Ошибка API: ${response.status} ${response.statusText}`);

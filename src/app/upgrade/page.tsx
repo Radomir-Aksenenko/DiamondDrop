@@ -471,7 +471,10 @@ export default function UpgradePage() {
     
     // Подготавливаем данные для API
     const upgradeData = {
-      selectedItemIds: selectedItems.map(item => item.inventoryItem.item.id),
+      selectedItemIds: selectedItems.map(item => ({
+        id: item.inventoryItem.item.id,
+        amount: item.selectedAmount
+      })),
       targetItemId: selectedUpgradeItem.id
     };
     
@@ -709,7 +712,7 @@ export default function UpgradePage() {
   return (
     <div className="h-[calc(100vh-85px-1rem)] flex flex-col items-stretch gap-2 self-stretch overflow-hidden py-2">
       <div className='flex justify-center items-stretch gap-2 self-stretch min-h-0 h-[300px]'>
-        <div className='flex flex-col justify-center items-center flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)] p-4 min-h-0 max-h-full overflow-hidden'>
+        <div className='flex flex-col justify-center items-center flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)] py-4 min-h-0 max-h-full overflow-hidden'>
           {selectedItems.length === 0 ? (
             <p className='text-[#5C5B60] text-center font-["Actay_Wide"] text-base'>Выберите до 8 предметов<br/>для апгрейда</p>
           ) : (
@@ -807,7 +810,7 @@ export default function UpgradePage() {
               <div className='flex w-[160px] h-[160px] flex-col justify-end items-end aspect-square bg-center bg-cover bg-no-repeat' style={{ backgroundImage: `url(${selectedUpgradeItem.imageUrl})` }}>
                 <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-2xl font-bold opacity-30'>x{selectedUpgradeItem.amount}</p>
               </div>
-              <div className='flex px-4 py-3 justify-between items-center self-stretch border-t border-[rgba(249,248,252,0.05)]'>
+              <div className='flex py-3 justify-between items-center self-stretch border-t border-[rgba(249,248,252,0.05)]'>
                 <p className={`text-center font-["Actay_Wide"] text-base font-bold ${rarityTextColor(selectedUpgradeItem.rarity)}`}>{selectedUpgradeItem.name}</p>
                 <div>
                   <span className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold'>{selectedUpgradeItem.price}</span>
