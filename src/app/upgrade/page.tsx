@@ -325,8 +325,8 @@ function InventoryItemsList({ selectedItems, onItemSelect, inventoryUpdateRef }:
   if (items.length === 0) {
     return (
       <div className='flex px-4 flex-col items-center justify-center gap-4 flex-1 self-stretch'>
-        <p className='text-[#5C5B60] text-center font-["Actay_Wide"] text-base'>Предметы можно найти <Link href="/case" className="text-[#5C5ADC] underline">в кейсах</Link></p>
-        <Link href="/case" className="inline-flex">
+        <p className='text-[#5C5B60] text-center font-["Actay_Wide"] text-base'>Предметы можно найти <Link href="/" className="text-[#5C5ADC] underline">в кейсах</Link></p>
+        <Link href="/" className="inline-flex">
           <button className='px-6 py-3 rounded-xl bg-[rgba(249,248,252,0.05)] text-[#F9F8FC] font-["Actay_Wide"] text-base hover:bg-[rgba(249,248,252,0.1)] transition'>Перейти</button>
         </Link>
       </div>
