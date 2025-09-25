@@ -95,7 +95,7 @@ export default function RecentWins() {
                 amount={win.amount}
                 orientation="horizontal"
                 playerName={win.playerName}
-                playerAvatarUrl={win.playerAvatarUrl}
+                username={win.username}
                 showPlayerOnHover={true}
                 onPlayerClick={() => handlePlayerClick(win.playerName)}
                 onCardClick={() => handleCaseClick(win.caseId)}

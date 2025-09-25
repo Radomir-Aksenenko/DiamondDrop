@@ -64,6 +64,7 @@ const mockLiveWins: LiveWinData[] = [
   {
     id: 'mock-1',
     playerName: 'Player123',
+    username: 'Player123',
     rarity: 'Legendary',
     percentage: '0.01%',
     itemImage: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/netherite_sword/icon',
@@ -71,13 +72,13 @@ const mockLiveWins: LiveWinData[] = [
     apValue: 999.5,
     amount: 1,
     timestamp: new Date(Date.now() - 1000 * 60 * 5),
-    playerAvatarUrl: 'https://avatar.spoverlay.ru/face/Player123?w=128',
     caseId: 'case-1',
     caseName: 'Легендарный кейс'
   },
   {
     id: 'mock-2',
     playerName: 'GamerPro',
+    username: 'GamerPro',
     rarity: 'Epic',
     percentage: '0.5%',
     itemImage: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/diamond_chestplate/icon',
@@ -85,13 +86,13 @@ const mockLiveWins: LiveWinData[] = [
     apValue: 250.3,
     amount: 2,
     timestamp: new Date(Date.now() - 1000 * 60 * 15),
-    playerAvatarUrl: 'https://avatar.spoverlay.ru/face/GamerPro?w=128',
     caseId: 'case-2',
     caseName: 'Эпический кейс'
   },
   {
     id: 'mock-3',
     playerName: 'LuckyOne',
+    username: 'LuckyOne',
     rarity: 'Rare',
     percentage: '2.5%',
     itemImage: 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/diamond/icon',
@@ -99,7 +100,6 @@ const mockLiveWins: LiveWinData[] = [
     apValue: 100.7,
     amount: 16,
     timestamp: new Date(Date.now() - 1000 * 60 * 30),
-    playerAvatarUrl: 'https://avatar.spoverlay.ru/face/LuckyOne?w=128',
     caseId: 'case-3',
     caseName: 'Редкий кейс'
   }

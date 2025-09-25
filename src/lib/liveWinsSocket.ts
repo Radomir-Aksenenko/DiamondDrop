@@ -7,7 +7,7 @@ export type RarityType = 'Common' | 'Uncommon' | 'Rare' | 'Epic' | 'Legendary';
 export interface LiveWinData {
   id: string;
   playerName: string;
-  playerAvatarUrl: string | null;
+  username: string; // Имя пользователя для генерации аватара
   rarity: RarityType;
   percentage: string;
   itemImage: string;
@@ -67,7 +67,7 @@ function transformWSData(wsData: WSWinData, messageCounter: number): LiveWinData
   return {
     id: uniqueId,
     playerName: wsData.user.Username,
-    playerAvatarUrl: wsData.user.Username ? `https://avatar.spoverlay.ru/face/${encodeURIComponent(wsData.user.Username)}?w=128` : null,
+    username: wsData.user.Username || 'Steve', // Используем Steve как дефолтное имя
     rarity: mapRarityToType(wsData.item.Rarity),
     percentage: `${wsData.item.PercentChance.toFixed(2)}%`,
     itemImage: wsData.item.ImageUrl || 'https://assets.zaralx.ru/api/v1/minecraft/vanilla/item/cobblestone/icon',

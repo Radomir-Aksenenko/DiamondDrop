@@ -3,6 +3,7 @@
 import React from 'react';
 import { CaseItem } from '@/hooks/useCasesAPI';
 import { handleItemImageError, getItemImageUrl } from '@/utils/imageUtils';
+import { useUserFaceAvatar } from '@/hooks/useUserAvatar';
 // Заменено на обычный img тег
 
 // Типы редкости карточек
@@ -23,7 +24,7 @@ interface RarityCardProps {
   className?: string;
   // Данные для hover состояния (live wins)
   playerName?: string;
-  playerAvatarUrl?: string | null;
+  username?: string; // Имя пользователя для генерации аватара
   showPlayerOnHover?: boolean;
   // Функция для обработки клика по карточке
   onPlayerClick?: () => void;
@@ -84,13 +85,16 @@ export default function RarityCard({
   orientation = 'vertical',
   className = '',
   playerName,
-  playerAvatarUrl,
+  username,
   showPlayerOnHover = false,
   onCardClick
 }: RarityCardProps) {
   const [isHovered, setIsHovered] = React.useState(false);
   const config = rarityConfig[rarity];
   const isHorizontal = orientation === 'horizontal';
+  
+  // Генерируем URL аватара с помощью хука
+  const playerAvatarUrl = useUserFaceAvatar(username, 128);
   
   // Для live wins при hover показываем Common стиль
   const hoverConfig = showPlayerOnHover && isHovered ? rarityConfig.Common : config;

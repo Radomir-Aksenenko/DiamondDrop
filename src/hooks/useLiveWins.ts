@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { RarityType } from '@/components/ui/RarityCard';
 import { liveWinsSocket, LiveWinData as ManagerWinData } from '@/lib/liveWinsSocket';
+import { useUserFaceAvatar } from '@/hooks/useUserAvatar';
 
 // Интерфейс для данных пользователя из WebSocket
 interface WSUser {
@@ -43,7 +44,7 @@ interface WSWinData {
 export interface LiveWinData {
   id: string;
   playerName: string;
-  playerAvatarUrl: string | null;
+  username: string; // Имя пользователя для генерации аватара
   rarity: RarityType;
   percentage: string;
   itemImage: string;
