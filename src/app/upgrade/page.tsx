@@ -246,7 +246,7 @@ function CaseItemsList({
                 orientation="horizontal"
                 className="hover:brightness-110 transition-all"
                 fullWidth
-                showPercentage
+                showPercentage={false}
                 isSelected={selectedUpgradeItem?.id === item.id}
                 onRemove={selectedUpgradeItem?.id === item.id ? onItemRemove : undefined}
                 onClick={() => {
@@ -266,13 +266,14 @@ function CaseItemsList({
 }
 
 // Компонент для отображения списка предметов инвентаря
-function InventoryItemsList({ selectedItems, onItemSelect, inventoryUpdateRef }: { 
+function InventoryItemsList({ selectedItems, onItemSelect, inventoryUpdateRef, convertToCaseItem }: { 
   selectedItems: SelectedItem[], 
   onItemSelect: (item: InventoryItem) => void,
   inventoryUpdateRef?: React.MutableRefObject<{
     updateItemAmounts: (updates: { itemId: string; amountChange: number }[]) => void;
     addItemToInventory: (newItem: InventoryItem) => void;
-  } | null>
+  } | null>,
+  convertToCaseItem: (inventoryItem: InventoryItem) => CaseItem
 }) {
   const { items, loading, error, updateItemAmounts, addItemToInventory } = useInventoryAPI();
   
@@ -291,18 +292,7 @@ function InventoryItemsList({ selectedItems, onItemSelect, inventoryUpdateRef }:
     return [...items].sort((a, b) => b.item.price - a.item.price);
   }, [items]);
 
-  // Преобразуем InventoryItem в CaseItem для совместимости с ItemCard
-  const convertToCaseItem = (inventoryItem: InventoryItem): CaseItem => ({
-    id: inventoryItem.item.id,
-    name: inventoryItem.item.name,
-    description: inventoryItem.item.description || null,
-    imageUrl: inventoryItem.item.imageUrl || null,
-    amount: inventoryItem.item.amount, // Количество единиц в ОДНОМ предмете для x на иконке
-    price: inventoryItem.item.price,
-    percentChance: inventoryItem.item.percentChance || 0,
-    rarity: inventoryItem.item.rarity,
-    isWithdrawable: inventoryItem.item.isWithdrawable
-  });
+
 
   if (loading && items.length === 0) {
     return (
@@ -363,6 +353,7 @@ function InventoryItemsList({ selectedItems, onItemSelect, inventoryUpdateRef }:
                   orientation="horizontal"
                   className="hover:brightness-110 transition-all"
                   fullWidth
+                  showPercentage={false}
                   onClick={() => {
                     if (availableAmount > 0) {
                       onItemSelect(inventoryItem);
@@ -407,7 +398,7 @@ export default function UpgradePage() {
   // Функция для расчета общей суммы выбранных предметов
   const calculateTotalPrice = useCallback(() => {
     return selectedItems.reduce((total, item) => {
-      return total + (item.inventoryItem.item.price * item.selectedAmount);
+      return total + item.inventoryItem.item.price;
     }, 0);
   }, [selectedItems]);
 
@@ -448,6 +439,19 @@ export default function UpgradePage() {
     const payback = Math.round(upgradeItemPrice - totalUserItemsPrice);
     return payback < 0 ? 0 : payback;
   }, [calculateTotalPrice, selectedUpgradeItem?.price]);
+
+  // Преобразуем InventoryItem в CaseItem для совместимости с ItemCard
+  const convertToCaseItem = useCallback((inventoryItem: InventoryItem): CaseItem => ({
+    id: inventoryItem.item.id,
+    name: inventoryItem.item.name,
+    description: inventoryItem.item.description || null,
+    imageUrl: inventoryItem.item.imageUrl || null,
+    amount: inventoryItem.item.amount, // Количество единиц в ОДНОМ предмете для x на иконке
+    price: inventoryItem.item.price,
+    percentChance: inventoryItem.item.percentChance || 0,
+    rarity: inventoryItem.item.rarity,
+    isWithdrawable: inventoryItem.item.isWithdrawable
+  }), []);
 
   // Обработчик выбора предмета для апгрейда
   const handleUpgradeItemSelect = (item: CaseItem) => {
@@ -579,9 +583,16 @@ export default function UpgradePage() {
       // Обновляем инвентарь после завершения анимации
       if (inventoryUpdateFunctions.current) {
         // Уменьшаем количество потраченных предметов
-        const itemUpdates = selectedItems.map(selectedItem => ({
-          itemId: selectedItem.inventoryItem.item.id,
-          amountChange: -selectedItem.selectedAmount
+        // Группируем одинаковые предметы и считаем их количество
+        const itemCounts = selectedItems.reduce((acc, selectedItem) => {
+          const itemId = selectedItem.inventoryItem.item.id;
+          acc[itemId] = (acc[itemId] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>);
+        
+        const itemUpdates = Object.entries(itemCounts).map(([itemId, count]) => ({
+          itemId,
+          amountChange: -count
         }));
         
         inventoryUpdateFunctions.current.updateItemAmounts(itemUpdates);
@@ -690,22 +701,14 @@ export default function UpgradePage() {
     }
 
     setSelectedItems(prev => {
-      const existingItem = prev.find(item => item.inventoryItem.item.id === inventoryItem.item.id);
+      // Проверяем, сколько раз уже выбран этот предмет
+      const selectedCount = prev.filter(item => item.inventoryItem.item.id === inventoryItem.item.id).length;
       
-      if (existingItem) {
-        // Увеличиваем количество выбранного предмета
-        if (existingItem.selectedAmount < inventoryItem.amount) {
-          return prev.map(item => 
-            item.inventoryItem.item.id === inventoryItem.item.id 
-              ? { ...item, selectedAmount: item.selectedAmount + 1 }
-              : item
-          );
-        }
-        return prev;
-      } else {
-        // Добавляем новый предмет
+      if (selectedCount < inventoryItem.amount) {
+        // Добавляем новый экземпляр предмета в отдельную ячейку
         return [...prev, { inventoryItem, selectedAmount: 1 }];
       }
+      return prev;
     });
   };
 
@@ -718,36 +721,39 @@ export default function UpgradePage() {
           ) : (
             <div className="flex flex-col gap-2 w-full">
               <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-sm opacity-70 mb-2'>Выбрано предметов: {selectedItems.length}/{MAX_UPGRADE_ITEMS}</p>
-              <div className="grid grid-cols-2 gap-2 flex-1 overflow-hidden">
-                {selectedItems.map((selectedItem, index) => (
-                  <div key={`${selectedItem.inventoryItem.item.id}-${index}`} className="flex items-center gap-2 p-2 bg-[rgba(249,248,252,0.05)] rounded-lg">
-                    <div 
-                      className="w-12 h-12 bg-center bg-cover bg-no-repeat rounded flex-shrink-0" 
-                      style={{ backgroundImage: `url(${selectedItem.inventoryItem.item.imageUrl})` }} 
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[#F9F8FC] font-['Actay_Wide'] text-xs font-bold truncate">{selectedItem.inventoryItem.item.name}</p>
-                      <p className="text-[#F9F8FC] font-['Actay_Wide'] text-xs opacity-50">x{selectedItem.selectedAmount}</p>
+              {/* Новый макет 2x4 ячеек по ТЗ */}
+              <div className="flex px-3 flex-col items-start gap-1 flex-1 self-stretch min-h-0 overflow-hidden">
+                {(() => {
+                  const slots = Array.from({ length: 8 }, (_, i) => selectedItems[i] || null);
+                  const rows = [slots.slice(0, 4), slots.slice(4, 8)];
+                  return rows.map((row, rowIdx) => (
+                    <div key={rowIdx} className="flex items-center gap-1">
+                      {row.map((slot, idx) => (
+                        <div key={idx} style={{ width: '78px', height: '124.75px' }}>
+                          {slot ? (
+                            <ItemCard
+                              item={convertToCaseItem(slot.inventoryItem)}
+                              amount={slot.inventoryItem.item.amount}
+                              orientation="vertical"
+                              className="w-[78px] h-[124.75px]"
+                              isSelected={true}
+                              onRemove={() => {
+                                setSelectedItems(prev => {
+                                  // Удаляем конкретный экземпляр предмета из этой позиции
+                                  const slotIndex = rowIdx * 4 + idx;
+                                  return prev.filter((_, index) => index !== slotIndex);
+                                });
+                              }}
+                            />
+                          ) : (
+                            // Пустой прямоугольник
+                            <div className="w-full h-full rounded-lg border border-[rgba(249,248,252,0.05)]" />
+                          )}
+                        </div>
+                      ))}
                     </div>
-                    <button 
-                      onClick={() => {
-                        setSelectedItems(prev => {
-                          const updated = prev.map(item => 
-                            item.inventoryItem.item.id === selectedItem.inventoryItem.item.id 
-                              ? { ...item, selectedAmount: item.selectedAmount - 1 }
-                              : item
-                          ).filter(item => item.selectedAmount > 0);
-                          return updated;
-                        });
-                      }}
-                      className="w-6 h-6 bg-red-500/20 hover:bg-red-500/40 rounded flex items-center justify-center transition-colors"
-                    >
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M3 9L9 3M3 3L9 9" stroke="#ff4444" strokeWidth="1.5" strokeLinecap="round"/>
-                      </svg>
-                    </button>
-                  </div>
-                ))}
+                  ));
+                })()}
               </div>
             </div>
           )}
@@ -842,6 +848,7 @@ export default function UpgradePage() {
              selectedItems={selectedItems} 
              onItemSelect={handleItemSelect}
              inventoryUpdateRef={inventoryUpdateFunctions}
+             convertToCaseItem={convertToCaseItem}
            />
          </div>
         <div className='flex box-border h-full flex-col items-center gap-3 flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)] min-h-0 overflow-hidden'>

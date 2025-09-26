@@ -111,7 +111,15 @@ export default function RarityCard({
     borderRadius: '8px'
   };
 
-  const imageSize = 'w-12 h-12'; // 48px для всех ориентаций
+  // Адаптивный размер изображения в зависимости от размера карточки
+  const imageSize = className.includes('w-[78px]') ? 'w-8 h-8' : 'w-12 h-12'; // 32px для маленьких карточек, 48px для обычных
+  
+  // Адаптивные размеры шрифтов для маленьких карточек
+  const isSmallCard = className.includes('w-[78px]');
+  const priceFontSize = isSmallCard ? '12px' : '16px';
+  const unitFontSize = isSmallCard ? '10px' : '12px';
+  const amountFontSize = isSmallCard ? '12px' : '14px';
+  const itemAmountFontSize = isSmallCard ? '12px' : '16px';
 
   // Форматируем стоимость с дробными значениями
   const formatPrice = (price: number): string => {
@@ -350,8 +358,11 @@ export function ItemCard({
   // Единые стили для всех карт согласно требованиям
   const cardStyles = {
     display: 'flex',
-    width: isHorizontal ? (fullWidth ? '100%' : '138px') : '138px',
-    ...(isHorizontal ? { height: '76px' } : {}),
+    // Размеры переопределяются через className, если он содержит w- или h-
+    ...(className.includes('w-') || className.includes('h-') ? {} : {
+      width: isHorizontal ? (fullWidth ? '100%' : '138px') : '138px',
+      ...(isHorizontal ? { height: '76px' } : {})
+    }),
     padding: '8px',
     justifyContent: 'center',
     alignItems: 'center',
@@ -359,7 +370,13 @@ export function ItemCard({
     borderRadius: '8px'
   };
 
-  const imageSize = 'w-12 h-12'; // 48px для всех ориентаций
+  const imageSize = isHorizontal ? 'w-12 h-12' : 'w-16 h-16'; // 48px для горизонтальной, 64px для вертикальной
+
+  // Адаптивные размеры шрифтов для вертикальной ориентации
+  const isSmallCard = className.includes('w-[78px]') || className.includes('h-[124.75px]');
+  const priceFontSize = isSmallCard ? '16px' : '28px';
+  const unitFontSize = isSmallCard ? '14px' : '20px';
+  const amountFontSize = isSmallCard ? '14px' : '24px';
 
   // Форматируем стоимость с дробными значениями
   const formatPrice = (price: number): string => {
@@ -502,36 +519,7 @@ export function ItemCard({
               АР
             </span>
           </div>
-          {/* Количество штук или проценты */}
-          <div className="flex items-baseline">
-            <span 
-              style={{
-                color: '#F9F8FC',
-                fontFamily: 'Actay Wide',
-                fontSize: '16px',
-                fontStyle: 'normal',
-                fontWeight: 700,
-                lineHeight: 'normal'
-              }}
-            >
-              {showPercentage ? `${amount}%` : amount}
-            </span>
-            {!showPercentage && (
-              <span 
-                style={{
-                  color: 'rgba(249, 248, 252, 0.50)',
-                  fontFamily: 'Actay Wide',
-                  fontSize: '12px',
-                  fontStyle: 'normal',
-                  fontWeight: 700,
-                  lineHeight: 'normal',
-                  marginLeft: '4px'
-                }}
-              >
-                ШТ.
-              </span>
-            )}
-          </div>
+
         </div>
       </div>
     );
@@ -612,56 +600,7 @@ export function ItemCard({
             )}
           </div>
       )}
-      {/* Верхняя часть - цена и количество штук */}
-      <div className="flex flex-col items-center justify-center text-center">
-        {/* Цена */}
-        <div className="flex items-baseline">
-          <span 
-            style={{
-              color: '#F9F8FC',
-              textAlign: 'center',
-              fontFamily: 'Actay Wide',
-              fontSize: '16px',
-              fontStyle: 'normal',
-              fontWeight: 700,
-              lineHeight: 'normal'
-            }}
-          >
-            {formatPrice(item.price)}
-          </span>
-          <span 
-            style={{
-              color: 'rgba(249, 248, 252, 0.50)',
-              fontFamily: 'Actay Wide',
-              fontSize: '12px',
-              fontStyle: 'normal',
-              fontWeight: 700,
-              lineHeight: 'normal',
-              marginLeft: '2px'
-            }}
-          >
-            АР
-          </span>
-        </div>
-        {/* Количество штук */}
-        <div className="flex items-baseline">
-          <span 
-            style={{
-              color: '#F9F8FC',
-              fontFamily: 'Actay Wide',
-              fontSize: '14px',
-              fontStyle: 'normal',
-              fontWeight: 700,
-              lineHeight: 'normal',
-              opacity: 0.5
-            }}
-          >
-            {amount} ШТ.
-          </span>
-        </div>
-      </div>
-
-      {/* Нижняя часть - иконка предмета */}
+      {/* Иконка предмета */}
       <div className={`relative ${imageSize} flex items-center justify-center`}>
         <img
           src={getItemImageUrl(item.imageUrl)}
@@ -675,7 +614,7 @@ export function ItemCard({
             style={{
               color: '#F9F8FC',
               fontFamily: 'Actay Wide',
-              fontSize: '16px',
+              fontSize: amountFontSize,
               fontStyle: 'normal',
               fontWeight: 700,
               lineHeight: 'normal',
@@ -683,6 +622,38 @@ export function ItemCard({
             }}
           >
             x{item.amount}
+          </span>
+        </div>
+      </div>
+
+      {/* Цена под иконкой */}
+      <div className="flex flex-col items-center justify-center text-center">
+        <div className="flex items-baseline">
+          <span 
+            style={{
+              color: '#F9F8FC',
+              textAlign: 'center',
+              fontFamily: 'Actay Wide',
+              fontSize: priceFontSize,
+              fontStyle: 'normal',
+              fontWeight: 700,
+              lineHeight: 'normal'
+            }}
+          >
+            {formatPrice(item.price)}
+          </span>
+          <span 
+            style={{
+              color: 'rgba(249, 248, 252, 0.50)',
+              fontFamily: 'Actay Wide',
+              fontSize: unitFontSize,
+              fontStyle: 'normal',
+              fontWeight: 700,
+              lineHeight: 'normal',
+              marginLeft: '2px'
+            }}
+          >
+            АР
           </span>
         </div>
       </div>
