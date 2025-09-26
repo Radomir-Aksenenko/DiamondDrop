@@ -370,13 +370,13 @@ export function ItemCard({
     borderRadius: '8px'
   };
 
-  const imageSize = isHorizontal ? 'w-12 h-12' : 'w-16 h-16'; // 48px для горизонтальной, 64px для вертикальной
+  const imageSize = 'w-12 h-12'; // 48px для всех ориентаций
 
   // Адаптивные размеры шрифтов для вертикальной ориентации
   const isSmallCard = className.includes('w-[78px]') || className.includes('h-[124.75px]');
-  const priceFontSize = isSmallCard ? '16px' : '28px';
-  const unitFontSize = isSmallCard ? '14px' : '20px';
-  const amountFontSize = isSmallCard ? '14px' : '24px';
+  const priceFontSize = isSmallCard ? '10px' : '16px';
+  const unitFontSize = isSmallCard ? '8px' : '12px';
+  const amountFontSize = isSmallCard ? '8px' : '12px';
 
   // Форматируем стоимость с дробными значениями
   const formatPrice = (price: number): string => {
@@ -519,7 +519,36 @@ export function ItemCard({
               АР
             </span>
           </div>
-
+          {/* Количество штук или проценты */}
+          <div className="flex items-baseline">
+            <span 
+              style={{
+                color: '#F9F8FC',
+                fontFamily: 'Actay Wide',
+                fontSize: '16px',
+                fontStyle: 'normal',
+                fontWeight: 700,
+                lineHeight: 'normal'
+              }}
+            >
+              {showPercentage ? `${amount}%` : amount}
+            </span>
+            {!showPercentage && (
+              <span 
+                style={{
+                  color: 'rgba(249, 248, 252, 0.50)',
+                  fontFamily: 'Actay Wide',
+                  fontSize: '12px',
+                  fontStyle: 'normal',
+                  fontWeight: 700,
+                  lineHeight: 'normal',
+                  marginLeft: '4px'
+                }}
+              >
+                ШТ.
+              </span>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -600,34 +629,9 @@ export function ItemCard({
             )}
           </div>
       )}
-      {/* Иконка предмета */}
-      <div className={`relative ${imageSize} flex items-center justify-center`}>
-        <img
-          src={getItemImageUrl(item.imageUrl)}
-          alt={item.name}
-          className="w-full h-full object-contain drop-shadow-lg"
-          onError={handleItemImageError}
-        />
-        {/* Количество единиц в предмете поверх изображения */}
-        <div className="absolute -bottom-1 -right-1">
-          <span 
-            style={{
-              color: '#F9F8FC',
-              fontFamily: 'Actay Wide',
-              fontSize: amountFontSize,
-              fontStyle: 'normal',
-              fontWeight: 700,
-              lineHeight: 'normal',
-              opacity: 0.5
-            }}
-          >
-            x{item.amount}
-          </span>
-        </div>
-      </div>
-
-      {/* Цена под иконкой */}
+      {/* Верхняя часть - цена и количество штук */}
       <div className="flex flex-col items-center justify-center text-center">
+        {/* Цена */}
         <div className="flex items-baseline">
           <span 
             style={{
@@ -654,6 +658,48 @@ export function ItemCard({
             }}
           >
             АР
+          </span>
+        </div>
+        {/* Количество штук */}
+        <div className="flex items-baseline">
+          <span 
+            style={{
+              color: '#F9F8FC',
+              fontFamily: 'Actay Wide',
+              fontSize: amountFontSize,
+              fontStyle: 'normal',
+              fontWeight: 700,
+              lineHeight: 'normal',
+              opacity: 0.5
+            }}
+          >
+            {amount} ШТ.
+          </span>
+        </div>
+      </div>
+
+      {/* Нижняя часть - иконка предмета */}
+      <div className={`relative ${imageSize} flex items-center justify-center`}>
+        <img
+          src={getItemImageUrl(item.imageUrl)}
+          alt={item.name}
+          className="w-full h-full object-contain drop-shadow-lg"
+          onError={handleItemImageError}
+        />
+        {/* Количество единиц в предмете поверх изображения */}
+        <div className="absolute -bottom-1 -right-1">
+          <span 
+            style={{
+              color: '#F9F8FC',
+              fontFamily: 'Actay Wide',
+              fontSize: amountFontSize,
+              fontStyle: 'normal',
+              fontWeight: 700,
+              lineHeight: 'normal',
+              opacity: 0.5
+            }}
+          >
+            x{item.amount}
           </span>
         </div>
       </div>
