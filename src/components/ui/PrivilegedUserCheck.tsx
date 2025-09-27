@@ -3,7 +3,7 @@
 import { usePreloadedData } from '@/components/providers/DataPreloadProvider';
 
 // Список привилегированных пользователей
-const PRIVILEGED_USERS = ['megatntmega', 'fupir', 'rafael1209', 'GEDPOOL31'];
+const PRIVILEGED_USERS = ['megatntmega', 'fupir', 'rafael1209', 'GEDPOOL31', '1_gobnik', 'MrEzhUk'];
 
 // В Dev режиме автоматически предоставляем привилегии
 const isDevelopmentMode = process.env.NODE_ENV === 'development';
