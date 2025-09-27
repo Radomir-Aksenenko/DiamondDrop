@@ -737,6 +737,8 @@ export default function UpgradePage() {
                               orientation="vertical"
                               className="w-[78px] h-[124.75px]"
                               isSelected={true}
+                              hideAmountInPieces={true}
+                              upgradeMode={true}
                               onRemove={() => {
                                 setSelectedItems(prev => {
                                   // Удаляем конкретный экземпляр предмета из этой позиции

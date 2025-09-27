@@ -22,14 +22,15 @@ interface RarityCardProps {
   amount?: number;
   orientation?: OrientationType;
   className?: string;
-  // Данные для hover состояния (live wins)
+  // Опциональные поля для отображения игрока
   playerName?: string;
   username?: string; // Имя пользователя для генерации аватара
   showPlayerOnHover?: boolean;
-  // Функция для обработки клика по карточке
+  // Функция для обработки клика по игроку
   onPlayerClick?: () => void;
-  // Функция для обработки клика по карточке (переход к кейсу)
+  // Функция для обработки клика по карточке
   onCardClick?: () => void;
+  upgradeMode?: boolean; // Режим апгрейда для увеличенных размеров элементов
 }
 
 // Интерфейс пропсов для ItemCard
@@ -44,6 +45,8 @@ interface ItemCardProps {
   showPercentage?: boolean; // Показывать проценты вместо количества штук
   isSelected?: boolean; // Предмет выбран (показывать галочку)
   onRemove?: () => void; // Функция для удаления предмета
+  hideAmountInPieces?: boolean; // Скрывать отображение количества в ШТ
+  upgradeMode?: boolean; // Режим апгрейда для увеличенных размеров элементов
 }
 
 // Конфигурация цветов и стилей для каждого типа редкости с новыми градиентами
@@ -87,7 +90,8 @@ export default function RarityCard({
   playerName,
   username,
   showPlayerOnHover = false,
-  onCardClick
+  onCardClick,
+  upgradeMode = false
 }: RarityCardProps) {
   const [isHovered, setIsHovered] = React.useState(false);
   const config = rarityConfig[rarity];
@@ -261,7 +265,8 @@ export default function RarityCard({
         border: config.border,
         ...cardStyles,
         flexDirection: 'column',
-        justifyContent: 'space-between'
+        justifyContent: upgradeMode ? 'center' : 'space-between',
+        alignItems: 'center'
       }}
     >
       {/* Верхняя часть - процент и стоимость */}
@@ -350,7 +355,9 @@ export function ItemCard({
   fullWidth = false,
   showPercentage = false,
   isSelected = false,
-  onRemove
+  onRemove,
+  hideAmountInPieces = false,
+  upgradeMode = false
 }: ItemCardProps) {
   const config = rarityConfig[item.rarity as keyof typeof rarityConfig] || rarityConfig.Common;
   const isHorizontal = orientation === 'horizontal';
@@ -363,20 +370,20 @@ export function ItemCard({
       width: isHorizontal ? (fullWidth ? '100%' : '138px') : '138px',
       ...(isHorizontal ? { height: '76px' } : {})
     }),
-    padding: '8px',
+    padding: upgradeMode ? '12px' : '8px',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: '8px',
+    gap: upgradeMode ? '12px' : '8px',
     borderRadius: '8px'
   };
 
-  const imageSize = 'w-12 h-12'; // 48px для всех ориентаций
+  const imageSize = upgradeMode ? 'w-14 h-14' : 'w-12 h-12'; // Немного уменьшенная иконка для режима апгрейда
 
   // Адаптивные размеры шрифтов для вертикальной ориентации
   const isSmallCard = className.includes('w-[78px]') || className.includes('h-[124.75px]');
-  const priceFontSize = isSmallCard ? '10px' : '16px';
+  const priceFontSize = upgradeMode ? '18px' : (isSmallCard ? '10px' : '16px');
   const unitFontSize = isSmallCard ? '8px' : '12px';
-  const amountFontSize = isSmallCard ? '8px' : '12px';
+  const amountFontSize = upgradeMode ? '16px' : (isSmallCard ? '8px' : '12px'); // АР пропорционально цене
 
   // Форматируем стоимость с дробными значениями
   const formatPrice = (price: number): string => {
@@ -629,7 +636,55 @@ export function ItemCard({
             )}
           </div>
       )}
-      {/* Верхняя часть - цена и количество штук */}
+      {/* Верхняя часть - количество штук (если не скрыто) */}
+      {!hideAmountInPieces && (
+        <div className="flex flex-col items-center justify-center text-center">
+          {/* Количество штук */}
+          <div className="flex items-baseline">
+            <span 
+              style={{
+                color: '#F9F8FC',
+                fontFamily: 'Actay Wide',
+                fontSize: amountFontSize,
+                fontStyle: 'normal',
+                fontWeight: 700,
+                lineHeight: 'normal',
+                opacity: 0.5
+              }}
+            >
+              {amount} ШТ.
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Средняя часть - иконка предмета */}
+      <div className={`relative ${imageSize} flex items-center justify-center`}>
+        <img
+          src={getItemImageUrl(item.imageUrl)}
+          alt={item.name}
+          className="w-full h-full object-contain drop-shadow-lg"
+          onError={handleItemImageError}
+        />
+        {/* Количество единиц в предмете поверх изображения */}
+        <div className="absolute -bottom-1 -right-1">
+          <span 
+            style={{
+              color: '#F9F8FC',
+              fontFamily: 'Actay Wide',
+              fontSize: amountFontSize,
+              fontStyle: 'normal',
+              fontWeight: 700,
+              lineHeight: 'normal',
+              opacity: 0.5
+            }}
+          >
+            x{item.amount}
+          </span>
+        </div>
+      </div>
+
+      {/* Нижняя часть - цена */}
       <div className="flex flex-col items-center justify-center text-center">
         {/* Цена */}
         <div className="flex items-baseline">
@@ -658,48 +713,6 @@ export function ItemCard({
             }}
           >
             АР
-          </span>
-        </div>
-        {/* Количество штук */}
-        <div className="flex items-baseline">
-          <span 
-            style={{
-              color: '#F9F8FC',
-              fontFamily: 'Actay Wide',
-              fontSize: amountFontSize,
-              fontStyle: 'normal',
-              fontWeight: 700,
-              lineHeight: 'normal',
-              opacity: 0.5
-            }}
-          >
-            {amount} ШТ.
-          </span>
-        </div>
-      </div>
-
-      {/* Нижняя часть - иконка предмета */}
-      <div className={`relative ${imageSize} flex items-center justify-center`}>
-        <img
-          src={getItemImageUrl(item.imageUrl)}
-          alt={item.name}
-          className="w-full h-full object-contain drop-shadow-lg"
-          onError={handleItemImageError}
-        />
-        {/* Количество единиц в предмете поверх изображения */}
-        <div className="absolute -bottom-1 -right-1">
-          <span 
-            style={{
-              color: '#F9F8FC',
-              fontFamily: 'Actay Wide',
-              fontSize: amountFontSize,
-              fontStyle: 'normal',
-              fontWeight: 700,
-              lineHeight: 'normal',
-              opacity: 0.5
-            }}
-          >
-            x{item.amount}
           </span>
         </div>
       </div>
