@@ -98,7 +98,7 @@ export default function Header() {
                   : userBalance.toLocaleString('ru-RU', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
                 }
               </span>
-              <span className='text-[#F9F8FC]/50 font-actay-wide text-16 font-bold ml-1 whitespace-nowrap'>АР</span>
+              <span className='text-[#F9F8FC]/50 font-actay-wide text-20 font-bold ml-1 whitespace-nowrap'>АР</span>
             </div>
             <button 
               onClick={() => openWalletModal()}

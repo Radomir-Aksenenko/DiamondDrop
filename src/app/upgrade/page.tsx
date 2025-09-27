@@ -715,21 +715,21 @@ export default function UpgradePage() {
   return (
     <div className="h-[calc(100vh-85px-1rem)] flex flex-col items-stretch gap-2 self-stretch overflow-hidden py-2">
       <div className='flex justify-center items-stretch gap-2 self-stretch min-h-0 h-[300px]'>
-        <div className='flex flex-col justify-center items-center flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)] py-4 min-h-0 max-h-full overflow-hidden'>
+        <div className='flex flex-col justify-center items-center flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)] py-4 min-h-0 max-h-full overflow-visible'>
           {selectedItems.length === 0 ? (
             <p className='text-[#5C5B60] text-center font-["Actay_Wide"] text-base'>Выберите до 8 предметов<br/>для апгрейда</p>
           ) : (
-            <div className="flex flex-col gap-2 w-full">
+            <div className="flex flex-col gap-2 w-full overflow-visible">
               <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-sm opacity-70 mb-2'>Выбрано предметов: {selectedItems.length}/{MAX_UPGRADE_ITEMS}</p>
               {/* Новый макет 2x4 ячеек по ТЗ */}
-              <div className="flex px-3 flex-col items-start gap-1 flex-1 self-stretch min-h-0 overflow-hidden">
+              <div className="flex px-3 flex-col items-start gap-1 flex-1 self-stretch min-h-0 overflow-visible">
                 {(() => {
                   const slots = Array.from({ length: 8 }, (_, i) => selectedItems[i] || null);
                   const rows = [slots.slice(0, 4), slots.slice(4, 8)];
                   return rows.map((row, rowIdx) => (
-                    <div key={rowIdx} className="flex items-center gap-1">
+                    <div key={rowIdx} className="flex items-center gap-1 overflow-visible">
                       {row.map((slot, idx) => (
-                        <div key={idx} style={{ width: '78px', height: '124.75px' }}>
+                        <div key={idx} style={{ width: '78px', height: '124.75px' }} className="overflow-visible">
                           {slot ? (
                             <ItemCard
                               item={convertToCaseItem(slot.inventoryItem)}

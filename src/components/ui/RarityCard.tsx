@@ -382,7 +382,7 @@ export function ItemCard({
   // Адаптивные размеры шрифтов для вертикальной ориентации
   const isSmallCard = className.includes('w-[78px]') || className.includes('h-[124.75px]');
   const priceFontSize = upgradeMode ? '18px' : (isSmallCard ? '10px' : '16px');
-  const unitFontSize = isSmallCard ? '8px' : '12px';
+  const unitFontSize = isSmallCard ? '12px' : '16px';
   const amountFontSize = upgradeMode ? '16px' : (isSmallCard ? '8px' : '12px'); // АР пропорционально цене
 
   // Форматируем стоимость с дробными значениями
@@ -516,7 +516,7 @@ export function ItemCard({
               style={{
                 color: 'rgba(249, 248, 252, 0.50)',
                 fontFamily: 'Actay Wide',
-                fontSize: '12px',
+                fontSize: '20px',
                 fontStyle: 'normal',
                 fontWeight: 700,
                 lineHeight: 'normal',
@@ -564,7 +564,7 @@ export function ItemCard({
   // Вертикальная ориентация
   return (
     <div 
-      className={`relative ${className} ${onClick ? 'group cursor-pointer hover:brightness-110 transition-all duration-200' : ''}`}
+      className={`relative ${className} ${onClick || (upgradeMode && onRemove) ? 'group cursor-pointer hover:brightness-110 transition-all duration-200' : ''}`}
       style={{
         background: config.background,
         border: config.border,
@@ -573,6 +573,21 @@ export function ItemCard({
         justifyContent: 'space-between'
       }}
     >
+      {/* Кнопка удаления в правом верхнем углу (только для upgradeMode) */}
+      {upgradeMode && onRemove && (
+        <div 
+          className="absolute -top-2 -right-2 w-8 h-8 bg-[#232328] rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 z-30 cursor-pointer hover:bg-[#1a1a1f] hover:scale-110"
+          onClick={(e) => {
+            e.stopPropagation();
+            onRemove();
+          }}
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 8H13" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
+        </div>
+      )}
+
       {/* Иконка при наведении на всю карточку */}
        {onClick && (
           <div 
