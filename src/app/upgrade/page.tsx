@@ -493,76 +493,77 @@ export default function UpgradePage() {
     console.log('Результат от сервера:', result?.success ? 'УСПЕХ' : 'НЕУДАЧА');
     console.log('Процент успеха:', currentPercentage + '%');
 
-    // Геометрия зон: цветная дуга всегда начинается с 90° (верх)
-    const coloredSectionStart = 90; // Начало цветной секции (направление указателя по умолчанию)
-    const coloredSectionSize = Math.max(0, Math.min(360, (currentPercentage / 100) * 360)); // Размер цветной секции
+    // ВАЖНО: работаем в экранных координатах, где 0° = верх (12 часов), вращение по часовой стрелке
+    // Цветная дуга начинается сверху и идёт по кругу на величину процента
+    const coloredSectionStartScreen = 0; // верх
+    const coloredSectionSize = Math.max(0, Math.min(360, (currentPercentage / 100) * 360));
 
-    // Центры зон
-    const coloredCenter = (coloredSectionStart + coloredSectionSize / 2) % 360;
-    const grayCenter = (coloredCenter + 180) % 360; // Центр серой зоны всегда противоположен цветной
+    // Центры зон в экранных координатах
+    const coloredCenterScreen = (coloredSectionStartScreen + coloredSectionSize / 2) % 360;
+    const grayCenterScreen = (coloredCenterScreen + 180) % 360; // противоположный центр
 
-    let targetPosition: number;
+    let targetScreenAngle: number;
 
     if (result && result.success && coloredSectionSize > 0) {
-      // УСПЕХ: всегда в цветной зоне (центр +/- безопасный джиттер)
+      // УСПЕХ: таргетим центр цветной зоны (с безопасным джиттером) в экранных координатах
       const safeMargin = Math.min(10, Math.max(3, coloredSectionSize * 0.1));
       const maxJitter = Math.max(0, coloredSectionSize / 2 - safeMargin);
       const jitter = maxJitter > 0 ? (Math.random() * 2 - 1) * maxJitter : 0;
-      targetPosition = (coloredCenter + jitter + 360) % 360;
+      targetScreenAngle = (coloredCenterScreen + jitter + 360) % 360;
       console.log('Режим: УСПЕХ');
       console.log('Цветная дуга (°):', coloredSectionSize.toFixed(1));
-      console.log('Центр цветной зоны:', coloredCenter.toFixed(1) + '°');
+      console.log('Центр цветной зоны (экран):', coloredCenterScreen.toFixed(1) + '°');
       console.log('Джиттер:', jitter.toFixed(1) + '°');
-      console.log('Целевая позиция (цвет):', targetPosition.toFixed(1) + '°');
+      console.log('Целевая позиция (экран, цвет):', targetScreenAngle.toFixed(1) + '°');
     } else {
-      // НЕУДАЧА: всегда в серой зоне (центр +/- безопасный джиттер)
+      // НЕУДАЧА: таргетим центр серой зоны (с безопасным джиттером) в экранных координатах
       const graySize = 360 - coloredSectionSize;
       const safeMargin = Math.min(15, Math.max(5, graySize * 0.1));
       const maxJitter = Math.max(0, graySize / 2 - safeMargin);
       const jitter = maxJitter > 0 ? (Math.random() * 2 - 1) * maxJitter : 0;
-      targetPosition = (grayCenter + jitter + 360) % 360;
+      targetScreenAngle = (grayCenterScreen + jitter + 360) % 360;
       console.log('Режим: НЕУДАЧА');
       console.log('Серая дуга (°):', graySize.toFixed(1));
-      console.log('Центр серой зоны:', grayCenter.toFixed(1) + '°');
+      console.log('Центр серой зоны (экран):', grayCenterScreen.toFixed(1) + '°');
       console.log('Джиттер:', jitter.toFixed(1) + '°');
-      console.log('Целевая позиция (серый):', targetPosition.toFixed(1) + '°');
+      console.log('Целевая позиция (экран, серый):', targetScreenAngle.toFixed(1) + '°');
     }
 
+    // Переводим целевой угол из экранных координат в координаты полигона
+    // Экранный угол 0° (верх) соответствует углу полигона 90° из-за -rotate-90 на SVG
+    const targetPolygonAngle = (targetScreenAngle + 90) % 360;
+
     // === РАСЧЕТ АНИМАЦИИ ===
-    // Нормализуем текущую позицию
+    // Нормализуем текущую позицию полигона
     const normalizedCurrentRotation = ((currentRotation % 360) + 360) % 360;
-    
+
     // Рассчитываем количество полных оборотов для эффектности
-    const minFullRotations = 4; // Увеличиваем минимум для большей зрелищности
+    const minFullRotations = 4;
     const maxFullRotations = 7;
     const fullRotations = minFullRotations + Math.random() * (maxFullRotations - minFullRotations);
-    
-    // Рассчитываем кратчайший путь до целевой позиции
-    let rotationDifference = targetPosition - normalizedCurrentRotation;
-    
-    // Корректируем направление вращения для плавности
+
+    // Рассчитываем кратчайший путь до целевой позиции (оставляем вращение по часовой)
+    let rotationDifference = targetPolygonAngle - normalizedCurrentRotation;
     if (rotationDifference > 180) {
       rotationDifference -= 360;
     } else if (rotationDifference < -180) {
       rotationDifference += 360;
     }
-    
-    // Всегда вращаем по часовой стрелке для консистентности
     if (rotationDifference <= 0) {
       rotationDifference += 360;
     }
-    
+
     // Общее вращение = полные обороты + путь до цели
     const totalRotation = fullRotations * 360 + rotationDifference;
-    
+
     // Динамическая длительность анимации
-    const baseSpeed = 150; // градусов/сек (увеличиваем скорость)
+    const baseSpeed = 150; // градусов/сек
     const calculatedDuration = Math.max(3000, Math.min(6000, (totalRotation / baseSpeed) * 1000));
-    
-    const coloredSectionEndForLog = (coloredSectionStart + coloredSectionSize) % 360;
-    console.log('Цветная зона:', `${coloredSectionStart.toFixed(1)}° - ${coloredSectionEndForLog.toFixed(1)}° (размер: ${coloredSectionSize.toFixed(1)}°)`);
-    console.log('Текущая позиция:', normalizedCurrentRotation.toFixed(1) + '°');
-    console.log('Целевая позиция:', targetPosition.toFixed(1) + '°');
+
+    const coloredSectionEndScreen = (coloredSectionStartScreen + coloredSectionSize) % 360;
+    console.log('Цветная зона (экран):', `${coloredSectionStartScreen.toFixed(1)}° - ${coloredSectionEndScreen.toFixed(1)}° (размер: ${coloredSectionSize.toFixed(1)}°)`);
+    console.log('Текущая позиция полигона:', normalizedCurrentRotation.toFixed(1) + '°');
+    console.log('Целевая позиция полигона:', targetPolygonAngle.toFixed(1) + '°');
     console.log('Полных оборотов:', fullRotations.toFixed(1));
     console.log('Путь до цели:', rotationDifference.toFixed(1) + '°');
     console.log('Общее вращение:', totalRotation.toFixed(1) + '°');
@@ -571,7 +572,7 @@ export default function UpgradePage() {
 
     // Устанавливаем длительность анимации
     setAnimationDuration(calculatedDuration);
-    
+
     // Устанавливаем новую позицию
     const newRotation = currentRotation + totalRotation;
     setCurrentRotation(newRotation);
