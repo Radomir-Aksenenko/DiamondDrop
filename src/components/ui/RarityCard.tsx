@@ -382,7 +382,7 @@ export function ItemCard({
   // Адаптивные размеры шрифтов для вертикальной ориентации
   const isSmallCard = className.includes('w-[78px]') || className.includes('h-[124.75px]');
   const priceFontSize = upgradeMode ? '18px' : (isSmallCard ? '10px' : '16px');
-  const unitFontSize = isSmallCard ? '12px' : '16px';
+  const unitFontSize = upgradeMode ? '16px' : (isSmallCard ? '8px' : '12px'); // Увеличенный размер АР для режима апгрейда
   const amountFontSize = upgradeMode ? '16px' : (isSmallCard ? '8px' : '12px'); // АР пропорционально цене
 
   // Форматируем стоимость с дробными значениями
@@ -516,7 +516,7 @@ export function ItemCard({
               style={{
                 color: 'rgba(249, 248, 252, 0.50)',
                 fontFamily: 'Actay Wide',
-                fontSize: '20px',
+                fontSize: '12px',
                 fontStyle: 'normal',
                 fontWeight: 700,
                 lineHeight: 'normal',

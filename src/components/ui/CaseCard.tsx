@@ -46,7 +46,7 @@ export default function CaseCard({ caseData, onClick }: CaseCardProps) {
       {/* Цена в AP */}
       <div className='flex px-3 py-1.5 justify-center items-center gap-1 rounded-[100px] bg-[#6563EE]/10 mb-2'>
         <span className='text-[#5C5ADC] font-actay text-xs font-bold'>{caseData.price}</span>
-        <span className='text-[#5C5ADC] font-actay text-sm font-bold'>АР</span>
+        <span className='text-[#5C5ADC] font-actay text-xs font-bold'>АР</span>
       </div>
       
       {/* Изображение кейса */}
