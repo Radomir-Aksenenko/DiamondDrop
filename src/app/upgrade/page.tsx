@@ -494,109 +494,53 @@ export default function UpgradePage() {
     // Получаем текущий процент успеха для расчета позиций
     const currentPercentage = calculateUpgradeSuccessPercentage();
     
-    // === ДЕТЕРМИНИРОВАННАЯ СИСТЕМА ПОЗИЦИОНИРОВАНИЯ (ЦЕНТР ЗОН) ===
-    console.log('=== НАЧАЛО АНИМАЦИИ ===');
-    console.log('Результат от сервера:', result?.success ? 'УСПЕХ' : 'НЕУДАЧА');
+    // === НОВАЯ УПРОЩЁННАЯ ДЕТЕРМИНИРОВАННАЯ СИСТЕМА ===
+    console.log('=== НОВАЯ АНИМАЦИЯ ===');
+    console.log('Результат:', result?.success ? 'ВЫИГРЫШ' : 'ПРОИГРЫШ');
     console.log('Процент успеха:', currentPercentage + '%');
 
-    // ВАЖНО: SVG повёрнут на -90°, поэтому цветная дуга начинается справа (3 часа), а не сверху
-    // В координатах экрана: 0° = верх, 90° = право, 180° = низ, 270° = лево
-    // Но из-за -rotate-90 на SVG, цветная дуга начинается с 90° (право) в экранных координатах
-    const coloredSectionStartScreen = 90; // право (из-за -rotate-90 на SVG)
-    const coloredSectionSize = Math.max(0, Math.min(360, (currentPercentage / 100) * 360));
+    // Простая система: круг разделён на 2 зоны
+    // Зелёная зона: 0° до (percentage% от 360°)
+    // Серая зона: (percentage% от 360°) до 360°
+    const greenZoneSize = (currentPercentage / 100) * 360; // Размер зелёной зоны в градусах
+    const grayZoneSize = 360 - greenZoneSize; // Размер серой зоны
 
-    // Центры зон в экранных координатах
-    const coloredCenterScreen = (coloredSectionStartScreen + coloredSectionSize / 2) % 360;
-    
-    // Серая зона начинается после цветной и занимает оставшуюся часть круга
-    const graySectionStartScreen = (coloredSectionStartScreen + coloredSectionSize) % 360;
-    const graySectionSize = 360 - coloredSectionSize;
-    const grayCenterScreen = (graySectionStartScreen + graySectionSize / 2) % 360;
+    let targetAngle: number;
 
-    let targetScreenAngle: number;
-
-    if (result && result.success && coloredSectionSize > 0) {
-      // УСПЕХ: таргетим центр цветной зоны (с безопасным джиттером) в экранных координатах
-      const safeMargin = Math.min(10, Math.max(3, coloredSectionSize * 0.1));
-      const maxJitter = Math.max(0, coloredSectionSize / 2 - safeMargin);
-      const jitter = maxJitter > 0 ? (Math.random() * 2 - 1) * maxJitter : 0;
-      targetScreenAngle = (coloredCenterScreen + jitter + 360) % 360;
-      console.log('Режим: УСПЕХ');
-      console.log('Цветная дуга (°):', coloredSectionSize.toFixed(1));
-      console.log('Центр цветной зоны (экран):', coloredCenterScreen.toFixed(1) + '°');
-      console.log('Джиттер:', jitter.toFixed(1) + '°');
-      console.log('Целевая позиция (экран, цвет):', targetScreenAngle.toFixed(1) + '°');
+    if (result && result.success && greenZoneSize > 0) {
+      // ВЫИГРЫШ: точно в центр зелёной зоны
+      targetAngle = greenZoneSize / 2;
+      console.log('Цель: ЦЕНТР ЗЕЛЁНОЙ ЗОНЫ =', targetAngle.toFixed(1) + '°');
     } else {
-      // НЕУДАЧА: таргетим центр серой зоны (с безопасным джиттером) в экранных координатах
-      const safeMargin = Math.min(15, Math.max(5, graySectionSize * 0.1));
-      const maxJitter = Math.max(0, graySectionSize / 2 - safeMargin);
-      const jitter = maxJitter > 0 ? (Math.random() * 2 - 1) * maxJitter : 0;
-      targetScreenAngle = (grayCenterScreen + jitter + 360) % 360;
-      console.log('Режим: НЕУДАЧА');
-      console.log('Серая дуга (°):', graySectionSize.toFixed(1));
-      console.log('Серая зона начало (экран):', graySectionStartScreen.toFixed(1) + '°');
-      console.log('Центр серой зоны (экран):', grayCenterScreen.toFixed(1) + '°');
-      console.log('Джиттер:', jitter.toFixed(1) + '°');
-      console.log('Целевая позиция (экран, серый):', targetScreenAngle.toFixed(1) + '°');
+      // ПРОИГРЫШ: точно в центр серой зоны
+      const grayZoneStart = greenZoneSize;
+      targetAngle = grayZoneStart + (grayZoneSize / 2);
+      console.log('Цель: ЦЕНТР СЕРОЙ ЗОНЫ =', targetAngle.toFixed(1) + '°');
     }
 
-    // Переводим целевой угол из экранных координат в координаты полигона
-    // SVG уже повёрнут на -90°, поэтому экранные координаты напрямую соответствуют координатам полигона
-    // Но полигон изначально смотрит вверх, поэтому нужно скорректировать на -90°
-    const targetPolygonAngle = (targetScreenAngle - 90 + 360) % 360;
-
-    // === РАСЧЕТ АНИМАЦИИ ===
-    // Нормализуем текущую позицию полигона
-    const normalizedCurrentRotation = ((currentRotation % 360) + 360) % 360;
-
-    // Рассчитываем количество полных оборотов для эффектности
-    const minFullRotations = 4;
-    const maxFullRotations = 7;
-    const fullRotations = minFullRotations + Math.random() * (maxFullRotations - minFullRotations);
-
-    // Рассчитываем кратчайший путь до целевой позиции (оставляем вращение по часовой)
-    let rotationDifference = targetPolygonAngle - normalizedCurrentRotation;
-    if (rotationDifference > 180) {
-      rotationDifference -= 360;
-    } else if (rotationDifference < -180) {
-      rotationDifference += 360;
-    }
-    if (rotationDifference <= 0) {
-      rotationDifference += 360;
-    }
-
-    // Общее вращение = полные обороты + путь до цели
-    const totalRotation = fullRotations * 360 + rotationDifference;
-
-    // Динамическая длительность анимации
-    const baseSpeed = 150; // градусов/сек
-    const calculatedDuration = Math.max(3000, Math.min(6000, (totalRotation / baseSpeed) * 1000));
-
-    const coloredSectionEndScreen = (coloredSectionStartScreen + coloredSectionSize) % 360;
-    console.log('Цветная зона (экран):', `${coloredSectionStartScreen.toFixed(1)}° - ${coloredSectionEndScreen.toFixed(1)}° (размер: ${coloredSectionSize.toFixed(1)}°)`);
-    console.log('Текущая позиция полигона:', normalizedCurrentRotation.toFixed(1) + '°');
-    console.log('Целевая позиция полигона:', targetPolygonAngle.toFixed(1) + '°');
-    console.log('Полных оборотов:', fullRotations.toFixed(1));
-    console.log('Путь до цели:', rotationDifference.toFixed(1) + '°');
-    console.log('Общее вращение:', totalRotation.toFixed(1) + '°');
-    console.log('Длительность анимации:', (calculatedDuration / 1000).toFixed(1) + 'с');
-    console.log('=== КОНЕЦ РАСЧЕТОВ ===');
-
-    // Устанавливаем длительность анимации
-    setAnimationDuration(calculatedDuration);
-
-    // Устанавливаем новую позицию
-    const newRotation = currentRotation + totalRotation;
-    setCurrentRotation(newRotation);
+    // Фиксированные параметры анимации для консистентности
+    const fullRotations = 4; // Ровно 4 полных оборота
+    const animationDuration = 4000; // Ровно 4 секунды
     
-    // Останавливаем анимацию через рассчитанное время
+    // Финальный угол = полные обороты + целевая позиция
+    const finalAngle = fullRotations * 360 + targetAngle;
+    
+    console.log('Полных оборотов:', fullRotations);
+    console.log('Финальный угол:', finalAngle.toFixed(1) + '°');
+    console.log('Длительность:', animationDuration / 1000 + 'с');
+    console.log('=== ЗАПУСК АНИМАЦИИ ===');
+
+    // Устанавливаем параметры анимации
+    setAnimationDuration(animationDuration);
+    setCurrentRotation(finalAngle);
+    
+    // Завершаем анимацию и обновляем инвентарь
     setTimeout(() => {
       setIsSpinning(false);
       
       // Обновляем инвентарь после завершения анимации
       if (inventoryUpdateFunctions.current) {
         // Уменьшаем количество потраченных предметов
-        // Группируем одинаковые предметы и считаем их количество
         const itemCounts = selectedItems.reduce((acc, selectedItem) => {
           const itemId = selectedItem.inventoryItem.item.id;
           acc[itemId] = (acc[itemId] || 0) + selectedItem.selectedAmount;
@@ -633,7 +577,7 @@ export default function UpgradePage() {
       
       // Очищаем выбранные предметы
       setSelectedItems([]);
-    }, calculatedDuration);
+    }, animationDuration);
   };
 
   // Функция для преобразования UpgradeInventoryItem в CaseItem
