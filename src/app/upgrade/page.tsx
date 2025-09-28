@@ -683,7 +683,8 @@ export default function UpgradePage() {
     if (selectedItems.length === 0) {
       if (minPrice !== 0) setMinPrice(0);
     } else {
-      if (minPrice !== total) setMinPrice(total);
+      const autoMinPrice = total > 0 ? (Number.isInteger(total) ? total + 1 : Math.ceil(total)) : 0; // целые => +1, дробные => округление до целого (вверх)
+      if (minPrice !== autoMinPrice) setMinPrice(autoMinPrice);
     }
   }, [selectedItems, calculateTotalPrice, isMinPriceManual, minPrice]);
 
