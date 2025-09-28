@@ -500,7 +500,11 @@ export default function UpgradePage() {
 
     // Центры зон в экранных координатах
     const coloredCenterScreen = (coloredSectionStartScreen + coloredSectionSize / 2) % 360;
-    const grayCenterScreen = (coloredCenterScreen + 180) % 360; // противоположный центр
+    
+    // Серая зона начинается после цветной и занимает оставшуюся часть круга
+    const graySectionStartScreen = (coloredSectionStartScreen + coloredSectionSize) % 360;
+    const graySectionSize = 360 - coloredSectionSize;
+    const grayCenterScreen = (graySectionStartScreen + graySectionSize / 2) % 360;
 
     let targetScreenAngle: number;
 
@@ -517,13 +521,13 @@ export default function UpgradePage() {
       console.log('Целевая позиция (экран, цвет):', targetScreenAngle.toFixed(1) + '°');
     } else {
       // НЕУДАЧА: таргетим центр серой зоны (с безопасным джиттером) в экранных координатах
-      const graySize = 360 - coloredSectionSize;
-      const safeMargin = Math.min(15, Math.max(5, graySize * 0.1));
-      const maxJitter = Math.max(0, graySize / 2 - safeMargin);
+      const safeMargin = Math.min(15, Math.max(5, graySectionSize * 0.1));
+      const maxJitter = Math.max(0, graySectionSize / 2 - safeMargin);
       const jitter = maxJitter > 0 ? (Math.random() * 2 - 1) * maxJitter : 0;
       targetScreenAngle = (grayCenterScreen + jitter + 360) % 360;
       console.log('Режим: НЕУДАЧА');
-      console.log('Серая дуга (°):', graySize.toFixed(1));
+      console.log('Серая дуга (°):', graySectionSize.toFixed(1));
+      console.log('Серая зона начало (экран):', graySectionStartScreen.toFixed(1) + '°');
       console.log('Центр серой зоны (экран):', grayCenterScreen.toFixed(1) + '°');
       console.log('Джиттер:', jitter.toFixed(1) + '°');
       console.log('Целевая позиция (экран, серый):', targetScreenAngle.toFixed(1) + '°');
