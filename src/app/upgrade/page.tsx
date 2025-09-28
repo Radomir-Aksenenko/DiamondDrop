@@ -167,7 +167,7 @@ function CaseItemsList({
   rtp: number,
   hasSelectedItems: boolean
 }) {
-  // Функция для расчета процента успешного апгрейда для конкретного предмета
+  // Функция для расчета успешного апгрейда для конкретного предмета
   const calculateItemUpgradePercentage = (upgradeItemPrice: number) => {
     const totalUserItemsPrice = calculateTotalPrice();
     
@@ -342,8 +342,11 @@ function InventoryItemsList({ selectedItems, onItemSelect, inventoryUpdateRef, c
         `}</style>
         <div className="grid grid-cols-3 auto-rows-[76px] gap-3">
           {sortedItems.map((inventoryItem) => {
-            const selectedItem = selectedItems.find(selected => selected.inventoryItem.item.id === inventoryItem.item.id);
-            const availableAmount = inventoryItem.amount - (selectedItem?.selectedAmount || 0);
+            // Суммируем все selectedAmount для одинаковых предметов
+            const totalSelectedAmount = selectedItems
+              .filter(selected => selected.inventoryItem.item.id === inventoryItem.item.id)
+              .reduce((sum, selected) => sum + selected.selectedAmount, 0);
+            const availableAmount = inventoryItem.amount - totalSelectedAmount;
             
             return (
               <div key={inventoryItem.item.id} className="relative group">
@@ -418,27 +421,32 @@ export default function UpgradePage() {
   // Функция для расчета округленного окупа (x9 формат)
   const calculateRoundedPayback = useCallback(() => {
     const totalUserItemsPrice = calculateTotalPrice();
-    const upgradeItemPrice = selectedUpgradeItem?.price || 0;
-    
-    if (totalUserItemsPrice === 0) {
+    const upgradeItemPrice = Number(selectedUpgradeItem?.price || 0);
+
+    if (!selectedUpgradeItem || totalUserItemsPrice <= 0 || upgradeItemPrice <= 0) {
       return 0;
     }
-    
-    return Math.round(upgradeItemPrice / totalUserItemsPrice);
+
+    const ratio = upgradeItemPrice / totalUserItemsPrice;
+    // Всегда возвращаем хотя бы 1, чтобы не показывать x0 при валидных данных
+    return Math.max(1, Math.round(ratio));
   }, [calculateTotalPrice, selectedUpgradeItem?.price]);
 
-  // Функция для расчета точного значения окупа
+  // Функция для расчета точного значения окупа (зелёное "+ ... АР")
   const calculateExactPayback = useCallback(() => {
-    const totalUserItemsPrice = calculateTotalPrice();
-    const upgradeItemPrice = selectedUpgradeItem?.price || 0;
-    
-    if (totalUserItemsPrice === 0) {
-      return 0;
-    }
-    
-    const payback = Math.round(upgradeItemPrice - totalUserItemsPrice);
-    return payback < 0 ? 0 : payback;
-  }, [calculateTotalPrice, selectedUpgradeItem?.price]);
+    const rawPrice = Number(selectedUpgradeItem?.price || 0);
+
+    // Нормализатор АР: дробные вверх, целые +1, защита от погрешностей
+    const normalizeAR = (value: number) => {
+      if (!isFinite(value) || value <= 0) return 0;
+      const epsilon = 1e-9;
+      const nearestInt = Math.round(value);
+      const isInt = Math.abs(value - nearestInt) < epsilon;
+      return isInt ? nearestInt + 1 : Math.ceil(value - epsilon);
+    };
+
+    return normalizeAR(rawPrice);
+  }, [selectedUpgradeItem?.price]);
 
   // Преобразуем InventoryItem в CaseItem для совместимости с ItemCard
   const convertToCaseItem = useCallback((inventoryItem: InventoryItem): CaseItem => ({
