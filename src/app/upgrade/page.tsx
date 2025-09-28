@@ -455,9 +455,7 @@ export default function UpgradePage() {
 
   // Обработчик выбора предмета для апгрейда
   const handleUpgradeItemSelect = (item: CaseItem) => {
-    if (!selectedUpgradeItem) {
-      setSelectedUpgradeItem(item);
-    }
+    setSelectedUpgradeItem(item);
   };
 
   // Обработчик удаления предмета из апгрейда
@@ -593,7 +591,7 @@ export default function UpgradePage() {
         // Группируем одинаковые предметы и считаем их количество
         const itemCounts = selectedItems.reduce((acc, selectedItem) => {
           const itemId = selectedItem.inventoryItem.item.id;
-          acc[itemId] = (acc[itemId] || 0) + 1;
+          acc[itemId] = (acc[itemId] || 0) + selectedItem.selectedAmount;
           return acc;
         }, {} as Record<string, number>);
         
@@ -727,7 +725,6 @@ export default function UpgradePage() {
             <p className='text-[#5C5B60] text-center font-["Actay_Wide"] text-base'>Выберите до 8 предметов<br/>для апгрейда</p>
           ) : (
             <div className="flex flex-col gap-2 w-full overflow-visible">
-              <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-sm opacity-70 mb-2'>Выбрано предметов: {selectedItems.length}/{MAX_UPGRADE_ITEMS}</p>
               {/* Новый макет 2x4 ячеек по ТЗ */}
               <div className="flex px-3 flex-col items-start gap-1 flex-1 self-stretch min-h-0 overflow-visible">
                 {(() => {
@@ -825,7 +822,7 @@ export default function UpgradePage() {
               <div className='flex w-[160px] h-[160px] flex-col justify-end items-end aspect-square bg-center bg-cover bg-no-repeat' style={{ backgroundImage: `url(${selectedUpgradeItem.imageUrl})` }}>
                 <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-2xl font-bold opacity-30'>x{selectedUpgradeItem.amount}</p>
               </div>
-              <div className='flex py-3 justify-between items-center self-stretch border-t border-[rgba(249,248,252,0.05)]'>
+              <div className='flex py-3 px-4 justify-between items-center self-stretch border-t border-[rgba(249,248,252,0.05)]'>
                 <p className={`text-center font-["Actay_Wide"] text-base font-bold ${rarityTextColor(selectedUpgradeItem.rarity)}`}>{selectedUpgradeItem.name}</p>
                 <div>
                   <span className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold'>{selectedUpgradeItem.price}</span>
