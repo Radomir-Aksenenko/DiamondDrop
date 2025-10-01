@@ -536,22 +536,35 @@ export default function UpgradePage() {
       targetAngle = Math.max(1, Math.min(targetAngle, greenZoneSize - 1));
     }
     
+    // === ОБЕСПЕЧЕНИЕ ВРАЩЕНИЯ ТОЛЬКО ПО ЧАСОВОЙ СТРЕЛКЕ ===
+    const currentAngle = currentRotation % 360; // Текущий угол треугольника (0-360°)
+    
+    // Если целевой угол меньше текущего, добавляем полный оборот
+    let adjustedTargetAngle = targetAngle;
+    if (targetAngle < currentAngle) {
+      adjustedTargetAngle = targetAngle + 360;
+    }
+    
     // === СЛУЧАЙНОЕ КОЛИЧЕСТВО ОБОРОТОВ ДЛЯ ЕСТЕСТВЕННОСТИ ===
     const baseRotations = 3; // Базовое количество оборотов
     const extraRotations = Math.random() * 2; // От 0 до 2 дополнительных оборотов
     const totalRotations = baseRotations + extraRotations;
     
-    const finalAngle = totalRotations * 360 + targetAngle;
+    // Финальный угол = текущий угол + дополнительные обороты + путь до цели
+    const finalAngle = currentRotation + (totalRotations * 360) + (adjustedTargetAngle - currentAngle);
     
     // === СТАНДАРТНАЯ ДЛИТЕЛЬНОСТЬ ДЛЯ ВСЕХ АНИМАЦИЙ ===
     const animationDuration = 4000; // Всегда 4 секунды
     
+    console.log('🧭 Текущий угол:', currentAngle.toFixed(2) + '°');
+    console.log('🎯 Целевой угол:', targetAngle.toFixed(2) + '°');
+    console.log('🔄 Скорректированный угол:', adjustedTargetAngle.toFixed(2) + '°');
     console.log('🔄 Количество оборотов:', totalRotations.toFixed(2));
     console.log('🎯 Финальный угол:', finalAngle.toFixed(2) + '°');
     console.log('📏 Зелёная зона: 0° → ' + greenZoneSize.toFixed(2) + '°');
     console.log('📏 Серая зона: ' + greenZoneSize.toFixed(2) + '° → 360°');
     console.log('⏱️ Длительность: ' + (animationDuration / 1000) + 'с');
-    console.log('🚀 ЗАПУСК ЕСТЕСТВЕННОЙ АНИМАЦИИ...');
+    console.log('🚀 ЗАПУСК АНИМАЦИИ (ТОЛЬКО ПО ЧАСОВОЙ СТРЕЛКЕ)...');
 
     // Устанавливаем параметры анимации
     setAnimationDuration(animationDuration);
