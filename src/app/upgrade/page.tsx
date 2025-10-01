@@ -500,40 +500,42 @@ export default function UpgradePage() {
     console.log('Процент успеха:', currentPercentage + '%');
     
     // Рассчитываем размеры зон (0° = верх)
-    const greenZoneSize = (currentPercentage / 100) * 360; // Зелёная зона от 0° до greenZoneSize
-    const grayZoneSize = 360 - greenZoneSize; // Серая зона от greenZoneSize до 360°
+    const blueZoneSize = (currentPercentage / 100) * 360; // Синяя зона (шанс успеха) от 0° до blueZoneSize
+    const grayZoneSize = 360 - blueZoneSize; // Серая зона от blueZoneSize до 360°
     
     // === СЛУЧАЙНОЕ ПОЗИЦИОНИРОВАНИЕ В НУЖНОЙ ЗОНЕ ===
     let targetAngle: number;
     if (result && result.success) {
-      // Выигрыш: случайная позиция в зелёной зоне
-      const minGreen = 5; // Отступ от края
-      const maxGreen = Math.max(minGreen + 1, greenZoneSize - 5);
-      targetAngle = minGreen + Math.random() * (maxGreen - minGreen);
-      console.log('🎯 СЛУЧАЙНАЯ ПОЗИЦИЯ В ЗЕЛЁНОЙ ЗОНЕ:', targetAngle.toFixed(2) + '°');
-    } else {
-      // Проигрыш: случайная позиция в серой зоне
-      const minGray = greenZoneSize + 5; // Отступ от края
+      // Выигрыш: случайная позиция в серой зоне (за пределами шанса успеха)
+      const minGray = blueZoneSize + 5; // Отступ от края
       const maxGray = Math.min(355, 360); // Отступ от края
       
       if (grayZoneSize < 20) { // Очень маленькая серая зона
         // Для очень маленьких зон используем центральную область
-        const centerGray = greenZoneSize + (grayZoneSize / 2);
+        const centerGray = blueZoneSize + (grayZoneSize / 2);
         const variance = Math.min(grayZoneSize * 0.3, 5); // Максимум 30% зоны или 5°
         targetAngle = centerGray + (Math.random() - 0.5) * variance;
         console.log('⚠️ ОЧЕНЬ МАЛЕНЬКАЯ СЕРАЯ ЗОНА! Центр с вариацией:', targetAngle.toFixed(2) + '°');
       } else {
         // Обычная случайная позиция в серой зоне
         targetAngle = minGray + Math.random() * (maxGray - minGray);
-        console.log('🎯 СЛУЧАЙНАЯ ПОЗИЦИЯ В СЕРОЙ ЗОНЕ:', targetAngle.toFixed(2) + '°');
+        console.log('🎯 СЛУЧАЙНАЯ ПОЗИЦИЯ В СЕРОЙ ЗОНЕ (ВЫИГРЫШ):', targetAngle.toFixed(2) + '°');
       }
+    } else {
+      // Проигрыш: случайная позиция в синей зоне (в пределах шанса успеха)
+      const minBlue = 5; // Отступ от края
+      const maxBlue = Math.max(minBlue + 1, blueZoneSize - 5);
+      targetAngle = minBlue + Math.random() * (maxBlue - minBlue);
+      console.log('🎯 СЛУЧАЙНАЯ ПОЗИЦИЯ В СИНЕЙ ЗОНЕ (ПРОИГРЫШ):', targetAngle.toFixed(2) + '°');
     }
     
     // Убеждаемся, что угол находится в правильных границах
     if (!result?.success) {
-      targetAngle = Math.max(greenZoneSize + 1, Math.min(targetAngle, 359));
+      // Проигрыш: ограничиваем синей зоной
+      targetAngle = Math.max(1, Math.min(targetAngle, blueZoneSize - 1));
     } else {
-      targetAngle = Math.max(1, Math.min(targetAngle, greenZoneSize - 1));
+      // Выигрыш: ограничиваем серой зоной
+      targetAngle = Math.max(blueZoneSize + 1, Math.min(targetAngle, 359));
     }
     
     // === ОБЕСПЕЧЕНИЕ ВРАЩЕНИЯ ТОЛЬКО ПО ЧАСОВОЙ СТРЕЛКЕ ===
@@ -561,8 +563,8 @@ export default function UpgradePage() {
     console.log('🔄 Скорректированный угол:', adjustedTargetAngle.toFixed(2) + '°');
     console.log('🔄 Количество оборотов:', totalRotations.toFixed(2));
     console.log('🎯 Финальный угол:', finalAngle.toFixed(2) + '°');
-    console.log('📏 Зелёная зона: 0° → ' + greenZoneSize.toFixed(2) + '°');
-    console.log('📏 Серая зона: ' + greenZoneSize.toFixed(2) + '° → 360°');
+    console.log('📏 Синяя зона (шанс успеха): 0° → ' + blueZoneSize.toFixed(2) + '°');
+    console.log('📏 Серая зона: ' + blueZoneSize.toFixed(2) + '° → 360°');
     console.log('⏱️ Длительность: ' + (animationDuration / 1000) + 'с');
     console.log('🚀 ЗАПУСК АНИМАЦИИ (ТОЛЬКО ПО ЧАСОВОЙ СТРЕЛКЕ)...');
 
@@ -576,10 +578,11 @@ export default function UpgradePage() {
       
       // === ПРОВЕРКА РЕЗУЛЬТАТА ===
       const actualFinalPosition = finalAngle % 360;
-      const isInGreenZone = actualFinalPosition >= 0 && actualFinalPosition <= greenZoneSize;
-      const isCorrect = (result?.success && isInGreenZone) || (!result?.success && !isInGreenZone);
+      const isInBlueZone = actualFinalPosition >= 0 && actualFinalPosition <= blueZoneSize;
+      const isCorrect = (result?.success && !isInBlueZone) || (!result?.success && isInBlueZone);
       
       console.log('🏁 Анимация завершена! Позиция:', actualFinalPosition.toFixed(1) + '°');
+      console.log('📍 В синей зоне:', isInBlueZone ? 'ДА' : 'НЕТ');
       console.log('✅ Результат корректен:', isCorrect ? 'ДА' : 'НЕТ');
       
       // Обновляем инвентарь после завершения анимации
