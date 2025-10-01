@@ -378,7 +378,7 @@ export default function UpgradePage() {
   const [isMinPriceManual, setIsMinPriceManual] = useState<boolean>(false);
   const [selectedUpgradeItem, setSelectedUpgradeItem] = useState<CaseItem | null>(null);
   const [isSpinning, setIsSpinning] = useState<boolean>(false);
-  const [currentRotation, setCurrentRotation] = useState<number>(90); // Начальный угол 90 градусов
+  const [currentRotation, setCurrentRotation] = useState<number>(180); // Начальный угол 180 градусов (90° + 90° коррекция для SVG)
   const [animationDuration, setAnimationDuration] = useState<number>(3000); // Длительность анимации в мс
   
   // Ref для функций обновления инвентаря
@@ -539,7 +539,8 @@ export default function UpgradePage() {
     }
     
     // === ОБЕСПЕЧЕНИЕ ВРАЩЕНИЯ ТОЛЬКО ПО ЧАСОВОЙ СТРЕЛКЕ ===
-    const currentAngle = currentRotation % 360; // Текущий угол треугольника (0-360°)
+    // Корректируем текущий угол обратно к логической системе координат (убираем SVG коррекцию)
+    const currentAngle = (currentRotation - 90) % 360; // Текущий угол треугольника в логической системе (0-360°)
     
     // Если целевой угол меньше текущего, добавляем полный оборот
     let adjustedTargetAngle = targetAngle;
@@ -606,8 +607,10 @@ export default function UpgradePage() {
     console.log('🚀 ЗАПУСК ТОЧНОЙ АНИМАЦИИ (ТОЛЬКО ПО ЧАСОВОЙ СТРЕЛКЕ)...');
 
     // Устанавливаем параметры анимации с скорректированным углом
+    // Корректируем угол для SVG системы координат (SVG повернут на -90°)
+    const svgCorrectedAngle = correctedFinalAngle + 90;
     setAnimationDuration(animationDuration);
-    setCurrentRotation(correctedFinalAngle);
+    setCurrentRotation(svgCorrectedAngle);
     
     // Завершаем анимацию и обновляем инвентарь
     setTimeout(() => {
