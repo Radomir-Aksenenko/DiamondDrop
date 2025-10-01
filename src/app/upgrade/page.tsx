@@ -560,22 +560,32 @@ export default function UpgradePage() {
     
     // Проверяем, что финальная позиция будет точно в нужной зоне
     const predictedFinalPosition = finalAngle % 360;
-    const tolerance = 2; // Допустимая погрешность в градусах
+    const maxDeviation = 5; // Максимальное допустимое отклонение от цели
     
-    // Корректируем финальный угол если он выходит за пределы целевой зоны
+    // Всегда корректируем для достижения точной цели
     let correctedFinalAngle = finalAngle;
-    if (!result?.success) {
-      // Для проигрыша: должен быть в синей зоне (0° - blueZoneSize)
-      if (predictedFinalPosition > blueZoneSize + tolerance) {
-        const correction = predictedFinalPosition - targetAngle;
-        correctedFinalAngle = finalAngle - correction;
-      }
-    } else {
-      // Для выигрыша: должен быть в серой зоне (blueZoneSize - 360°)
-      if (predictedFinalPosition < blueZoneSize - tolerance) {
-        const correction = targetAngle - predictedFinalPosition;
-        correctedFinalAngle = finalAngle + correction;
-      }
+    const deviation = Math.abs(predictedFinalPosition - targetAngle);
+    
+    if (deviation > maxDeviation) {
+      // Большое отклонение - применяем полную коррекцию
+      const correction = predictedFinalPosition - targetAngle;
+      correctedFinalAngle = finalAngle - correction;
+    } else if (deviation > 1) {
+      // Малое отклонение - применяем частичную коррекцию для плавности
+      const correction = (predictedFinalPosition - targetAngle) * 0.8;
+      correctedFinalAngle = finalAngle - correction;
+    }
+    
+    // Дополнительная проверка: убеждаемся, что результат в правильной зоне
+    const finalPredictedPosition = correctedFinalAngle % 360;
+    const isInCorrectZone = !result?.success ? 
+      (finalPredictedPosition >= 0 && finalPredictedPosition <= blueZoneSize) :
+      (finalPredictedPosition > blueZoneSize || finalPredictedPosition < 0);
+    
+    if (!isInCorrectZone) {
+      // Если после коррекции всё ещё в неправильной зоне, применяем экстренную коррекцию
+      const emergencyCorrection = finalPredictedPosition - targetAngle;
+      correctedFinalAngle = finalAngle - emergencyCorrection;
     }
     
     // === СТАНДАРТНАЯ ДЛИТЕЛЬНОСТЬ ДЛЯ ВСЕХ АНИМАЦИЙ ===
@@ -587,6 +597,7 @@ export default function UpgradePage() {
     console.log('🔄 Количество оборотов:', totalRotations.toFixed(2));
     console.log('🎯 Исходный финальный угол:', finalAngle.toFixed(2) + '°');
     console.log('🎯 Предсказанная позиция:', predictedFinalPosition.toFixed(2) + '°');
+    console.log('📐 Отклонение от цели:', Math.abs(predictedFinalPosition - targetAngle).toFixed(2) + '°');
     console.log('🔧 Скорректированный финальный угол:', correctedFinalAngle.toFixed(2) + '°');
     console.log('🔧 Ожидаемая финальная позиция:', (correctedFinalAngle % 360).toFixed(2) + '°');
     console.log('📏 Синяя зона (шанс успеха): 0° → ' + blueZoneSize.toFixed(2) + '°');
