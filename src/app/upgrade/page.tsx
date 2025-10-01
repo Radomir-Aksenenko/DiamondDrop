@@ -67,7 +67,7 @@ const rarityTextColor = (rarity: CaseItem['rarity']) => {
   }
 };
 
-const CircularProgress = ({ percentage, hasSelectedUpgradeItem = false, isSpinning = false, currentRotation = 0, animationDuration = 3000 }: CircularProgressProps) => {
+const CircularProgress = ({ percentage, hasSelectedUpgradeItem = false, isSpinning = false, currentRotation = 90, animationDuration = 3000 }: CircularProgressProps) => {
   const radius = 82;
   const circumference = 2 * Math.PI * radius;
   const strokeDasharray = `${(percentage / 100) * circumference} ${circumference}`;
@@ -479,7 +479,7 @@ export default function UpgradePage() {
 
     setIsSpinning(true);
     
-    // Подготавливаем данные для API (результат определяется только на сервере)
+    // Подготавливаем данные для API
     const upgradeData = {
       selectedItemIds: selectedItems.map(item => ({
         id: item.inventoryItem.item.id,
@@ -491,63 +491,66 @@ export default function UpgradePage() {
     // Выполняем запрос к API
     const result = await executeUpgrade(upgradeData);
     
-    // Получаем текущий процент успеха
+    // Получаем текущий процент успеха для расчета позиций
     const currentPercentage = calculateUpgradeSuccessPercentage();
     
-    // Формулы алгоритма
-    const winAngle = Math.max(0, Math.min(360, (360 * currentPercentage) / 100));
-    const isWin = !!(result && result.success);
+    // === МАТЕМАТИЧЕСКИ ТОЧНЫЙ АЛГОРИТМ ПОЗИЦИОНИРОВАНИЯ ===
+    console.log('=== ТОЧНЫЙ АЛГОРИТМ ПОЗИЦИОНИРОВАНИЯ ===');
+    console.log('Результат:', result?.success ? 'ВЫИГРЫШ' : 'ПРОИГРЫШ');
+    console.log('Процент успеха:', currentPercentage + '%');
 
-    const edgeBuffer = 1; // Минимальный буфер от границы сектора (критическое правило)
+    /*
+    СИСТЕМА КООРДИНАТ (МАТЕМАТИЧЕСКИ ТОЧНАЯ):
+    - SVG повёрнут на -90°, поэтому 0° = верх экрана
+    - Треугольник стартует в позиции 0° (верх экрана)
+    - Цветная дуга начинается с 0° (верх экрана)
+    - Всё синхронизировано, никаких дополнительных поправок не нужно!
+    
+    ЗОНЫ:
+    - Зелёная зона (выигрыш): от 0° до (percentage% от 360°)
+    - Серая зона (проигрыш): от (percentage% от 360°) до 360°
+    */
 
-    // Генерация безопасного угла остановки курсора
-    const calculateStopAngle = (isWin: boolean, winAngle: number) => {
-      if (isWin) {
-        // Диапазон для победы: [1, winAngle - 1]
-        const safeSpan = Math.max(0, winAngle - 2 * edgeBuffer);
-        if (safeSpan <= 0) {
-          // Если безопасного диапазона нет (очень узкая секция), берём центр
-          return Math.min(359, winAngle / 2);
-        }
-        return edgeBuffer + Math.random() * safeSpan;
-      }
-      // Проигрыш: диапазон [winAngle + 1, 359]
-      const loseAngle = 360 - winAngle;
-      const safeSpan = Math.max(0, loseAngle - 2 * edgeBuffer);
-      const loseStart = winAngle;
-      if (safeSpan <= 0) {
-        // Узкая секция проигрыша → центр
-        return Math.min(359, loseStart + loseAngle / 2);
-      }
-      return loseStart + edgeBuffer + Math.random() * safeSpan;
-    };
+    // Точные размеры зон в градусах
+    const greenZoneSize = (currentPercentage / 100) * 360;
+    const grayZoneSize = 360 - greenZoneSize;
 
-    const stopAngle = calculateStopAngle(isWin, winAngle);
+    let targetAngle: number;
 
-    // Количество полных оборотов (фиксированно по спецификации)
-    const fullSpins = 5;
-    const finalAngle = 360 * fullSpins + stopAngle;
+    if (result && result.success && greenZoneSize > 0) {
+      // ВЫИГРЫШ: математически точный центр зелёной зоны
+      targetAngle = greenZoneSize / 2;
+      console.log('🎯 ЦЕЛЬ: ЦЕНТР ЗЕЛЁНОЙ ЗОНЫ =', targetAngle.toFixed(2) + '°');
+      console.log('📊 Зелёная зона: 0° → ' + greenZoneSize.toFixed(2) + '°');
+    } else {
+      // ПРОИГРЫШ: математически точный центр серой зоны
+      const grayZoneStart = greenZoneSize;
+      targetAngle = grayZoneStart + (grayZoneSize / 2);
+      console.log('🎯 ЦЕЛЬ: ЦЕНТР СЕРОЙ ЗОНЫ =', targetAngle.toFixed(2) + '°');
+      console.log('📊 Серая зона: ' + grayZoneStart.toFixed(2) + '° → 360°');
+    }
 
-    // Валидация положения курсора относительно сектора
-    const normalizedAngle = ((finalAngle % 360) + 360) % 360;
-    const inWinSector = normalizedAngle >= 0 && normalizedAngle <= winAngle;
-    const inLoseSector = normalizedAngle > winAngle && normalizedAngle < 360;
+    // Фиксированные параметры для стабильности
+    const fullRotations = 4;
+    const animationDuration = 4000;
+    
+    // Финальный угол = полные обороты + точная целевая позиция
+    const finalAngle = fullRotations * 360 + targetAngle;
+    
+    console.log('🔄 Полных оборотов:', fullRotations);
+    console.log('🎯 Финальный угол:', finalAngle.toFixed(2) + '°');
+    console.log('⏱️ Длительность:', animationDuration / 1000 + 'с');
+    console.log('🚀 ЗАПУСК ТОЧНОЙ АНИМАЦИИ...');
 
-    console.log('=== Wheel Fortune (предопределённый результат) ===');
-    console.log('Результат:', isWin ? 'ВЫИГРЫШ' : 'ПРОИГРЫШ');
-    console.log('Процент успеха:', currentPercentage + '%', '| Угол победы:', winAngle.toFixed(1) + '°');
-    console.log('StopAngle:', stopAngle.toFixed(1) + '°', '| Normalized:', normalizedAngle.toFixed(1) + '°');
-    console.log('Валидация → winSector:', inWinSector, 'loseSector:', inLoseSector);
-
-    // Параметры анимации
-    const animationDuration = 4500; // 4.5 секунды для 5 оборотов
+    // Устанавливаем параметры анимации
     setAnimationDuration(animationDuration);
     setCurrentRotation(finalAngle);
     
-    // Завершение анимации и обновление инвентаря
+    // Завершаем анимацию и обновляем инвентарь
     setTimeout(() => {
       setIsSpinning(false);
       
+      // Обновляем инвентарь после завершения анимации
       if (inventoryUpdateFunctions.current) {
         // Уменьшаем количество потраченных предметов
         const itemCounts = selectedItems.reduce((acc, selectedItem) => {
@@ -577,8 +580,9 @@ export default function UpgradePage() {
               rarity: selectedUpgradeItem.rarity,
               isWithdrawable: selectedUpgradeItem.isWithdrawable
             },
-            amount: 1
+            amount: 1 // Добавляем 1 экземпляр выигранного предмета
           };
+          
           inventoryUpdateFunctions.current.addItemToInventory(wonItem);
         }
       }
