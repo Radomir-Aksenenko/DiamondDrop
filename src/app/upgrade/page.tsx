@@ -547,13 +547,36 @@ export default function UpgradePage() {
       adjustedTargetAngle = targetAngle + 360;
     }
     
-    // === СЛУЧАЙНОЕ КОЛИЧЕСТВО ОБОРОТОВ ДЛЯ ЕСТЕСТВЕННОСТИ ===
+    // === ТОЧНЫЙ АЛГОРИТМ ПОЗИЦИОНИРОВАНИЯ ===
+    // Используем более точный подход для обеспечения правильной остановки
     const baseRotations = 3; // Базовое количество оборотов
     const extraRotations = Math.random() * 2; // От 0 до 2 дополнительных оборотов
     const totalRotations = baseRotations + extraRotations;
     
-    // Финальный угол = текущий угол + дополнительные обороты + путь до цели
-    const finalAngle = currentRotation + (totalRotations * 360) + (adjustedTargetAngle - currentAngle);
+    // Вычисляем точный финальный угол с учетом особенностей CSS анимации
+    // Используем модульную арифметику для точного позиционирования
+    const rotationDistance = (adjustedTargetAngle - currentAngle) + (totalRotations * 360);
+    const finalAngle = currentRotation + rotationDistance;
+    
+    // Проверяем, что финальная позиция будет точно в нужной зоне
+    const predictedFinalPosition = finalAngle % 360;
+    const tolerance = 2; // Допустимая погрешность в градусах
+    
+    // Корректируем финальный угол если он выходит за пределы целевой зоны
+    let correctedFinalAngle = finalAngle;
+    if (!result?.success) {
+      // Для проигрыша: должен быть в синей зоне (0° - blueZoneSize)
+      if (predictedFinalPosition > blueZoneSize + tolerance) {
+        const correction = predictedFinalPosition - targetAngle;
+        correctedFinalAngle = finalAngle - correction;
+      }
+    } else {
+      // Для выигрыша: должен быть в серой зоне (blueZoneSize - 360°)
+      if (predictedFinalPosition < blueZoneSize - tolerance) {
+        const correction = targetAngle - predictedFinalPosition;
+        correctedFinalAngle = finalAngle + correction;
+      }
+    }
     
     // === СТАНДАРТНАЯ ДЛИТЕЛЬНОСТЬ ДЛЯ ВСЕХ АНИМАЦИЙ ===
     const animationDuration = 4000; // Всегда 4 секунды
@@ -562,28 +585,32 @@ export default function UpgradePage() {
     console.log('🎯 Целевой угол:', targetAngle.toFixed(2) + '°');
     console.log('🔄 Скорректированный угол:', adjustedTargetAngle.toFixed(2) + '°');
     console.log('🔄 Количество оборотов:', totalRotations.toFixed(2));
-    console.log('🎯 Финальный угол:', finalAngle.toFixed(2) + '°');
+    console.log('🎯 Исходный финальный угол:', finalAngle.toFixed(2) + '°');
+    console.log('🎯 Предсказанная позиция:', predictedFinalPosition.toFixed(2) + '°');
+    console.log('🔧 Скорректированный финальный угол:', correctedFinalAngle.toFixed(2) + '°');
+    console.log('🔧 Ожидаемая финальная позиция:', (correctedFinalAngle % 360).toFixed(2) + '°');
     console.log('📏 Синяя зона (шанс успеха): 0° → ' + blueZoneSize.toFixed(2) + '°');
     console.log('📏 Серая зона: ' + blueZoneSize.toFixed(2) + '° → 360°');
     console.log('⏱️ Длительность: ' + (animationDuration / 1000) + 'с');
-    console.log('🚀 ЗАПУСК АНИМАЦИИ (ТОЛЬКО ПО ЧАСОВОЙ СТРЕЛКЕ)...');
+    console.log('🚀 ЗАПУСК ТОЧНОЙ АНИМАЦИИ (ТОЛЬКО ПО ЧАСОВОЙ СТРЕЛКЕ)...');
 
-    // Устанавливаем параметры анимации
+    // Устанавливаем параметры анимации с скорректированным углом
     setAnimationDuration(animationDuration);
-    setCurrentRotation(finalAngle);
+    setCurrentRotation(correctedFinalAngle);
     
     // Завершаем анимацию и обновляем инвентарь
     setTimeout(() => {
       setIsSpinning(false);
       
       // === ПРОВЕРКА РЕЗУЛЬТАТА ===
-      const actualFinalPosition = finalAngle % 360;
+      const actualFinalPosition = correctedFinalAngle % 360;
       const isInBlueZone = actualFinalPosition >= 0 && actualFinalPosition <= blueZoneSize;
       const isCorrect = (result?.success && !isInBlueZone) || (!result?.success && isInBlueZone);
       
-      console.log('🏁 Анимация завершена! Позиция:', actualFinalPosition.toFixed(1) + '°');
+      console.log('🏁 Точная анимация завершена! Позиция:', actualFinalPosition.toFixed(1) + '°');
       console.log('📍 В синей зоне:', isInBlueZone ? 'ДА' : 'НЕТ');
       console.log('✅ Результат корректен:', isCorrect ? 'ДА' : 'НЕТ');
+      console.log('🎯 Отклонение от цели:', Math.abs(actualFinalPosition - targetAngle).toFixed(1) + '°');
       
       // Обновляем инвентарь после завершения анимации
       if (inventoryUpdateFunctions.current) {
