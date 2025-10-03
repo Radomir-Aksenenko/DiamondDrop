@@ -538,7 +538,7 @@ export function ItemCard({
                 lineHeight: 'normal'
               }}
             >
-              {showPercentage ? `${amount}%` : amount}
+              {showPercentage ? `${amount}ШТ.` : amount}
             </span>
             {!showPercentage && (
               <span 
