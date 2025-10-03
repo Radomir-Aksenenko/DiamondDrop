@@ -246,7 +246,7 @@ function CaseItemsList({
                 orientation="horizontal"
                 className="hover:brightness-110 transition-all"
                 fullWidth
-                showPercentage={false}
+                showPercentage={true}
                 isSelected={selectedUpgradeItem?.id === item.id}
                 onRemove={selectedUpgradeItem?.id === item.id ? onItemRemove : undefined}
                 onClick={() => {
