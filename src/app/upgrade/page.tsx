@@ -393,7 +393,7 @@ export default function UpgradePage() {
   const [isMinPriceManual, setIsMinPriceManual] = useState<boolean>(false);
   const [selectedUpgradeItem, setSelectedUpgradeItem] = useState<CaseItem | null>(null);
   const [isSpinning, setIsSpinning] = useState<boolean>(false);
-  const [currentRotation, setCurrentRotation] = useState<number>(180); // Начальный угол 180 градусов (90° + 90° коррекция для SVG)
+  const [currentRotation, setCurrentRotation] = useState<number>(90); // Начальный угол 90°, чтобы указатель был сверху
   const [animationDuration, setAnimationDuration] = useState<number>(3000); // Длительность анимации в мс
   
   // Ref для функций обновления инвентаря
