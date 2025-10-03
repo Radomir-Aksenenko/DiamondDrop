@@ -155,7 +155,9 @@ function CaseItemsList({
   onItemRemove,
   calculateTotalPrice,
   rtp,
-  hasSelectedItems
+  hasSelectedItems,
+  hasMore,
+  onLoadMore
 }: { 
   items: CaseItem[], 
   loading: boolean,
@@ -165,7 +167,9 @@ function CaseItemsList({
   onItemRemove: () => void,
   calculateTotalPrice: () => number,
   rtp: number,
-  hasSelectedItems: boolean
+  hasSelectedItems: boolean,
+  hasMore: boolean,
+  onLoadMore: () => void
 }) {
   // Функция для расчета успешного апгрейда для конкретного предмета
   const calculateItemUpgradePercentage = (upgradeItemPrice: number) => {
@@ -230,6 +234,13 @@ function CaseItemsList({
           scrollbarColor: 'rgba(249, 248, 252, 0.2) transparent',
           paddingBottom: '10px'
         }}
+        onScroll={(e) => {
+          const el = e.currentTarget as HTMLDivElement;
+          const nearBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 50;
+          if (nearBottom && hasMore && !loading) {
+            onLoadMore();
+          }
+        }}
       >
         <style jsx>{`
           div::-webkit-scrollbar { width: 4px; }
@@ -260,6 +271,15 @@ function CaseItemsList({
             </div>
           ))}
         </div>
+        {/* Индикатор подгрузки и конец списка */}
+        {loading && items.length > 0 && (
+          <div className='flex items-center justify-center py-3'>
+            <div className='w-6 h-6 border-2 border-[#F9F8FC]/20 border-t-[#F9F8FC] rounded-full animate-spin'></div>
+          </div>
+        )}
+        {!hasMore && items.length > 0 && (
+          <div className='py-2 text-center text-[#F9F8FC]/40 font-["Actay_Wide"] text-xs'>Это всё</div>
+        )}
       </div>
     </div>
    );
@@ -395,7 +415,9 @@ export default function UpgradePage() {
     upgradeItems, 
     upgradeItemsLoading, 
     upgradeItemsError, 
-    fetchUpgradeItems 
+    fetchUpgradeItems,
+    upgradeItemsHasMore,
+    loadMoreUpgradeItems
   } = useUpgradeAPI();
 
   // Функция для расчета общей суммы выбранных предметов
@@ -705,7 +727,8 @@ export default function UpgradePage() {
 
   // Загружаем предметы для апгрейда при изменении минимальной цены
   React.useEffect(() => {
-    fetchUpgradeItems(minPrice);
+    // При изменении минимальной цены сбрасываем пагинацию и грузим первую страницу
+    fetchUpgradeItems(minPrice, 1, false);
   }, [minPrice, fetchUpgradeItems]);
 
   // Обновляем минимальную цену при изменении выбранных предметов (авто-режим)
@@ -730,7 +753,7 @@ export default function UpgradePage() {
 
   // Подгружаем предметы при изменении минимальной цены
   React.useEffect(() => {
-    fetchUpgradeItems(minPrice);
+    fetchUpgradeItems(minPrice, 1, false);
   }, [minPrice, fetchUpgradeItems]);
 
   // Если пользователь полностью очистил окно апгрейда (нет выбранных предметов),
@@ -940,6 +963,8 @@ export default function UpgradePage() {
              calculateTotalPrice={calculateTotalPrice}
              rtp={rtp}
              hasSelectedItems={selectedItems.length > 0}
+             hasMore={upgradeItemsHasMore}
+             onLoadMore={() => loadMoreUpgradeItems(minPrice)}
            />
          </div>
        </div>

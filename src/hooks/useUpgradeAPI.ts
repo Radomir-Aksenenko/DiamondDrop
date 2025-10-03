@@ -76,6 +76,9 @@ export default function useUpgradeAPI() {
   const [upgradeItems, setUpgradeItems] = useState<UpgradeInventoryItem[]>([]);
   const [upgradeItemsLoading, setUpgradeItemsLoading] = useState<boolean>(false);
   const [upgradeItemsError, setUpgradeItemsError] = useState<string | null>(null);
+  const [upgradeItemsPage, setUpgradeItemsPage] = useState<number>(1);
+  const upgradeItemsPageSize = 20;
+  const [upgradeItemsHasMore, setUpgradeItemsHasMore] = useState<boolean>(true);
 
   /**
    * Загружает данные апгрейда из API
@@ -136,7 +139,7 @@ export default function useUpgradeAPI() {
    * Загружает предметы доступные для апгрейда
    * @param {number} minPrice - Минимальная цена предметов для фильтрации
    */
-  const fetchUpgradeItems = useCallback(async (minPrice: number = 0) => {
+  const fetchUpgradeItems = useCallback(async (minPrice: number = 0, page: number = 1, append: boolean = false) => {
     try {
       setUpgradeItemsLoading(true);
       setUpgradeItemsError(null);
@@ -148,11 +151,12 @@ export default function useUpgradeAPI() {
         return;
       }
 
-      // Формируем URL безопасно
-      const url = new URL(`${API_BASE_URL}/upgrade/items`);
-      url.searchParams.set('minprice', String(minPrice));
+      // Формируем URL строкой, чтобы гарантировать регистр параметров
+      const itemsUrl = `${API_BASE_URL}/upgrade/items?minPrice=${encodeURIComponent(String(minPrice))}&page=${encodeURIComponent(String(page))}&pageSize=${encodeURIComponent(String(upgradeItemsPageSize))}`;
+      // Для отладки: печатаем конечный URL
+      console.debug('[useUpgradeAPI] fetchUpgradeItems URL:', itemsUrl);
 
-      const response = await fetch(url.toString(), {
+      const response = await fetch(itemsUrl, {
         method: 'GET',
         headers: {
           'accept': 'application/json',
@@ -226,7 +230,16 @@ export default function useUpgradeAPI() {
         .map(toUpgradeInventoryItem)
         .filter((it): it is UpgradeInventoryItem => it !== null);
 
-      setUpgradeItems(normalized);
+      if (append) {
+        setUpgradeItems(prev => [...prev, ...normalized]);
+      } else {
+        setUpgradeItems(normalized);
+      }
+
+      // Обновляем страницу и информацию о наличии следующих страниц
+      setUpgradeItemsPage(page);
+      // Если вернулось меньше, чем pageSize — дальнейших страниц нет
+      setUpgradeItemsHasMore(normalized.length === upgradeItemsPageSize);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Неизвестная ошибка';
       setUpgradeItemsError(errorMessage);
@@ -236,6 +249,13 @@ export default function useUpgradeAPI() {
       setUpgradeItemsLoading(false);
     }
   }, []);
+
+  // Загрузка следующей страницы предметов апгрейда
+  const loadMoreUpgradeItems = useCallback(async (minPrice: number = 0) => {
+    if (upgradeItemsLoading || !upgradeItemsHasMore) return;
+    const nextPage = upgradeItemsPage + 1;
+    await fetchUpgradeItems(minPrice, nextPage, true);
+  }, [fetchUpgradeItems, upgradeItemsLoading, upgradeItemsHasMore, upgradeItemsPage]);
 
   /**
    * Выполняет апгрейд ресурсов
@@ -326,6 +346,9 @@ export default function useUpgradeAPI() {
     upgradeItems,
     upgradeItemsLoading,
     upgradeItemsError,
-    fetchUpgradeItems
+    fetchUpgradeItems,
+    upgradeItemsPage,
+    upgradeItemsHasMore,
+    loadMoreUpgradeItems
   };
 }
