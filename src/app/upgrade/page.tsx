@@ -418,7 +418,9 @@ export default function UpgradePage() {
   // Функция для расчета общей суммы выбранных предметов
   const calculateTotalPrice = useCallback(() => {
     return selectedItems.reduce((total, item) => {
-      return total + item.inventoryItem.item.price;
+      const price = Number(item.inventoryItem.item.price || 0);
+      const count = Number(item.selectedAmount || 1);
+      return total + price * count;
     }, 0);
   }, [selectedItems]);
 
@@ -449,21 +451,13 @@ export default function UpgradePage() {
     return Math.max(1, Math.round(ratio));
   }, [calculateTotalPrice, selectedUpgradeItem?.price]);
 
-  // Функция для расчета точного значения окупа (зелёное "+ ... АР")
-  const calculateExactPayback = useCallback(() => {
-    const rawPrice = Number(selectedUpgradeItem?.price || 0);
-
-    // Нормализатор АР: дробные вверх, целые +1, защита от погрешностей
-    const normalizeAR = (value: number) => {
-      if (!isFinite(value) || value <= 0) return 0;
-      const epsilon = 1e-9;
-      const nearestInt = Math.round(value);
-      const isInt = Math.abs(value - nearestInt) < epsilon;
-      return isInt ? nearestInt + 1 : Math.ceil(value - epsilon);
-    };
-
-    return normalizeAR(rawPrice);
-  }, [selectedUpgradeItem?.price]);
+  // Разница цены: (цена цели − сумма выбранных), не отрицательная
+  const calculatePriceDifference = useCallback(() => {
+    const totalUserItemsPrice = calculateTotalPrice();
+    const upgradeItemPrice = Number(selectedUpgradeItem?.price || 0);
+    const diff = upgradeItemPrice - totalUserItemsPrice;
+    return Math.max(0, Math.round(diff));
+  }, [calculateTotalPrice, selectedUpgradeItem?.price]);
 
   // Преобразуем InventoryItem в CaseItem для совместимости с ItemCard
   const convertToCaseItem = useCallback((inventoryItem: InventoryItem): CaseItem => ({
@@ -839,8 +833,8 @@ export default function UpgradePage() {
               <div className='flex h-[36px] px-2 py-[6px] pb-[6px] justify-center items-center gap-2 flex-1 rounded-lg bg-[rgba(249,248,252,0.05)]'>
                 <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold opacity-30 overflow-hidden text-ellipsis line-clamp-1' style={{ display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 1 }}>x{calculateRoundedPayback()}</p>
               </div>
-              <div className='flex w-[104px] h-[36px] px-2 py-[6px] pb-[6px] justify-center items-center gap-2 rounded-lg bg-[rgba(17,171,71,0.10)]'>
-                <span className='text-[#11AB47] font-["Actay_Wide"] text-base font-bold overflow-hidden text-ellipsis line-clamp-1' style={{ display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 1, textOverflow: 'ellipsis' }}>+ {calculateExactPayback()}</span>
+              <div className='flex w-[140px] h-[36px] px-2 py-[6px] pb-[6px] justify-center items-center gap-2 rounded-lg bg-[rgba(17,171,71,0.10)]'>
+                <span className='text-[#11AB47] font-["Actay_Wide"] text-base font-bold overflow-hidden text-ellipsis line-clamp-1' style={{ display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 1, textOverflow: 'ellipsis' }}>+ {calculatePriceDifference()}</span>
                 <span className='overflow-hidden text-[#11AB47] font-["Actay_Wide"] text-sm font-bold leading-normal' style={{ display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 1, textOverflow: 'ellipsis' }}> АР</span>
               </div>
             </div>
@@ -888,22 +882,6 @@ export default function UpgradePage() {
                   <span className='text-[rgba(249,248,252,0.50)] font-["Actay_Wide"] text-xs font-bold'> АР</span>
                 </div>
               </div>
-              {(() => {
-                const total = calculateTotalPrice();
-                const diff = (selectedUpgradeItem?.price || 0) - total;
-                const isCovered = diff < 0;
-                const label = isCovered ? 'Перекрыто на' : 'Осталось';
-                const value = Math.abs(diff);
-                return (
-                  <div className='flex py-2 px-4 justify-between items-center self-stretch border-t border-[rgba(249,248,252,0.05)]'>
-                    <p className='text-[#F9F8FC]/70 text-center font-["Actay_Wide"] text-sm'>{label}</p>
-                    <div>
-                      <span className={`${isCovered ? 'text-[#44FF44]' : 'text-[#F9F8FC]'} text-center font-["Actay_Wide"] text-sm font-bold`}>{value}</span>
-                      <span className='text-[rgba(249,248,252,0.50)] font-["Actay_Wide"] text-xs font-bold'> АР</span>
-                    </div>
-                  </div>
-                );
-              })()}
             </>
           )}
         </div>
