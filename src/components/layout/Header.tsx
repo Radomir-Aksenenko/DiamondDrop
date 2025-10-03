@@ -7,14 +7,11 @@ import NavButton from '@/components/ui/NavButton';
 import { usePreloadedData } from '@/components/providers/DataPreloadProvider';
 import { useUserFaceAvatar } from '@/hooks/useUserAvatar';
 import WalletModal from '@/components/ui/WalletModal';
-import UpgradeModal from '@/components/ui/UpgradeModal';
 import { useWalletModal } from '@/contexts/WalletModalContext';
-import { usePrivilegedUser } from '@/components/ui/PrivilegedUserCheck';
 
 export default function Header() {
   const { user, isAuthenticated } = usePreloadedData();
   const { openWalletModal, closeWalletModal, isWalletModalOpen, walletPresetAmount } = useWalletModal();
-  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const router = useRouter();
   
   // Используем предзагруженные данные пользователя
@@ -42,20 +39,10 @@ export default function Header() {
   
 
 
-  // Используем хук для проверки привилегированного пользователя
-  const { isPrivilegedUser } = usePrivilegedUser();
-
   const handleUpgradeClick = () => {
-    if (isPrivilegedUser) {
-      // Для привилегированных пользователей - переход на страницу
-      router.push('/upgrade');
-    } else {
-      // Для остальных - показываем модалку
-      setIsUpgradeModalOpen(true);
-    }
+    // Открываем апгрейд для всех пользователей
+    router.push('/upgrade');
   };
-
-  const closeUpgradeModal = () => setIsUpgradeModalOpen(false);
 
   const handleOpenInventory = () => {
     router.push('/profile');
@@ -136,11 +123,6 @@ export default function Header() {
         presetAmount={walletPresetAmount}
       />
 
-      {/* Модальное окно апгрейда */}
-      <UpgradeModal 
-        isOpen={isUpgradeModalOpen} 
-        onClose={closeUpgradeModal} 
-      />
     </header>
   );
 }
