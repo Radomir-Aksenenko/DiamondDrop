@@ -538,23 +538,21 @@ export function ItemCard({
                 lineHeight: 'normal'
               }}
             >
-              {showPercentage ? `${amount}ШТ.` : amount}
+              {amount}
             </span>
-            {!showPercentage && (
-              <span 
-                style={{
-                  color: 'rgba(249, 248, 252, 0.50)',
-                  fontFamily: 'Actay Wide',
-                  fontSize: '12px',
-                  fontStyle: 'normal',
-                  fontWeight: 700,
-                  lineHeight: 'normal',
-                  marginLeft: '4px'
-                }}
-              >
-                %
-              </span>
-            )}
+            <span 
+              style={{
+                color: 'rgba(249, 248, 252, 0.50)',
+                fontFamily: 'Actay Wide',
+                fontSize: '12px',
+                fontStyle: 'normal',
+                fontWeight: 700,
+                lineHeight: 'normal',
+                marginLeft: '4px'
+              }}
+            >
+              {showPercentage ? '%' : 'ШТ.'}
+            </span>
           </div>
         </div>
       </div>
@@ -667,7 +665,20 @@ export function ItemCard({
                 opacity: 0.5
               }}
             >
-              {amount} ШТ.
+              {amount}
+            </span>
+            <span 
+              style={{
+                color: 'rgba(249, 248, 252, 0.50)',
+                fontFamily: 'Actay Wide',
+                fontSize: '12px',
+                fontStyle: 'normal',
+                fontWeight: 700,
+                lineHeight: 'normal',
+                marginLeft: '4px'
+              }}
+            >
+              {showPercentage ? '%' : 'ШТ.'}
             </span>
           </div>
         </div>
