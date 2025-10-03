@@ -187,13 +187,7 @@ function CaseItemsList({
     return [...items].sort((a, b) => a.price - b.price);
   }, [items]);
 
-  if (loading) {
-    return (
-      <div className='flex-1 flex items-center justify-center'>
-        <div className='w-6 h-6 border-2 border-[#F9F8FC]/20 border-t-[#F9F8FC] rounded-full animate-spin'></div>
-      </div>
-    );
-  }
+  // Не показываем центральный индикатор загрузки — список остаётся стабильным
 
   if (error) {
     return (
@@ -217,7 +211,7 @@ function CaseItemsList({
   // Фильтруем предметы на основе минимальной цены и выбранного предмета для улучшения
   const filteredItems = sortedItems.filter(item => item.price >= Math.max(calculateTotalPrice(), 0));
 
-  if (filteredItems.length === 0 && hasSelectedItems) {
+  if (filteredItems.length === 0 && hasSelectedItems && !loading) {
     return (
       <div className='flex-1 flex items-center justify-center'>
         <p className='text-[#5C5B60] text-center font-["Actay_Wide"] text-base'>Нет доступных предметов<br/>для данной цены</p>
@@ -273,14 +267,12 @@ function CaseItemsList({
         </div>
         {/* Нижний индикатор: фиксированная высота для бесшовной подгрузки */}
         <div className='h-10 flex items-center justify-center'>
-          {items.length > 0 && (
-            loading ? (
-              <div className='w-6 h-6 border-2 border-[#F9F8FC]/20 border-t-[#F9F8FC] rounded-full animate-spin' aria-label='Загрузка...' />
-            ) : (
-              !hasMore ? (
-                <div className='text-center text-[#F9F8FC]/40 font-["Actay_Wide"] text-xs'>Это всё</div>
-              ) : null
-            )
+          {loading ? (
+            <div className='w-6 h-6 border-2 border-[#F9F8FC]/20 border-t-[#F9F8FC] rounded-full animate-spin' aria-label='Загрузка...' />
+          ) : (
+            items.length > 0 && !hasMore ? (
+              <div className='text-center text-[#F9F8FC]/40 font-["Actay_Wide"] text-xs'>Это всё</div>
+            ) : null
           )}
         </div>
       </div>
