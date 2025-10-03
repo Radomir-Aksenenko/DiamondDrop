@@ -552,7 +552,7 @@ export function ItemCard({
                   marginLeft: '4px'
                 }}
               >
-                ШТ.
+                %
               </span>
             )}
           </div>
