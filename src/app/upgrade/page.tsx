@@ -205,7 +205,7 @@ function CaseItemsList({
   if (!hasSelectedItems) {
     return (
       <div className='flex-1 flex items-center justify-center'>
-        <p className='text-[#5C5B60] text-center font-["Actay_Wide"] text-base'>Выберите до 8 предметов<br/>для апгрейда</p>
+        <p className='text-[#5C5B60] text-center font-["Actay_Wide"] text-base'>Сначало выберите предметы<br/>для апгрейда</p>
       </div>
     );
   }
