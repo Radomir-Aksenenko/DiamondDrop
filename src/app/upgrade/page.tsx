@@ -888,6 +888,22 @@ export default function UpgradePage() {
                   <span className='text-[rgba(249,248,252,0.50)] font-["Actay_Wide"] text-xs font-bold'> АР</span>
                 </div>
               </div>
+              {(() => {
+                const total = calculateTotalPrice();
+                const diff = (selectedUpgradeItem?.price || 0) - total;
+                const isCovered = diff < 0;
+                const label = isCovered ? 'Перекрыто на' : 'Осталось';
+                const value = Math.abs(diff);
+                return (
+                  <div className='flex py-2 px-4 justify-between items-center self-stretch border-t border-[rgba(249,248,252,0.05)]'>
+                    <p className='text-[#F9F8FC]/70 text-center font-["Actay_Wide"] text-sm'>{label}</p>
+                    <div>
+                      <span className={`${isCovered ? 'text-[#44FF44]' : 'text-[#F9F8FC]'} text-center font-["Actay_Wide"] text-sm font-bold`}>{value}</span>
+                      <span className='text-[rgba(249,248,252,0.50)] font-["Actay_Wide"] text-xs font-bold'> АР</span>
+                    </div>
+                  </div>
+                );
+              })()}
             </>
           )}
         </div>
