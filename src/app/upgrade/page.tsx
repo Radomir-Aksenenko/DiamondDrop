@@ -271,15 +271,18 @@ function CaseItemsList({
             </div>
           ))}
         </div>
-        {/* Индикатор подгрузки и конец списка */}
-        {loading && items.length > 0 && (
-          <div className='flex items-center justify-center py-3'>
-            <div className='w-6 h-6 border-2 border-[#F9F8FC]/20 border-t-[#F9F8FC] rounded-full animate-spin'></div>
-          </div>
-        )}
-        {!hasMore && items.length > 0 && (
-          <div className='py-2 text-center text-[#F9F8FC]/40 font-["Actay_Wide"] text-xs'>Это всё</div>
-        )}
+        {/* Нижний индикатор: фиксированная высота для бесшовной подгрузки */}
+        <div className='h-10 flex items-center justify-center'>
+          {items.length > 0 && (
+            loading ? (
+              <div className='w-6 h-6 border-2 border-[#F9F8FC]/20 border-t-[#F9F8FC] rounded-full animate-spin' aria-label='Загрузка...' />
+            ) : (
+              !hasMore ? (
+                <div className='text-center text-[#F9F8FC]/40 font-["Actay_Wide"] text-xs'>Это всё</div>
+              ) : null
+            )
+          )}
+        </div>
       </div>
     </div>
    );
