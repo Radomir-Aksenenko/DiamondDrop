@@ -231,7 +231,7 @@ export default function ProfilePage() {
           <div className='flex flex-col items-start gap-1 self-stretch'>
             <p className='self-stretch text-[#F9F8FC] font-unbounded text-[32px] font-medium'>{userName}</p>
             <div className='text-[#F9F8FC] font-actay-wide text-base font-bold opacity-50 flex items-center gap-1'>
-              <span>{userCurrentXp}</span>
+              <span>{userCurrentXp.toFixed(1)}</span>
               <span>/</span>
               <span>{userCurrentXp + userXpToNext}</span>
               <span>XP</span>
