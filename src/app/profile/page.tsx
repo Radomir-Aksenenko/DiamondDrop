@@ -16,7 +16,7 @@ import { CaseItem } from '@/hooks/useCasesAPI';
 import { PrivilegedUserCheck } from '@/components/ui/PrivilegedUserCheck';
 
 export default function ProfilePage() {
-  const { user, isAuthenticated } = usePreloadedData();
+  const { user, isAuthenticated, refreshUser } = usePreloadedData();
   const router = useRouter();
   const { items: inventoryItems, loading, error, hasMore, loadMore, softRefresh } = useInventoryAPI();
   const observerRef = useRef<HTMLDivElement>(null);
@@ -39,6 +39,13 @@ export default function ProfilePage() {
   const [isSticky, setIsSticky] = useState(false);
   const stickyThreshold = useRef(0);
   
+  // Обновляем данные пользователя при открытии профиля
+  useEffect(() => {
+    if (isAuthenticated) {
+      refreshUser();
+    }
+  }, [isAuthenticated, refreshUser]);
+
   // Инициализация порога для sticky поведения
   useEffect(() => {
     if (tabsRef.current) {
