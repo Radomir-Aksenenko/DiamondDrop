@@ -157,16 +157,19 @@ export function DeliveryOrderCard({ order, onConfirmDelivery, onBranchClick, onI
             <span className='text-[rgba(249,248,252,0.30)] font-["Actay_Wide"] text-base font-bold leading-normal'>Корды в аду: </span>
             <span className='text-[rgba(249,248,252,0.50)] font-["Actay_Wide"] text-base font-bold leading-normal'>{order.branch.coordinates}</span>
           </div>
-          <div className='self-stretch'>
-            <span className='text-[rgba(249,248,252,0.30)] font-["Actay_Wide"] text-base font-bold leading-normal'>Ячейка: </span>
-            <span className={`font-["Actay_Wide"] text-base font-bold leading-normal ${
-              order.branch.cell === 'Пока неизвестно' 
-                ? 'text-[rgba(249,248,252,0.10)]' 
-                : 'text-[rgba(249,248,252,0.50)]'
-            }`}>
-              {order.branch.cell}
-            </span>
-          </div>
+          {/* Ячейка показывается только для статусов "Доставлен в филиал" или "Получен" */}
+          {(order.status === DeliveryStatus.DELIVERED || order.status === DeliveryStatus.CONFIRMED) && (
+            <div className='self-stretch'>
+              <span className='text-[rgba(249,248,252,0.30)] font-["Actay_Wide"] text-base font-bold leading-normal'>Ячейка: </span>
+              <span className={`font-["Actay_Wide"] text-base font-bold leading-normal ${
+                order.branch.cell === 'Пока неизвестно' 
+                  ? 'text-[rgba(249,248,252,0.10)]' 
+                  : 'text-[rgba(249,248,252,0.50)]'
+              }`}>
+                {order.branch.cell}
+              </span>
+            </div>
+          )}
         </div>
       </div>
       
