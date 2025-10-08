@@ -11,6 +11,7 @@ import InventoryItemCard from '@/components/ui/InventoryItemCard';
 import InventoryModal from '@/components/ui/InventoryModal';
 import ItemDescriptionModal from '@/components/ui/ItemDescriptionModal';
 import DeliveryTab from '@/components/ui/DeliveryTab';
+import FreeCasesTab from '@/components/ui/FreeCasesTab';
 import { CaseItem } from '@/hooks/useCasesAPI';
 import { PrivilegedUserCheck } from '@/components/ui/PrivilegedUserCheck';
 
@@ -87,7 +88,10 @@ export default function ProfilePage() {
   
   // Данные пользователя
   const userName = user?.nickname ?? (isAuthenticated ? 'Загрузка...' : 'Гость');
-  const userLevel = user?.level ?? 1;
+  const userLevel = typeof user?.level === 'object' ? user.level.level : (user?.level ?? 1);
+  const userCurrentXp = typeof user?.level === 'object' ? user.level.currentXp : 0;
+  const userXpToNext = typeof user?.level === 'object' ? user.level.xpToNextLevel : 0;
+  const userProgress = typeof user?.level === 'object' ? user.level.progressPercent : 0;
   
   // Получаем URL аватара тела через хук
   const userAvatar = useUserBodyAvatar(userName === 'Загрузка...' || userName === 'Гость' ? null : userName);
@@ -227,9 +231,9 @@ export default function ProfilePage() {
           <div className='flex flex-col items-start gap-1 self-stretch'>
             <p className='self-stretch text-[#F9F8FC] font-unbounded text-[32px] font-medium'>{userName}</p>
             <div className='text-[#F9F8FC] font-actay-wide text-base font-bold opacity-50 flex items-center gap-1'>
-              <span>5</span>
+              <span>{userCurrentXp}</span>
               <span>/</span>
-              <span>2500</span>
+              <span>{userCurrentXp + userXpToNext}</span>
               <span>XP</span>
             </div>
           </div>
@@ -239,7 +243,10 @@ export default function ProfilePage() {
               <p className='text-[#F9F8FC] font-unbounded text-base font-semibold opacity-50'>lvl {userLevel + 1}</p>
             </div>
             <div className='flex h-[18px] pr-2 items-center gap-[10px] self-stretch rounded-[100px] bg-[#0D0D11]'>
-              <div className="w-[314px] self-stretch rounded-[100px] bg-gradient-to-r from-[#313076] to-[#5C5ADC] shadow-[inset_0_4px_25.8px_0_rgba(249,248,252,0.10)]"></div>
+              <div 
+                className="self-stretch rounded-[100px] bg-gradient-to-r from-[#313076] to-[#5C5ADC] shadow-[inset_0_4px_25.8px_0_rgba(249,248,252,0.10)]"
+                style={{ width: `${Math.max(0, Math.min(100, userProgress))}%`, minWidth: '8px' }}
+              ></div>
             </div>
           </div>
         </div>
@@ -460,48 +467,7 @@ export default function ProfilePage() {
         )}
 
         {activeTab === 'freeCases' && (
-          <div className='flex flex-col items-center justify-center w-full py-16 gap-2'>
-            <div className='w-16 h-16 rounded-full bg-[#F9F8FC]/[0.05] flex items-center justify-center'>
-              <svg 
-                width="32" 
-                height="32" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                xmlns="http://www.w3.org/2000/svg"
-                className="text-[#F9F8FC] opacity-50"
-              >
-                <path 
-                  d="M12 2L3 7L12 12L21 7L12 2Z" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                />
-                <path 
-                  d="M3 17L12 22L21 17" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                />
-                <path 
-                  d="M3 12L12 17L21 12" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </div>
-            <div className='text-center'>
-              <h3 className='text-[#F9F8FC] font-unbounded text-lg font-medium mb-2'>
-                Нет бесплатных кейсов
-              </h3>
-              <p className='text-[#F9F8FC] font-actay-wide text-sm opacity-50'>
-                Здесь будут отображаться ваши бесплатные кейсы
-              </p>
-            </div>
-          </div>
+          <FreeCasesTab userId={user?.id} level={userLevel} />
         )}
 
         {activeTab === 'settings' && (

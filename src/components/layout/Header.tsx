@@ -17,7 +17,7 @@ export default function Header() {
   // Используем предзагруженные данные пользователя
   const userBalance = user?.balance ?? 999;
   const userName = user?.nickname ?? (isAuthenticated ? 'Загрузка...' : 'Гость');
-  const userLevel = user?.level ?? 1;
+  const userLevel = typeof user?.level === 'object' ? user.level.level : (user?.level ?? 1);
   
   // Получаем URL аватара через хук
   const userAvatarUrl = useUserFaceAvatar(userName === 'Загрузка...' || userName === 'Гость' ? null : userName);
