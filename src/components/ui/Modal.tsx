@@ -9,6 +9,7 @@ interface ModalProps {
   children: React.ReactNode;
   title?: React.ReactNode;
   className?: string;
+  hideCloseButton?: boolean;
 }
 
 // Оптимизированные варианты анимации для лучшей производительности
@@ -62,7 +63,7 @@ const modalVariants = {
  * @param children - Содержимое модального окна
  * @param title - Заголовок модального окна (опционально)
  */
-const Modal = memo(function Modal({ isOpen, onClose, children, title, className }: ModalProps) {
+const Modal = memo(function Modal({ isOpen, onClose, children, title, className, hideCloseButton }: ModalProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
 
   // Мемоизированный обработчик клика по оверлею
@@ -126,16 +127,18 @@ const Modal = memo(function Modal({ isOpen, onClose, children, title, className 
             )}
             
             {/* Кнопка закрытия */}
-            <button
-              className="absolute top-3 right-3 flex items-center justify-center w-8 h-8 rounded-full bg-[#19191D] text-[#F9F8FC] hover:bg-[#1E1E23] transition-colors cursor-pointer"
-              onClick={onClose}
-              aria-label="Закрыть"
-              type="button"
-            >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
+            {!hideCloseButton && (
+              <button
+                className="absolute top-3 right-3 flex items-center justify-center w-8 h-8 rounded-full bg-[#19191D] text-[#F9F8FC] hover:bg-[#1E1E23] transition-colors cursor-pointer"
+                onClick={onClose}
+                aria-label="Закрыть"
+                type="button"
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+            )}
             
             {/* Содержимое */}
             <div className="px-4 pb-4 overflow-y-auto max-h-[calc(90vh-80px)]">

@@ -3,6 +3,7 @@
 import { useIsMobile } from '@/hooks/useIsMobile';
 import Header from '@/components/layout/Header';
 import BroadcastBanner from '@/components/ui/BroadcastBanner';
+import SubscriptionGate from '@/components/ui/SubscriptionGate';
 import { ReactNode } from 'react';
 
 interface ClientLayoutProps {
@@ -32,6 +33,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
   // Показываем обычный layout для десктопа
   return (
     <>
+      <SubscriptionGate />
       <Header />
       <BroadcastBanner />
       <main className="pt-[85px] px-6">
