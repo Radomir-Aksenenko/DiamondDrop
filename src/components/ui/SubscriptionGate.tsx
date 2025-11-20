@@ -6,13 +6,21 @@ import { SmartLink } from '@/lib/linkUtils';
 
 const COMMUNITY_URL = 'https://spworlds.ru/spm/groups/f9f641b0-4069-4f3b-b21b-39ad9eebfbfd';
 const CHECK_DELAY_MS = 3000;
+const STORAGE_KEY = 'subscriptionGateVerified';
+
+const getStoredVerification = () => {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+  return window.localStorage.getItem(STORAGE_KEY) === 'true';
+};
 
 type CheckStatus = 'idle' | 'checking' | 'error' | 'success';
 
 export default function SubscriptionGate() {
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState<boolean>(() => !getStoredVerification());
   const [status, setStatus] = useState<CheckStatus>('idle');
-  const [attempt, setAttempt] = useState(0);
+  const [attempt, setAttempt] = useState(() => (getStoredVerification() ? 2 : 0));
   const timerRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -52,6 +60,13 @@ export default function SubscriptionGate() {
         }
 
         setStatus('success');
+        try {
+          if (typeof window !== 'undefined') {
+            window.localStorage.setItem(STORAGE_KEY, 'true');
+          }
+        } catch {
+          // ignore localStorage errors
+        }
         setTimeout(() => setIsOpen(false), 800);
         return 2;
       });
