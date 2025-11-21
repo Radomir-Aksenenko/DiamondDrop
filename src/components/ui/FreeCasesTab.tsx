@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { getAuthToken } from '@/lib/auth';
-import { API_BASE_URL, API_ENDPOINTS } from '@/lib/config';
+import { API_ENDPOINTS } from '@/lib/config';
 import Modal from './Modal';
 
 type BonusCaseInfo = {
@@ -28,31 +29,6 @@ type Props = {
 };
 
 type OpenState = 'locked' | 'available' | 'cooldown';
-
-type BonusCaseReward = {
-  id: string;
-  name: string;
-  description: string | null;
-  imageUrl: string | null;
-  amount: number;
-  price: number;
-  percentChance: number;
-  rarity: string;
-  stackAmount: number | null;
-  isWithdrawable: boolean;
-};
-
-type ClaimError = {
-  type: 'error';
-  message: string;
-};
-
-type ClaimSuccess = {
-  type: 'success';
-  reward: BonusCaseReward;
-};
-
-type ClaimFeedback = ClaimError | ClaimSuccess | null;
 
 function formatMs(ms: number): string {
   const totalSeconds = Math.max(0, Math.floor(ms / 1000));
@@ -80,9 +56,8 @@ export default function FreeCasesTab({ userId, level }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [infoBannerTierId, setInfoBannerTierId] = useState<string | null>(null);
-  const [claimingLevel, setClaimingLevel] = useState<number | null>(null);
-  const [claimFeedback, setClaimFeedback] = useState<ClaimFeedback>(null);
   const isMountedRef = useRef(true);
+  const router = useRouter();
 
   useEffect(() => {
     return () => {
@@ -141,43 +116,10 @@ export default function FreeCasesTab({ userId, level }: Props) {
     return tier?.level;
   }, [infoBannerTierId, tiers]);
 
-  const handleOpen = useCallback(async (tierLevel: number) => {
-    if (claimingLevel !== null) return;
-
-    setClaimFeedback(null);
-    setClaimingLevel(tierLevel);
-
-    try {
-      const token = getAuthToken();
-      const response = await fetch(`${API_BASE_URL}/bonus/claim/${tierLevel}`, {
-        method: 'POST',
-        headers: {
-          'accept': 'application/json',
-          ...(token ? { Authorization: token } : {}),
-        },
-      });
-
-      const payload = await response.json().catch(() => ({}));
-
-      if (!response.ok) {
-        const message = typeof payload?.error === 'string'
-          ? payload.error
-          : `Не удалось получить бонусный кейс для уровня ${tierLevel}`;
-        setClaimFeedback({ type: 'error', message });
-        return;
-      }
-
-      setClaimFeedback({ type: 'success', reward: payload as BonusCaseReward });
-      fetchBonusCases();
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Произошла ошибка при попытке получения бонусного кейса';
-      setClaimFeedback({ type: 'error', message });
-    } finally {
-      if (isMountedRef.current) {
-        setClaimingLevel(null);
-      }
-    }
-  }, [claimingLevel, fetchBonusCases]);
+  const handleOpen = useCallback((caseId: string | undefined) => {
+    if (!caseId) return;
+    router.push(`/case/${caseId}`);
+  }, [router]);
 
   const handleShowLockedInfo = useCallback((tierId: string) => {
     setInfoBannerTierId(tierId);
@@ -211,46 +153,6 @@ export default function FreeCasesTab({ userId, level }: Props) {
           </div>
         </div>
       </Modal>
-
-      {claimFeedback && (
-        <div className={`flex flex-col gap-2 rounded-xl border p-4 ${claimFeedback.type === 'success'
-          ? 'border-[#1F2C23] bg-[#12201A]'
-          : 'border-[#442323] bg-[#1F1515]'
-        }`}>
-          {claimFeedback.type === 'success' ? (
-            <>
-              <p className='text-[#9BE28A] font-actay-wide text-sm'>
-                Бонусный кейс получен! Вам выпал предмет:
-              </p>
-              <div className='flex items-center gap-3'>
-                <img
-                  src={claimFeedback.reward.imageUrl ?? '/09b1b0e86eb0cd8a7909f6f74b56ddc17804658d.png'}
-                  alt={claimFeedback.reward.name}
-                  className='w-12 h-12 rounded-lg object-cover border border-[#2A2A3A]'
-                />
-                <div>
-                  <p className='text-[#F9F8FC] font-actay-wide text-sm font-bold'>{claimFeedback.reward.name}</p>
-                  {claimFeedback.reward.description && (
-                    <p className='text-[#F9F8FC]/70 text-xs font-actay-wide truncate max-w-[200px]'>
-                      {claimFeedback.reward.description}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </>
-          ) : (
-            <p className='text-[#F9F8FC] font-actay-wide text-sm'>
-              {claimFeedback.message}
-            </p>
-          )}
-          <button
-            onClick={() => setClaimFeedback(null)}
-            className='self-start rounded-lg border border-[#2A2A3A] px-3 py-1 text-xs font-actay-wide text-[#F9F8FC]/70 hover:text-white transition-colors cursor-pointer'
-          >
-            Скрыть
-          </button>
-        </div>
-      )}
 
       {error && (
         <div className='flex flex-col gap-3 rounded-xl border border-[#442323] bg-[#1F1515] p-4'>
@@ -314,11 +216,11 @@ export default function FreeCasesTab({ userId, level }: Props) {
               </div>
               {state === 'available' && (
                 <button
-                  onClick={() => handleOpen(tier.level)}
+                  onClick={() => handleOpen(tier.case?.id)}
                   className='w-full h-9 rounded-lg bg-[#5C5ADC] text-white font-actay-wide text-sm font-bold hover:brightness-110 transition-colors disabled:opacity-60 disabled:cursor-not-allowed'
-                  disabled={claimingLevel === tier.level}
+                  disabled={!tier.case?.id}
                 >
-                  {claimingLevel === tier.level ? 'Получаем...' : 'Бесплатно'}
+                  {tier.case?.id ? 'Открыть' : 'Нет данных'}
                 </button>
               )}
               {state === 'cooldown' && (
