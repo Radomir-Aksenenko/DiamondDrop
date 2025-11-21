@@ -18,6 +18,7 @@ export interface CaseItem {
   percentChance: number;
   rarity: 'Common' | 'Uncommon' | 'Rare' | 'Epic' | 'Legendary';
   isWithdrawable: boolean;
+  stackAmount?: number | null;
 }
 
 /**
