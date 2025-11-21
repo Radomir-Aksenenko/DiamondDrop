@@ -1,13 +1,25 @@
 'use client';
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { getAuthToken } from '@/lib/auth';
+import { API_BASE_URL, API_ENDPOINTS } from '@/lib/config';
 import Modal from './Modal';
 
-type FreeCaseTier = {
+type BonusCaseInfo = {
+  id: string;
+  name: string;
+  description: string;
+  imageUrl: string | null;
+  price: number;
+};
+
+type BonusCaseTier = {
+  id: string;
   level: number;
-  id: string; // stable id for storage
-  title: string;
-  imageUrl?: string | null;
+  case: BonusCaseInfo | null;
+  canClaim: boolean;
+  nextAvailableAt: string | null;
+  hoursUntilNextClaim: number | null;
 };
 
 type Props = {
@@ -17,41 +29,30 @@ type Props = {
 
 type OpenState = 'locked' | 'available' | 'cooldown';
 
-type StoredOpenInfo = {
-  lastOpenAt: number; // epoch ms
+type BonusCaseReward = {
+  id: string;
+  name: string;
+  description: string | null;
+  imageUrl: string | null;
+  amount: number;
+  price: number;
+  percentChance: number;
+  rarity: string;
+  stackAmount: number | null;
+  isWithdrawable: boolean;
 };
 
-const DAILY_COOLDOWN_MS = 24 * 60 * 60 * 1000;
+type ClaimError = {
+  type: 'error';
+  message: string;
+};
 
-function getStorageKey(userId: string | undefined) {
-  return `dd:free-cases:${userId ?? 'guest'}`;
-}
+type ClaimSuccess = {
+  type: 'success';
+  reward: BonusCaseReward;
+};
 
-function readStorage(userId: string | undefined): Record<string, StoredOpenInfo> {
-  try {
-    const raw = localStorage.getItem(getStorageKey(userId));
-    if (!raw) return {};
-    const parsed = JSON.parse(raw);
-    if (parsed && typeof parsed === 'object') return parsed as Record<string, StoredOpenInfo>;
-    return {};
-  } catch {
-    return {};
-  }
-}
-
-function writeStorage(userId: string | undefined, data: Record<string, StoredOpenInfo>) {
-  try {
-    localStorage.setItem(getStorageKey(userId), JSON.stringify(data));
-  } catch {}
-}
-
-function getOpenState(info: StoredOpenInfo | undefined): { state: OpenState; msLeft: number } {
-  if (!info) return { state: 'available', msLeft: 0 };
-  const now = Date.now();
-  const delta = now - info.lastOpenAt;
-  if (delta >= DAILY_COOLDOWN_MS) return { state: 'available', msLeft: 0 };
-  return { state: 'cooldown', msLeft: DAILY_COOLDOWN_MS - delta };
-}
+type ClaimFeedback = ClaimError | ClaimSuccess | null;
 
 function formatMs(ms: number): string {
   const totalSeconds = Math.max(0, Math.floor(ms / 1000));
@@ -62,37 +63,121 @@ function formatMs(ms: number): string {
   return `${pad(h)}:${pad(m)}:${pad(s)}`;
 }
 
-const TIERS: FreeCaseTier[] = [2, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100].map((lvl) => ({
-  level: lvl,
-  id: `level-${lvl}`,
-  title: `LEVEL ${lvl}`,
-  imageUrl: '/09b1b0e86eb0cd8a7909f6f74b56ddc17804658d.png',
-}));
+function getMsLeft(tier: BonusCaseTier, now: number): number {
+  if (tier.nextAvailableAt) {
+    const nextAt = new Date(tier.nextAvailableAt).getTime();
+    return Math.max(0, nextAt - now);
+  }
+  if (typeof tier.hoursUntilNextClaim === 'number') {
+    return Math.max(0, Math.round(tier.hoursUntilNextClaim * 60 * 60 * 1000));
+  }
+  return 0;
+}
 
 export default function FreeCasesTab({ userId, level }: Props) {
-  const [now, setNow] = useState(Date.now());
+  const [currentTime, setCurrentTime] = useState(Date.now());
+  const [tiers, setTiers] = useState<BonusCaseTier[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [infoBannerTierId, setInfoBannerTierId] = useState<string | null>(null);
-  const infoLevel = useMemo(() => {
-    const tier = TIERS.find(t => t.id === infoBannerTierId);
-    return tier?.level;
-  }, [infoBannerTierId]);
+  const [claimingLevel, setClaimingLevel] = useState<number | null>(null);
+  const [claimFeedback, setClaimFeedback] = useState<ClaimFeedback>(null);
+  const isMountedRef = useRef(true);
 
   useEffect(() => {
-    const i = setInterval(() => setNow(Date.now()), 1000);
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    const i = setInterval(() => setCurrentTime(Date.now()), 1000);
     return () => clearInterval(i);
   }, []);
 
-  const storage = useMemo(() => readStorage(userId), [userId, now]);
+  const fetchBonusCases = useCallback(async () => {
+    setLoading(true);
+    setError(null);
 
-  const handleOpen = useCallback((tierId: string) => {
-    // Here you can integrate real API call to open a free case.
-    // For now we only set cooldown locally.
-    const next = { ...readStorage(userId), [tierId]: { lastOpenAt: Date.now() } };
-    writeStorage(userId, next);
-    // Optional: simple feedback
-    try { window?.alert?.('Кейс открыт! Возвращайтесь через 24 часа.'); } catch {}
-    setNow(Date.now());
-  }, [userId]);
+    try {
+      const token = getAuthToken();
+      const response = await fetch(API_ENDPOINTS.bonusCases, {
+        method: 'GET',
+        headers: {
+          'accept': 'application/json',
+          ...(token ? { Authorization: token } : {}),
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Ошибка загрузки бонусных кейсов: ${response.status}`);
+      }
+
+      const data: Omit<BonusCaseTier, 'id'>[] = await response.json();
+      const normalized = (Array.isArray(data) ? data : []).map((tier) => ({
+        ...tier,
+        id: tier.case?.id ?? `level-${tier.level}`,
+      }));
+
+      if (!isMountedRef.current) return;
+      setTiers(normalized);
+    } catch (err) {
+      if (!isMountedRef.current) return;
+      const message = err instanceof Error ? err.message : 'Не удалось загрузить бонусные кейсы';
+      setError(message);
+      console.error('[FreeCasesTab] Failed to load bonus cases:', err);
+    } finally {
+      if (!isMountedRef.current) return;
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchBonusCases();
+  }, [fetchBonusCases, userId]);
+
+  const infoLevel = useMemo(() => {
+    const tier = tiers.find(t => t.id === infoBannerTierId);
+    return tier?.level;
+  }, [infoBannerTierId, tiers]);
+
+  const handleOpen = useCallback(async (tierLevel: number) => {
+    if (claimingLevel !== null) return;
+
+    setClaimFeedback(null);
+    setClaimingLevel(tierLevel);
+
+    try {
+      const token = getAuthToken();
+      const response = await fetch(`${API_BASE_URL}/bonus/claim/${tierLevel}`, {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          ...(token ? { Authorization: token } : {}),
+        },
+      });
+
+      const payload = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        const message = typeof payload?.error === 'string'
+          ? payload.error
+          : `Не удалось получить бонусный кейс для уровня ${tierLevel}`;
+        setClaimFeedback({ type: 'error', message });
+        return;
+      }
+
+      setClaimFeedback({ type: 'success', reward: payload as BonusCaseReward });
+      fetchBonusCases();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Произошла ошибка при попытке получения бонусного кейса';
+      setClaimFeedback({ type: 'error', message });
+    } finally {
+      if (isMountedRef.current) {
+        setClaimingLevel(null);
+      }
+    }
+  }, [claimingLevel, fetchBonusCases]);
 
   const handleShowLockedInfo = useCallback((tierId: string) => {
     setInfoBannerTierId(tierId);
@@ -103,7 +188,7 @@ export default function FreeCasesTab({ userId, level }: Props) {
   }, []);
 
   return (
-    <div className='flex flex-col gap-2 w-full'>
+    <div className='flex flex-col gap-3 w-full'>
       <Modal isOpen={Boolean(infoBannerTierId)} onClose={handleHideLockedInfo} title='Кейс заблокирован'>
         <div className='flex flex-col gap-3'>
           <div className='flex items-start gap-2 rounded-xl bg-[#19191D] border border-[#2A2A3A] p-3'>
@@ -126,31 +211,114 @@ export default function FreeCasesTab({ userId, level }: Props) {
           </div>
         </div>
       </Modal>
+
+      {claimFeedback && (
+        <div className={`flex flex-col gap-2 rounded-xl border p-4 ${claimFeedback.type === 'success'
+          ? 'border-[#1F2C23] bg-[#12201A]'
+          : 'border-[#442323] bg-[#1F1515]'
+        }`}>
+          {claimFeedback.type === 'success' ? (
+            <>
+              <p className='text-[#9BE28A] font-actay-wide text-sm'>
+                Бонусный кейс получен! Вам выпал предмет:
+              </p>
+              <div className='flex items-center gap-3'>
+                <img
+                  src={claimFeedback.reward.imageUrl ?? '/09b1b0e86eb0cd8a7909f6f74b56ddc17804658d.png'}
+                  alt={claimFeedback.reward.name}
+                  className='w-12 h-12 rounded-lg object-cover border border-[#2A2A3A]'
+                />
+                <div>
+                  <p className='text-[#F9F8FC] font-actay-wide text-sm font-bold'>{claimFeedback.reward.name}</p>
+                  {claimFeedback.reward.description && (
+                    <p className='text-[#F9F8FC]/70 text-xs font-actay-wide truncate max-w-[200px]'>
+                      {claimFeedback.reward.description}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </>
+          ) : (
+            <p className='text-[#F9F8FC] font-actay-wide text-sm'>
+              {claimFeedback.message}
+            </p>
+          )}
+          <button
+            onClick={() => setClaimFeedback(null)}
+            className='self-start rounded-lg border border-[#2A2A3A] px-3 py-1 text-xs font-actay-wide text-[#F9F8FC]/70 hover:text-white transition-colors cursor-pointer'
+          >
+            Скрыть
+          </button>
+        </div>
+      )}
+
+      {error && (
+        <div className='flex flex-col gap-3 rounded-xl border border-[#442323] bg-[#1F1515] p-4'>
+          <p className='text-[#F9F8FC] font-actay-wide text-sm'>
+            {error}
+          </p>
+          <button
+            onClick={fetchBonusCases}
+            className='w-fit rounded-lg bg-[#5C5ADC] px-4 py-2 text-sm font-actay-wide font-bold text-white hover:brightness-110 transition-colors cursor-pointer'
+          >
+            Повторить попытку
+          </button>
+        </div>
+      )}
+
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 w-full'>
-        {TIERS.map((tier) => {
-          const reached = level >= tier.level;
-          const stateInfo = getOpenState(storage[tier.id]);
-          const state: OpenState = reached ? stateInfo.state : 'locked';
+        {loading && tiers.length === 0 && (
+          <div className='col-span-full rounded-lg border border-[#19191D] bg-[#151519] p-4 text-center text-[#F9F8FC]/70 font-actay-wide text-sm'>
+            Загружаем бонусные кейсы...
+          </div>
+        )}
+
+        {!loading && tiers.length === 0 && !error && (
+          <div className='col-span-full rounded-lg border border-[#19191D] bg-[#151519] p-4 text-center text-[#F9F8FC]/70 font-actay-wide text-sm'>
+            Бонусные кейсы не найдены.
+          </div>
+        )}
+
+        {tiers.map((tier) => {
+          const caseImage = tier.case?.imageUrl ?? '/09b1b0e86eb0cd8a7909f6f74b56ddc17804658d.png';
+          let state: OpenState = 'locked';
+          let msLeft = 0;
+
+          if (level >= tier.level) {
+            if (tier.canClaim) {
+              state = 'available';
+            } else {
+              state = 'cooldown';
+              msLeft = getMsLeft(tier, currentTime);
+            }
+          }
+
           return (
-            <div key={tier.id} className='relative flex flex-col items-center w-full h-[220px] p-3 rounded-[12px] bg-[#151519] border border-[#19191D]'>
-              <div className='w-full flex items-start justify-center overflow-hidden mb-2 pt-1'>
-                <p className='text-center text-[#F9F8FC] font-actay font-bold leading-tight w-full text-base'>
+            <div key={tier.id} className='relative flex flex-col items-center w-full h-[240px] p-3 rounded-[12px] bg-[#151519] border border-[#19191D]'>
+              <div className='w-full flex flex-col items-center justify-center overflow-hidden mb-2 pt-1 text-center'>
+                <p className='text-[#F9F8FC] font-actay font-bold leading-tight w-full text-base'>
                   {`LEVEL ${tier.level}`}
                 </p>
+                {tier.case?.name && (
+                  <span className='text-[#F9F8FC]/70 font-actay-wide text-xs truncate w-full'>
+                    {tier.case.name}
+                  </span>
+                )}
               </div>
               <div className='flex-1 flex items-center justify-center w-full min-h-0 mb-2'>
-                {tier.imageUrl ? (
-                  <img src={tier.imageUrl} alt={tier.title} className='w-[120px] h-[120px] object-contain rounded-lg' />
+                {caseImage ? (
+                  <img src={caseImage} alt={tier.case?.name ?? `LEVEL ${tier.level}`} className='w-[120px] h-[120px] object-contain rounded-lg' />
                 ) : (
                   <div className='w-[120px] h-[120px] bg-[#2A2A3A] rounded-lg' />
                 )}
               </div>
               {state === 'available' && (
                 <button
-                  onClick={() => handleOpen(tier.id)}
-                  className='w-full h-9 rounded-lg bg-[#5C5ADC] text-white font-actay-wide text-sm font-bold hover:brightness-110 transition-colors'
+                  onClick={() => handleOpen(tier.level)}
+                  className='w-full h-9 rounded-lg bg-[#5C5ADC] text-white font-actay-wide text-sm font-bold hover:brightness-110 transition-colors disabled:opacity-60 disabled:cursor-not-allowed'
+                  disabled={claimingLevel === tier.level}
                 >
-                  Бесплатно
+                  {claimingLevel === tier.level ? 'Получаем...' : 'Бесплатно'}
                 </button>
               )}
               {state === 'cooldown' && (
@@ -158,7 +326,7 @@ export default function FreeCasesTab({ userId, level }: Props) {
                   className='w-full h-9 rounded-lg bg-[#F9F8FC]/[0.08] text-[#F9F8FC] font-actay-wide text-sm font-bold cursor-not-allowed'
                   disabled
                 >
-                  {formatMs(getOpenState(storage[tier.id]).msLeft)}
+                  {msLeft > 0 ? formatMs(msLeft) : 'Скоро'}
                 </button>
               )}
               {state === 'locked' && (
@@ -174,8 +342,6 @@ export default function FreeCasesTab({ userId, level }: Props) {
                   <span className='leading-none'>{`LVL ${tier.level}`}</span>
                 </button>
               )}
-
-              {/* Inline info panel removed in favor of top-of-screen banner */}
             </div>
           );
         })}

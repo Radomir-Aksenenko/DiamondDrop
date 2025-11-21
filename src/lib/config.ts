@@ -15,6 +15,7 @@ export const API_ENDPOINTS = {
   validate: `${API_BASE_URL}/validate`,
   banners: `${API_BASE_URL}/banners`,
   cases: `${API_BASE_URL}/cases`,
+  bonusCases: `${API_BASE_URL}/bonus/cases`,
   users: {
     me: `${API_BASE_URL}/users/me`,
     inventory: `${API_BASE_URL}/users/me/inventory`,
