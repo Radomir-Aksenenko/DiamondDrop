@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, useParams, notFound } from 'next/navigation';
 import { motion, useAnimation } from 'framer-motion';
 import CaseItemCard from '@/components/ui/CaseItemCard';
@@ -41,6 +41,12 @@ export default function BonusCasePage() {
   const [isItemDescriptionModalOpen, setIsItemDescriptionModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<CaseItem | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [now, setNow] = useState(Date.now());
+
+  useEffect(() => {
+    const interval = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const field1Controls = useAnimation();
   const field2Controls = useAnimation();
@@ -140,9 +146,41 @@ export default function BonusCasePage() {
     return '';
   };
 
-  const buttonLabel = canClaimBonus
-    ? (isSpinning ? 'Открываем...' : 'Открыть')
-    : formatCooldownText() || 'Недоступно';
+  const formatCountdown = (ms: number) => {
+    const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+  };
+
+  const getMsUntilAvailable = () => {
+    if (!bonusCase || !bonusCase.hasLevelAccess || bonusCase.canClaim) return 0;
+    if (bonusCase.nextAvailableAt) {
+      const next = new Date(bonusCase.nextAvailableAt).getTime();
+      return Math.max(0, next - now);
+    }
+    if (typeof bonusCase.hoursUntilNextClaim === 'number') {
+      return Math.max(0, Math.round(bonusCase.hoursUntilNextClaim * 60 * 60 * 1000));
+    }
+    return 0;
+  };
+
+  let buttonMainText = isSpinning ? 'Открываем...' : 'Открыть';
+  let buttonSubText: string | null = isSpinning ? null : 'Бесплатно';
+
+  if (!canClaimBonus) {
+    if (bonusCase && !bonusCase.hasLevelAccess) {
+      buttonMainText = `LVL ${bonusCase.level}`;
+      buttonSubText = `Ваш уровень: ${bonusCase.userLevel}`;
+    } else {
+      const msLeft = getMsUntilAvailable();
+      buttonMainText = formatCountdown(msLeft);
+      buttonSubText = 'До открытия';
+    }
+  }
+
   const isButtonDisabled = isSpinning || !canClaimBonus;
 
   const handleOpenCase = async (isDemo: boolean = false) => {
@@ -479,9 +517,16 @@ export default function BonusCasePage() {
                       whileTap={!isButtonDisabled ? { scale: 0.98 } : {}}
                       transition={{ type: "spring", stiffness: 400, damping: 17 }}
                     >
-                      <span className="text-[#F9F8FC] font-unbounded text-sm font-medium">
-                        {buttonLabel}
-                      </span>
+                      <div className="flex flex-col items-center leading-tight text-center">
+                        <span className="text-[#F9F8FC] font-unbounded text-base font-medium">
+                          {buttonMainText}
+                        </span>
+                        {buttonSubText && (
+                          <span className='text-[#F9F8FC]/70 font-actay-wide text-xs'>
+                            {buttonSubText}
+                          </span>
+                        )}
+                      </div>
                     </motion.button>
 
                     <motion.button
