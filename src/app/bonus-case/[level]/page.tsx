@@ -441,7 +441,7 @@ export default function BonusCasePage() {
             className="w-[18px] h-[12px]"
           />
         </motion.div>
-        <p className='text-[#F9F8FC] font-unbounded text-2xl font-medium'>Бонусные кейсы</p>
+        <p className='text-[#F9F8FC] font-unbounded text-2xl font-medium'>Фри Кейсы</p>
       </button>
 
       <div className='flex items-start gap-2 flex-[1_0_0] self-stretch'>
@@ -486,13 +486,11 @@ export default function BonusCasePage() {
                         setIsFastMode(!isFastMode);
                       }}
                       disabled={isSpinning}
-                      className={`flex w-[27px] h-[15px] p-[2px] ${
-                        isSpinning
+                      className={`flex w-[27px] h-[15px] p-[2px] ${isSpinning
                           ? 'cursor-not-allowed opacity-50'
                           : 'cursor-pointer'
-                      } ${
-                        isFastMode ? 'justify-end bg-[#5C5ADC]' : 'justify-start bg-[#F9F8FC]/[0.10]'
-                      } items-center rounded-[100px] transition-colors duration-200`}
+                        } ${isFastMode ? 'justify-end bg-[#5C5ADC]' : 'justify-start bg-[#F9F8FC]/[0.10]'
+                        } items-center rounded-[100px] transition-colors duration-200`}
                     >
                       <motion.div
                         className='w-[11px] h-[11px] flex-shrink-0 rounded-[100px] bg-[#F9F8FC]'
@@ -508,11 +506,10 @@ export default function BonusCasePage() {
                     <motion.button
                       onClick={() => handleOpenCase(false)}
                       disabled={isButtonDisabled}
-                      className={`flex px-4 py-3 justify-center items-center gap-2 rounded-xl transition-colors duration-200 ${
-                        isButtonDisabled
+                      className={`flex px-4 py-3 justify-center items-center gap-2 rounded-xl transition-colors duration-200 ${isButtonDisabled
                           ? 'bg-[#5C5ADC]/50 cursor-not-allowed'
                           : 'bg-[#5C5ADC] cursor-pointer'
-                      }`}
+                        }`}
                       whileHover={!isButtonDisabled ? { backgroundColor: "#6462DE" } : {}}
                       whileTap={!isButtonDisabled ? { scale: 0.98 } : {}}
                       transition={{ type: "spring", stiffness: 400, damping: 17 }}
@@ -532,9 +529,8 @@ export default function BonusCasePage() {
                     <motion.button
                       onClick={() => handleOpenCase(true)}
                       disabled={isSpinning}
-                      className={`flex px-4 py-3 justify-center items-center gap-[10px] rounded-[8px] bg-[#F9F8FC]/[0.05] text-[#F9F8FC] font-unbounded text-sm font-medium transition-colors duration-200 ${
-                        isSpinning ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
-                      }`}
+                      className={`flex px-4 py-3 justify-center items-center gap-[10px] rounded-[8px] bg-[#F9F8FC]/[0.05] text-[#F9F8FC] font-unbounded text-sm font-medium transition-colors duration-200 ${isSpinning ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+                        }`}
                       whileHover={!isSpinning ? { backgroundColor: "#242428" } : {}}
                       whileTap={!isSpinning ? { scale: 0.98 } : {}}
                       transition={{ type: "spring", stiffness: 400, damping: 17 }}
