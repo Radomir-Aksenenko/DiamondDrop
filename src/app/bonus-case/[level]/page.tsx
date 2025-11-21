@@ -35,7 +35,7 @@ export default function BonusCasePage() {
   const caseData = bonusCase?.case || null;
 
   const [isFastMode, setIsFastMode] = useState(false);
-  const [selectedNumber, setSelectedNumber] = useState(1);
+  const selectedNumber: number = 1;
   const [savedLayouts, setSavedLayouts] = useState<{ [key: string]: CaseItem[] }>({});
   const [isSpinning, setIsSpinning] = useState(false);
   const [isItemDescriptionModalOpen, setIsItemDescriptionModalOpen] = useState(false);
@@ -46,13 +46,6 @@ export default function BonusCasePage() {
   const field2Controls = useAnimation();
   const field3Controls = useAnimation();
   const field4Controls = useAnimation();
-
-  const resetAnimationPositions = () => {
-    field1Controls.set(selectedNumber === 1 ? { x: 0 } : { y: 0 });
-    field2Controls.set({ y: 0 });
-    field3Controls.set({ y: 0 });
-    field4Controls.set({ y: 0 });
-  };
 
   const getSortedItems = () => {
     if (!caseData?.items) return [];
@@ -146,6 +139,11 @@ export default function BonusCasePage() {
     }
     return '';
   };
+
+  const buttonLabel = canClaimBonus
+    ? (isSpinning ? 'Открываем...' : 'Открыть')
+    : formatCooldownText() || 'Недоступно';
+  const isButtonDisabled = isSpinning || !canClaimBonus;
 
   const handleOpenCase = async (isDemo: boolean = false) => {
     if (isSpinning || !caseData) return;
@@ -357,35 +355,6 @@ export default function BonusCasePage() {
     }
   };
 
-  const NumberButton = ({ number }: { number: number }) => {
-    const disabled = isSpinning || number !== 1;
-    return (
-      <motion.button
-        onClick={() => {
-          if (disabled) return;
-          if (selectedNumber !== number) {
-            setSelectedNumber(number);
-            setTimeout(() => resetAnimationPositions(), 50);
-          }
-        }}
-        disabled={disabled}
-        className={`flex w-[36px] h-[36px] justify-center items-center rounded-[8px] font-unbounded text-sm font-medium transition-all duration-200 ${
-          disabled
-            ? 'cursor-not-allowed opacity-50 bg-[#F9F8FC]/[0.05] text-[#F9F8FC]'
-            : selectedNumber === number
-              ? 'border border-[#5C5ADC] bg-[#6563EE]/[0.10] text-[#F9F8FC] cursor-pointer'
-              : 'bg-[#F9F8FC]/[0.05] text-[#F9F8FC] hover:bg-[#F9F8FC]/[0.08] cursor-pointer'
-        }`}
-        whileHover={!disabled ? { scale: 1.05 } : {}}
-        whileTap={!disabled ? { scale: 0.95 } : {}}
-        transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-        title={number === 1 ? '' : 'Бонусный кейс открывается только по одному'}
-      >
-        {number}
-      </motion.button>
-    );
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -459,11 +428,6 @@ export default function BonusCasePage() {
                   </p>
                 </div>
 
-                <div className='flex items-center gap-2'>
-                  {[1, 2, 3, 4].map((number) => (
-                    <NumberButton key={number} number={number} />
-                  ))}
-                </div>
                 <p className="text-xs text-[#F9F8FC]/60 font-actay-wide">
                   Бонусный кейс можно открывать только по одному разу.
                 </p>
@@ -505,27 +469,19 @@ export default function BonusCasePage() {
                   <div className='flex items-center gap-2'>
                     <motion.button
                       onClick={() => handleOpenCase(false)}
-                      disabled={isSpinning || !canClaimBonus}
+                      disabled={isButtonDisabled}
                       className={`flex px-4 py-3 justify-center items-center gap-2 rounded-xl transition-colors duration-200 ${
-                        isSpinning || !canClaimBonus
+                        isButtonDisabled
                           ? 'bg-[#5C5ADC]/50 cursor-not-allowed'
                           : 'bg-[#5C5ADC] cursor-pointer'
                       }`}
-                      whileHover={!isSpinning && canClaimBonus ? { backgroundColor: "#6462DE" } : {}}
-                      whileTap={!isSpinning && canClaimBonus ? { scale: 0.98 } : {}}
+                      whileHover={!isButtonDisabled ? { backgroundColor: "#6462DE" } : {}}
+                      whileTap={!isButtonDisabled ? { scale: 0.98 } : {}}
                       transition={{ type: "spring", stiffness: 400, damping: 17 }}
                     >
                       <span className="text-[#F9F8FC] font-unbounded text-sm font-medium">
-                        {isSpinning ? 'Открываем...' : 'Открыть бонус'}
+                        {buttonLabel}
                       </span>
-                      {!isSpinning && (
-                        <>
-                          <span className="text-[#F9F8FC] font-unbounded text-sm font-medium opacity-50">·</span>
-                          <span className='text-[#F9F8FC] font-unbounded text-sm font-medium opacity-50'>
-                            Бесплатно
-                          </span>
-                        </>
-                      )}
                     </motion.button>
 
                     <motion.button
@@ -541,9 +497,9 @@ export default function BonusCasePage() {
                       Демо
                     </motion.button>
                   </div>
-                  {(actionError || !canClaimBonus) && (
-                    <p className="text-xs font-actay-wide text-[#E9A23B]">
-                      {actionError ?? formatCooldownText()}
+                  {actionError && (
+                    <p className="text-xs font-actay-wide text-[#E74A4A]">
+                      {actionError}
                     </p>
                   )}
                 </div>
@@ -729,24 +685,69 @@ export default function BonusCasePage() {
           </div>
         </div>
 
-        <div className='flex flex-col gap-2 flex-1'>
-          <div className="flex flex-col p-4 gap-4 rounded-xl bg-[#F9F8FC]/[0.05]">
-            <div className="flex items-center justify-between">
-              <h2 className='text-[#F9F8FC] font-unbounded text-xl font-medium'>В кейсе</h2>
-              <p className='text-[#F9F8FC]/70 font-actay-wide text-sm'>
-                {caseData?.items?.length ?? 0} предметов
-              </p>
-            </div>
-
-            <div className="grid grid-cols-4 gap-2 max-h-[340px] overflow-y-auto pr-1">
-              {getSortedItems().map((item) => (
-                <CaseItemCard
-                  key={item.id}
-                  item={item}
-                  onClick={() => handleOpenItemDescriptionModal(item)}
-                />
-              ))}
-            </div>
+        <div className='flex w-[221px] flex-col rounded-xl bg-[#F9F8FC]/[0.05] overflow-hidden' style={{ height: '585px' }}>
+          <div className='flex p-4 pb-2 justify-center items-center flex-shrink-0'>
+            <h1 className='text-[#F9F8FC] font-unbounded text-xl font-medium'>В кейсе</h1>
+          </div>
+          <div className='flex-1 px-4 pb-4 min-h-0'>
+            <motion.div
+              className='h-full overflow-y-auto overflow-x-hidden pr-2'
+              style={{
+                scrollbarWidth: 'thin',
+                scrollbarColor: 'rgba(249, 248, 252, 0.2) transparent'
+              }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+            >
+              <style jsx>{`
+                div::-webkit-scrollbar {
+                  width: 4px;
+                }
+                div::-webkit-scrollbar-track {
+                  background: transparent;
+                }
+                div::-webkit-scrollbar-thumb {
+                  background: rgba(249, 248, 252, 0.2);
+                  border-radius: 2px;
+                }
+                div::-webkit-scrollbar-thumb:hover {
+                  background: rgba(249, 248, 252, 0.3);
+                }
+              `}</style>
+              <div className='grid grid-cols-2 gap-2 w-full auto-rows-max'>
+                {getSortedItems().length > 0 ? (
+                  getSortedItems().map((item, index) => (
+                    <motion.div
+                      key={`${item.id}-${index}`}
+                      className='w-full flex justify-center items-start'
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{
+                        duration: 0.3,
+                        delay: index * 0.05,
+                        ease: "easeOut"
+                      }}
+                    >
+                      <CaseItemCard
+                        item={item}
+                        className='flex-shrink-0'
+                        onClick={() => handleOpenItemDescriptionModal(item)}
+                      />
+                    </motion.div>
+                  ))
+                ) : (
+                  <motion.div
+                    className="text-[#F9F8FC]/50 font-unbounded text-sm text-center w-full col-span-2 py-8"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    Предметы не найдены
+                  </motion.div>
+                )}
+              </div>
+            </motion.div>
           </div>
         </div>
       </div>
