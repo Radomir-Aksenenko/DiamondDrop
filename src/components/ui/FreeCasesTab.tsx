@@ -81,85 +81,74 @@ const BonusCaseCard = ({ tier, userLevel, currentTime, onOpen, onShowLockedInfo 
     }
   };
 
+  const getTextSizeClass = (text: string) => {
+    const length = text.length;
+    if (length <= 20) {
+      return 'text-lg';
+    } else if (length <= 35) {
+      return 'text-base';
+    } else if (length <= 50) {
+      return 'text-sm';
+    } else {
+      return 'text-xs';
+    }
+  };
+
+  const caseName = tier.case?.name || `Кейс уровня ${tier.level}`;
+
   return (
-    <div className="group relative flex flex-col w-full bg-[#151519] rounded-2xl border border-[#2A2A3A] overflow-hidden hover:border-[#5C5ADC]/50 transition-all duration-300 hover:shadow-[0_0_30px_-10px_rgba(92,90,220,0.15)]">
-      {/* Background Gradient Effect */}
-      <div className="absolute top-0 left-0 w-full h-[150px] bg-gradient-to-b from-[#5C5ADC]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+    <div
+      className='relative flex flex-col items-center w-full h-[280px] p-3 rounded-[12px] bg-[#151519] border border-[#19191D] hover:bg-[#1a1a1e] hover:border-[#2A2A3A] transition-all duration-300 cursor-pointer group overflow-hidden'
+      onClick={handleClick}
+    >
+      {/* Name */}
+      <div className='w-full flex items-start justify-center overflow-hidden mb-2 pt-1'>
+        <p className={`text-center text-[#F9F8FC] font-actay font-bold line-clamp-3 leading-tight w-full ${getTextSizeClass(caseName)}`}>
+          {caseName}
+        </p>
+      </div>
 
-      <div className="relative flex flex-col items-center p-5 z-10 h-full">
-        {/* Level Badge */}
-        <div className={`absolute top-3 right-3 px-2.5 py-1 rounded-lg border text-[10px] font-actay-wide font-bold backdrop-blur-sm transition-colors duration-300
-          ${state === 'locked'
-            ? 'bg-[#1F1F25]/80 border-[#2A2A3A] text-[#F9F8FC]/40'
-            : 'bg-[#5C5ADC]/10 border-[#5C5ADC]/20 text-[#5C5ADC]'
-          }
-        `}>
+      {/* Level Badge */}
+      <div className={`flex px-3 py-1.5 justify-center items-center gap-1 rounded-[100px] mb-2 ${state === 'locked' ? 'bg-[#2A2A3A]' : 'bg-[#6563EE]/10'
+        }`}>
+        <span className={`font-actay text-xs font-bold ${state === 'locked' ? 'text-[#F9F8FC]/40' : 'text-[#5C5ADC]'
+          }`}>
           LVL {tier.level}
-        </div>
+        </span>
+      </div>
 
-        {/* Image Area */}
-        <div className="relative w-full aspect-square max-w-[140px] flex items-center justify-center my-4 group-hover:scale-105 transition-transform duration-500 ease-out">
-          {/* Glow behind image */}
-          <div className={`absolute inset-0 bg-[#5C5ADC]/20 blur-3xl rounded-full transition-opacity duration-500
-             ${state === 'available' ? 'opacity-40' : 'opacity-0 group-hover:opacity-30'}
-           `} />
-          <img
-            src={caseImage}
-            alt={tier.case?.name || `Level ${tier.level}`}
-            className={`relative w-full h-full object-contain drop-shadow-2xl transition-all duration-300
-               ${state === 'locked' ? 'grayscale opacity-50' : ''}
-             `}
-          />
-        </div>
+      {/* Image */}
+      <div className='flex-1 flex items-center justify-center w-full min-h-0 mb-2'>
+        <img
+          src={caseImage}
+          alt={caseName}
+          className={`object-contain w-[120px] h-[120px] transition-transform duration-300 ${state === 'locked' ? 'grayscale opacity-50' : 'group-hover:scale-105'
+            }`}
+        />
+      </div>
 
-        {/* Case Name */}
-        <div className="w-full text-center mb-5 mt-auto">
-          <h3 className="text-[#F9F8FC] font-actay font-bold text-lg leading-tight truncate px-2">
-            {tier.case?.name || `Кейс уровня ${tier.level}`}
-          </h3>
-          {tier.case?.description && (
-            <p className="text-[#F9F8FC]/40 text-xs font-actay-wide mt-1.5 truncate px-4">
-              {tier.case.description}
-            </p>
-          )}
-        </div>
-
-        {/* Action Button */}
+      {/* Button */}
+      <div className='w-full mt-auto'>
         <button
-          onClick={handleClick}
           disabled={state === 'cooldown'}
-          className={`
-            w-full h-[46px] rounded-xl flex items-center justify-center
-            font-actay-wide text-sm font-bold transition-all duration-300 relative overflow-hidden
-            ${state === 'available'
-              ? 'bg-[#5C5ADC] hover:bg-[#4A48B8] text-white shadow-[0_0_20px_-5px_#5C5ADC] hover:shadow-[0_0_25px_-5px_#5C5ADC] cursor-pointer translate-y-0'
+          className={`flex w-full px-4 py-2 justify-center items-center gap-2.5 rounded-lg transition-colors duration-300 ${state === 'available'
+              ? 'bg-[#5C5ADC] hover:bg-[#4947b3] group-hover:shadow-lg group-hover:shadow-[#5C5ADC]/20'
               : state === 'cooldown'
-                ? 'bg-[#1A1A20] text-[#F9F8FC]/50 border border-[#2A2A3A] cursor-not-allowed'
-                : 'bg-[#1A1A20] text-[#F9F8FC]/30 border border-[#2A2A3A] hover:border-[#3A3A4A] cursor-pointer'
-            }
-          `}
+                ? 'bg-[#2A2A3A] cursor-not-allowed border border-[#3A3A4A]'
+                : 'bg-[#2A2A3A] border border-[#3A3A4A]'
+            }`}
         >
-          {state === 'available' && (
-            <span className="relative z-10">Открыть</span>
-          )}
-
-          {state === 'cooldown' && (
-            <span className="relative z-10 font-mono tabular-nums tracking-wider">
-              {msLeft > 0 ? formatMs(msLeft) : '...'}
-            </span>
-          )}
-
-          {state === 'locked' && (
-            <span className="relative z-10 flex items-center gap-2">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="opacity-70">
-                <path d="M19 11H5C3.89543 11 3 11.8954 3 13V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V13C21 11.8954 20.1046 11 19 11Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M7 11V7C7 5.67392 7.52678 4.40215 8.46447 3.46447C9.40215 2.52678 10.6739 2 12 2C13.3261 2 14.5979 2.52678 15.5355 3.46447C16.4732 4.40215 17 5.67392 17 7V11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              LVL {tier.level}
-            </span>
-          )}
+          <p className={`font-unbounded text-xs font-medium ${state === 'available' ? 'text-[#F9F8FC]' : 'text-[#F9F8FC]/50'
+            }`}>
+            {state === 'available' && 'Открыть'}
+            {state === 'cooldown' && (msLeft > 0 ? formatMs(msLeft) : '...')}
+            {state === 'locked' && 'Заблокировано'}
+          </p>
         </button>
       </div>
+
+      {/* Hover Glow */}
+      <div className="absolute inset-0 rounded-[12px] bg-gradient-to-t from-[#5C5ADC]/0 via-[#5C5ADC]/5 to-[#5C5ADC]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
     </div>
   );
 };
