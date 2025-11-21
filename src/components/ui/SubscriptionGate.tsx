@@ -80,9 +80,7 @@ export default function SubscriptionGate() {
     }
   }, [status]);
 
-  if (!isOpen) {
-    return null;
-  }
+
 
   return (
     <Modal
