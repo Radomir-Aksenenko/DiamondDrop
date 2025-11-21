@@ -116,9 +116,8 @@ export default function FreeCasesTab({ userId, level }: Props) {
     return tier?.level;
   }, [infoBannerTierId, tiers]);
 
-  const handleOpen = useCallback((caseId: string | undefined) => {
-    if (!caseId) return;
-    router.push(`/case/${caseId}`);
+  const handleOpen = useCallback((tierLevel: number) => {
+    router.push(`/bonus-case/${tierLevel}`);
   }, [router]);
 
   const handleShowLockedInfo = useCallback((tierId: string) => {
@@ -216,11 +215,10 @@ export default function FreeCasesTab({ userId, level }: Props) {
               </div>
               {state === 'available' && (
                 <button
-                  onClick={() => handleOpen(tier.case?.id)}
-                  className='w-full h-9 rounded-lg bg-[#5C5ADC] text-white font-actay-wide text-sm font-bold hover:brightness-110 transition-colors disabled:opacity-60 disabled:cursor-not-allowed'
-                  disabled={!tier.case?.id}
+                  onClick={() => handleOpen(tier.level)}
+                  className='w-full h-9 rounded-lg bg-[#5C5ADC] text-white font-actay-wide text-sm font-bold hover:brightness-110 transition-colors'
                 >
-                  {tier.case?.id ? 'Открыть' : 'Нет данных'}
+                  Подробнее
                 </button>
               )}
               {state === 'cooldown' && (
