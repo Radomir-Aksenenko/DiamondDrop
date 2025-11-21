@@ -90,38 +90,37 @@ export default function SubscriptionGate() {
       onClose={handleClose}
       title="Только для подписчиков"
       hideCloseButton
-      className="w-full max-w-lg"
+      className="w-full max-w-md"
     >
-      <div className="flex flex-col gap-4 pt-2 pb-2">
+      <div className="flex flex-col gap-4">
         <p className="text-sm text-[#C6C5D5]/80">
-          Для использования платформы необходимо быть подписанным на наше сообщество. 
-          Перейдите по ссылке ниже, оформите подписку и затем подтвердите её.
+          Для доступа к сайту необходимо подписаться на наше сообщество.
         </p>
 
-        <div className="flex flex-wrap gap-3">
+        <div className="min-h-[52px] rounded-lg bg-[#19191D] px-4 py-3 flex items-center gap-3">
+          {status === 'checking' && (
+            <span className="w-4 h-4 border-2 border-[#5C5ADC] border-t-transparent rounded-full animate-spin shrink-0" />
+          )}
+          <span className={`text-sm font-medium ${status === 'error' ? 'text-[rgb(255,68,68)]' : status === 'success' ? 'text-[#11ab47]' : 'text-[#C6C5D5]'}`}>
+            {statusMessage}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
           <SmartLink
             href={COMMUNITY_URL}
-            className="flex-1 min-w-[150px] text-center px-4 py-3 rounded-[12px] bg-[#1C1C24] text-[#F9F8FC] font-medium hover:bg-[#24242F] transition-colors"
+            className="flex items-center justify-center px-4 py-2.5 rounded-lg bg-[#19191D] text-[#F9F8FC] font-bold hover:bg-[#1E1E23] transition-colors text-center cursor-pointer"
           >
-            Перейти в сообщество
+            Перейти
           </SmartLink>
           <button
             type="button"
             onClick={handleCheck}
             disabled={status === 'checking' || status === 'success'}
-            className="flex-1 min-w-[150px] px-4 py-3 rounded-[12px] bg-[#5C5ADC] text-[#F9F8FC] font-semibold hover:bg-[#6D6BFF] disabled:bg-[#3A3966] disabled:text-[#C6C5D5] transition-colors"
+            className="flex items-center justify-center px-4 py-2.5 rounded-lg bg-[#5C5ADC] text-[#F9F8FC] font-bold hover:bg-[#4A48B0] disabled:bg-[#5C5ADC]/50 disabled:cursor-not-allowed transition-colors text-center cursor-pointer"
           >
-            {status === 'checking' ? 'Проверяем...' : 'Проверить подписку'}
+            {status === 'checking' ? 'Проверка...' : 'Проверить'}
           </button>
-        </div>
-
-        <div className="min-h-[56px] rounded-[12px] bg-[#111118] border border-[#2A2A33] px-4 py-3 flex items-center gap-3">
-          {status === 'checking' && (
-            <span className="w-5 h-5 border-2 border-[#5C5ADC] border-t-transparent rounded-full animate-spin" />
-          )}
-          <span className={`text-sm font-medium ${status === 'error' ? 'text-[#FF6B6B]' : status === 'success' ? 'text-[#4ADE80]' : 'text-[#C6C5D5]'}`}>
-            {statusMessage}
-          </span>
         </div>
       </div>
     </Modal>
