@@ -1,4 +1,8 @@
+'use client';
+
 import { useState, useEffect } from 'react';
+import { getAuthToken, hasAuthToken } from '@/lib/auth';
+import { API_ENDPOINTS, DEV_CONFIG, isDevelopment } from '@/lib/config';
 
 interface Coordinates {
   overworld: {
@@ -26,66 +30,52 @@ export interface BranchForDisplay {
   coordinates: string;
 }
 
-// Простое кэширование в пределах жизненного цикла приложения, чтобы избежать повторных запросов
-let branchesCache: Branch[] | null = null;
-let branchesErrorCache: string | null = null;
-let branchesFetchPromise: Promise<Branch[]> | null = null;
-
 const useBranchesAPI = () => {
   const [branches, setBranches] = useState<Branch[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [tokenState, setTokenState] = useState<string | null>(getAuthToken());
 
-  const fetchBranches = async (force: boolean = false) => {
-    setLoading(true);
-    setError(null);
-
+  const fetchBranches = async () => {
     try {
-      // Если не требуется принудительное обновление — используем кэш/объединяем параллельные запросы
-      if (!force) {
-        if (branchesCache) {
-          setBranches(branchesCache);
-          setLoading(false);
-          return;
-        }
-        if (branchesFetchPromise) {
-          const data = await branchesFetchPromise;
-          setBranches(data);
-          if (branchesErrorCache) setError(branchesErrorCache);
-          setLoading(false);
-          return;
-        }
+      setLoading(true);
+      setError(null);
+
+      // В dev режиме используем мок данные
+      if (isDevelopment && DEV_CONFIG.skipAuth) {
+        setBranches([]);
+        setLoading(false);
+        return;
       }
 
-      // Запускаем единый запрос и сохраняем промис, чтобы все параллельные вызовы его переиспользовали
-      branchesFetchPromise = (async () => {
-        const response = await fetch('https://battle-api.chasman.engineer/api/v1/branches', {
-          method: 'GET',
-          headers: {
-            'accept': '*/*',
-            'Authorization': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI2ODhjYWQ2YWJlNjU0MWU5ZTgzMWFiZTciLCJwZXJtaXNzaW9uIjoiT3duZXIiLCJuYmYiOjE3NTQzMjU0OTEsImV4cCI6MTc1NDMyOTA5MSwiaWF0IjoxNzU0MzI1NDkxLCJpc3MiOiJtci5yYWZhZWxsbyJ9.kjvs3RdU4ettjsnNjTEQH8VDxXQdETcUX6B7HdB08k4'
-          }
-        });
+      const token = getAuthToken();
+      if (!token) {
+        setBranches([]);
+        setLoading(false);
+        return;
+      }
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
+      const response = await fetch(API_ENDPOINTS.branches, {
+        method: 'GET',
+        headers: {
+          'accept': '*/*',
+          'Authorization': `${token}`,
+        },
+      });
 
-        const data: Branch[] = await response.json();
-        branchesCache = data;
-        branchesErrorCache = null;
-        return data;
-      })();
+      if (!response.ok) {
+        throw new Error(`Ошибка API: ${response.status} ${response.statusText}`);
+      }
 
-      const data = await branchesFetchPromise;
+      const data: Branch[] = await response.json();
       setBranches(data);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Произошла ошибка при загрузке филиалов';
-      setError(message);
-      branchesErrorCache = message;
+      const errorMessage = err instanceof Error ? err.message : 'Произошла ошибка при загрузке филиалов';
+      setError(errorMessage);
+      console.error('Error loading branches:', errorMessage);
+      setBranches([]);
     } finally {
       setLoading(false);
-      branchesFetchPromise = null;
     }
   };
 
@@ -120,18 +110,34 @@ const useBranchesAPI = () => {
     });
   };
 
+  const refreshBranches = () => {
+    fetchBranches();
+  };
+
   useEffect(() => {
-    // При первом обращении подтянем данные (или используем кэш/в ожидании существующего запроса)
-    fetchBranches(false);
+    fetchBranches();
   }, []);
+
+  // Отслеживаем изменения токена
+  useEffect(() => {
+    const checkTokenInterval = setInterval(() => {
+      const currentToken = getAuthToken();
+      if (currentToken !== tokenState) {
+        setTokenState(currentToken);
+        fetchBranches();
+      }
+    }, 1000);
+
+    return () => clearInterval(checkTokenInterval);
+  }, [tokenState]);
 
   return {
     branches,
     branchesForDisplay: getBranchesForDisplay(),
     loading,
     error,
-    // Принудительное обновление для явного refetch
-    refetch: () => fetchBranches(true)
+    refreshBranches,
+    isAuthenticated: hasAuthToken(),
   };
 };
 

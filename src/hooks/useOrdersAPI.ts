@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react';
 import useBranchesAPI from './useBranchesAPI';
 import { getAuthToken } from '@/lib/auth';
+import { API_ENDPOINTS } from '@/lib/config';
 
 // Типы для API заказов
 export interface OrderCoordinate {
@@ -317,9 +318,9 @@ export const useOrdersAPI = (options?: { activeOnly?: boolean }) => {
       }
 
       console.log('useOrdersAPI: Загрузка данных с реального API');
-      
+
       const response = await fetch(
-        `https://battle-api.chasman.engineer/api/v1/orders?page=${page}&pageSize=${pageSize}&activeOnly=${activeOnly ? 'true' : 'false'}`,
+        `${API_ENDPOINTS.orders.list}?page=${page}&pageSize=${pageSize}&activeOnly=${activeOnly ? 'true' : 'false'}`,
         {
           method: 'GET',
           headers: {
@@ -452,7 +453,7 @@ export const useOrdersAPI = (options?: { activeOnly?: boolean }) => {
       }
 
       const response = await fetch(
-        `https://battle-api.chasman.engineer/api/v1/orders/${orderId}/confirm`,
+        API_ENDPOINTS.orders.confirm(orderId),
         {
           method: 'POST',
           headers: {

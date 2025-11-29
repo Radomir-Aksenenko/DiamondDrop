@@ -8,7 +8,10 @@ import type { APIUser } from '@/types/user';
 export const isDevelopment = process.env.NODE_ENV === 'development';
 
 // Базовый URL API
-export const API_BASE_URL = 'https://battle-api.chasman.engineer/api/v1';
+export const API_BASE_URL = 'https://dd-api.chasman.net/api/v1';
+
+// WebSocket URL
+export const WS_URL = 'wss://dd-api.chasman.net/ws';
 
 // Эндпоинты API
 export const API_ENDPOINTS = {
@@ -16,6 +19,14 @@ export const API_ENDPOINTS = {
   banners: `${API_BASE_URL}/banners`,
   cases: `${API_BASE_URL}/cases`,
   bonusCases: `${API_BASE_URL}/bonus/cases`,
+  branches: `${API_BASE_URL}/branches`,
+  orders: {
+    list: `${API_BASE_URL}/orders`,
+    confirm: (orderId: string) => `${API_BASE_URL}/orders/${orderId}/confirm`,
+  },
+  payments: {
+    deposit: `${API_BASE_URL}/payments/deposit`,
+  },
   users: {
     me: `${API_BASE_URL}/users/me`,
     inventory: `${API_BASE_URL}/users/me/inventory`,

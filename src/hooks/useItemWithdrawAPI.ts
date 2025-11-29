@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { getAuthToken } from '@/lib/auth';
+import { API_ENDPOINTS } from '@/lib/config';
 
 /**
  * Интерфейс запроса на вывод предмета
@@ -51,18 +52,15 @@ export default function useItemWithdrawAPI() {
       console.log('[ItemWithdrawAPI] Отправка запроса на вывод предмета:', { itemId, amount, branchId });
 
       // Создаем запрос на вывод предмета
-      const response = await fetch(
-        'https://battle-api.chasman.engineer/api/v1/orders',
-        {
-          method: 'POST',
-          headers: {
-            'accept': '*/*',
-            'Authorization': token,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(requestBody),
-        }
-      );
+      const response = await fetch(API_ENDPOINTS.orders.list, {
+        method: 'POST',
+        headers: {
+          'accept': '*/*',
+          'Authorization': token,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
 
       if (!response.ok) {
         try {

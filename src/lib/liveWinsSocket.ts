@@ -1,6 +1,7 @@
 'use client';
 
 import { hasAuthToken } from '@/lib/auth';
+import { WS_URL } from '@/lib/config';
 
 export type RarityType = 'Common' | 'Uncommon' | 'Rare' | 'Epic' | 'Legendary';
 
@@ -155,9 +156,8 @@ class LiveWinsSocketManager {
     if (this.ws && (this.ws.readyState === WebSocket.CONNECTING || this.ws.readyState === WebSocket.OPEN)) return;
 
     this.isConnecting = true;
-    const wsUrl = 'wss://battle-api.chasman.engineer/ws';
     try {
-      this.ws = new WebSocket(wsUrl);
+      this.ws = new WebSocket(WS_URL);
 
       this.ws.onopen = () => {
         this.isConnecting = false;

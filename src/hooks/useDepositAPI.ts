@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { API_BASE_URL } from '@/lib/config';
+import { API_ENDPOINTS } from '@/lib/config';
 import useSPW from '@/hooks/useSPW';
 
 /**
@@ -34,7 +34,7 @@ export default function useDepositAPI() {
     try {
       // Создаем транзакцию на сервере
       const response = await makeAuthenticatedRequest(
-        `${API_BASE_URL}/payments/deposit`,
+        API_ENDPOINTS.payments.deposit,
         {
           method: 'POST',
           body: JSON.stringify({ amount }),

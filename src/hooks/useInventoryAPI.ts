@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getAuthToken } from '@/lib/auth';
-import { DEV_CONFIG } from '@/lib/config';
+import { API_ENDPOINTS, DEV_CONFIG } from '@/lib/config';
 
 // Интерфейс для предмета инвентаря
 export interface InventoryItem {
@@ -50,7 +50,7 @@ export const useInventoryAPI = () => {
       }
 
       const response = await fetch(
-        `https://battle-api.chasman.engineer/api/v1/users/me/inventory?page=${page}&pageSize=${pageSize}`,
+        `${API_ENDPOINTS.users.inventory}?page=${page}&pageSize=${pageSize}`,
         {
           method: 'GET',
           headers: {
@@ -413,7 +413,7 @@ export const useInventoryAPI = () => {
         }
 
         const response = await fetch(
-          `https://battle-api.chasman.engineer/api/v1/users/me/inventory?page=${page}&pageSize=${pageSize}`,
+          `${API_ENDPOINTS.users.inventory}?page=${page}&pageSize=${pageSize}`,
           {
             method: 'GET',
             headers: {
