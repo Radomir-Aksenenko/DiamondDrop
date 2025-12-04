@@ -4,7 +4,6 @@ import "./globals.css";
 import SPWProvider from "@/components/providers/SPWProvider";
 import { WalletModalProvider } from "@/contexts/WalletModalContext";
 import ClientLayout from "@/components/layout/ClientLayout";
-import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const unbounded = Unbounded({
   variable: "--font-unbounded",

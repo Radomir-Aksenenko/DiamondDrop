@@ -11,9 +11,6 @@ import DeliveryLoader, { DeliveryCircleLoader } from './DeliveryLoader';
 import type { Order } from '@/hooks/useOrdersAPI';
 import useBranchesAPI, { Branch } from '@/hooks/useBranchesAPI';
 
-// Настраиваемый параметр высоты блоков доставки
-const DELIVERY_BLOCKS_HEIGHT = 670; // Измените это значение для изменения высоты блоков
-
 export default function DeliveryTab(): React.JSX.Element {
   // Хук для работы с API заказов (включает данные филиалов)
   const { orders, loading, hasMore, loadInitial, loadMore, isInitialized, branchesForDisplay, confirmOrder, totalCount } = useOrdersAPI();
@@ -282,20 +279,18 @@ export default function DeliveryTab(): React.JSX.Element {
 
   return (
     <>
-      <div className='flex items-start gap-[8px] flex-[1_0_0] self-stretch mb-8' style={{ height: `${DELIVERY_BLOCKS_HEIGHT}px`, maxHeight: '70vh' }}>
+      <div className='flex flex-col md:flex-row items-start gap-3 md:gap-[8px] self-stretch mb-8 md:h-[670px] md:max-h-[70vh]'>
         {/* Колонка текущих заказов */}
-        <div className='flex flex-col items-start gap-3 flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)]' style={{ minHeight: `${DELIVERY_BLOCKS_HEIGHT - 100}px`, height: '100%' }}>
+        <div className='flex flex-col items-start gap-3 flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)] md:min-h-[570px] md:h-full'>
           <div className='flex px-4 pb-3 pt-4 justify-between items-center self-stretch border-b border-[rgba(249,248,252,0.05)]'>
             <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold leading-normal'>Текущие заказы</p>
             <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold leading-normal opacity-30'>{currentOrdersCount} {pluralizeOrders(currentOrdersCount)}</p>
           </div>
-          <div 
-            className='flex flex-col items-start px-3 gap-2 flex-[1_0_0] self-stretch overflow-y-auto pr-2'
+          <div
+            className='flex flex-col items-start px-3 gap-2 self-stretch overflow-y-auto pr-2 md:flex-[1_0_0] md:min-h-[470px] pb-2 max-h-[55vh] min-h-[200px]'
             style={{
               scrollbarWidth: 'thin',
-              scrollbarColor: 'rgba(249, 248, 252, 0.2) transparent',
-              minHeight: `${DELIVERY_BLOCKS_HEIGHT - 200}px`,
-              paddingBottom: '10px'
+              scrollbarColor: 'rgba(249, 248, 252, 0.2) transparent'
             }}
           >
             <style jsx>{`
@@ -337,18 +332,16 @@ export default function DeliveryTab(): React.JSX.Element {
         </div>
         
         {/* Колонка истории заказов */}
-        <div className='flex flex-col items-start gap-3 flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)]' style={{ minHeight: `${DELIVERY_BLOCKS_HEIGHT - 100}px`, height: '100%' }}>
+        <div className='flex flex-col items-start gap-3 flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)] md:min-h-[570px] md:h-full'>
           <div className='flex px-4 pb-3 pt-4 justify-between items-center self-stretch border-b border-[rgba(249,248,252,0.05)]'>
             <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold leading-normal'>История заказов</p>
             <p className='text-[#F9F8FC] text-center font-["Actay_Wide"] text-base font-bold leading-normal opacity-30'>{historyOrdersCount} {pluralizeOrders(historyOrdersCount)}</p>
           </div>
-          <div 
-            className='flex flex-col items-start px-3 gap-2 flex-[1_0_0] self-stretch overflow-y-auto pr-2'
+          <div
+            className='flex flex-col items-start px-3 gap-2 self-stretch overflow-y-auto pr-2 md:flex-[1_0_0] md:min-h-[470px] pb-2 max-h-[55vh] min-h-[200px]'
             style={{
                 scrollbarWidth: 'thin',
-                scrollbarColor: 'rgba(249, 248, 252, 0.2) transparent',
-                minHeight: `${DELIVERY_BLOCKS_HEIGHT - 200}px`,
-                paddingBottom: '10px'
+                scrollbarColor: 'rgba(249, 248, 252, 0.2) transparent'
               }}
           >
             <style jsx>{`

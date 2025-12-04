@@ -4,7 +4,9 @@ import { useIsMobile } from '@/hooks/useIsMobile';
 import Header from '@/components/layout/Header';
 import BroadcastBanner from '@/components/ui/BroadcastBanner';
 import SubscriptionGate from '@/components/ui/SubscriptionGate';
+import BottomNavigation from '@/components/ui/BottomNavigation';
 import { ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface ClientLayoutProps {
   children: ReactNode;
@@ -14,7 +16,8 @@ interface ClientLayoutProps {
  * Клиентский компонент layout с определением мобильных устройств
  */
 export default function ClientLayout({ children }: ClientLayoutProps) {
-  const { isLoading } = useIsMobile();
+  const { isLoading, isMobile } = useIsMobile();
+  const router = useRouter();
 
   // Показываем загрузку пока определяем тип устройства
   if (isLoading) {
@@ -25,22 +28,24 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
     );
   }
 
-  // Убрана заглушка для мобильных устройств
-  // if (isMobile) {
-  //   return <MobileNotSupported />;
-  // }
+  const handleProfileClick = () => {
+    router.push('/profile');
+  };
 
-  // Показываем обычный layout для десктопа
+  // Показываем layout с нижним меню для мобильных и обычный для десктопа
   return (
     <>
       <SubscriptionGate />
       <Header />
       <BroadcastBanner />
-      <main className="pt-[85px] px-6">
+      <main className={`${isMobile ? 'pt-[73px]' : 'pt-[85px]'} px-6 ${isMobile ? 'pb-20' : ''}`}>
         <div className="pt-4">
           {children}
         </div>
       </main>
+      <BottomNavigation
+        onProfileClick={handleProfileClick}
+      />
     </>
   );
 }
