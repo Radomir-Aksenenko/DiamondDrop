@@ -56,17 +56,17 @@ export default function CaseItemCard({
   // Используем цену предмета из API
   const itemValue = item.price;
 
-  // Стили карточки - адаптивные для мобильных
+  // Стили карточки
   const cardStyles = {
     display: 'flex',
-    width: 'clamp(64px, 80px, 80px)', // Немного меньше на очень маленьких экранах
-    height: hideChance ? 'clamp(85px, 100px, 100px)' : 'clamp(105px, 122px, 122px)',
-    padding: '6px',
+    width: '80px',
+    height: hideChance ? '100px' : '122px', // Уменьшаем высоту если скрыт шанс
+    padding: '8px',
     alignItems: 'center',
-    gap: '4px',
+    gap: '6px',
     borderRadius: '8px',
     flexDirection: 'column' as const,
-    justifyContent: hideChance ? 'center' : 'space-between' as const
+    justifyContent: hideChance ? 'center' : 'space-between' as const // Центрируем если скрыт шанс
   };
 
   // Форматируем процент шанса

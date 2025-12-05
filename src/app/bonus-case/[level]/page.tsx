@@ -422,13 +422,13 @@ export default function BonusCasePage() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-85px-1rem)] md:h-[calc(100vh-85px-1rem)] flex flex-col items-start gap-4 flex-1 self-stretch overflow-hidden pb-4 md:pb-0">
+    <div className="h-[calc(100vh-85px-1rem)] flex flex-col items-start gap-4 flex-1 self-stretch overflow-hidden">
       <button
         onClick={() => router.back()}
-        className="flex w-full h-[42px] items-center gap-2 md:gap-4 cursor-pointer"
+        className="flex w-full h-[42px] items-center gap-4 cursor-pointer"
       >
         <motion.div
-          className="flex w-[36px] h-[36px] md:w-[42px] md:h-[42px] flex-col justify-center items-center gap-[10px] flex-shrink-0 rounded-[8px] bg-[#F9F8FC]/[0.05]"
+          className="flex w-[42px] h-[42px] flex-col justify-center items-center gap-[10px] flex-shrink-0 rounded-[8px] bg-[#F9F8FC]/[0.05]"
           whileHover={{ backgroundColor: 'rgba(249, 248, 252, 0.1)' }}
           whileTap={{ scale: 0.95 }}
           transition={{ type: 'spring', stiffness: 400, damping: 25 }}
@@ -438,48 +438,48 @@ export default function BonusCasePage() {
             alt="Назад"
             width={18}
             height={12}
-            className="w-[14px] h-[10px] md:w-[18px] md:h-[12px]"
+            className="w-[18px] h-[12px]"
           />
         </motion.div>
-        <p className='text-[#F9F8FC] font-unbounded text-lg md:text-2xl font-medium'>Фри Кейсы</p>
+        <p className='text-[#F9F8FC] font-unbounded text-2xl font-medium'>Фри Кейсы</p>
       </button>
 
-      <div className='flex flex-col lg:flex-row items-start gap-2 flex-[1_0_0] self-stretch overflow-y-auto lg:overflow-hidden'>
-        <div className='flex flex-col items-start gap-2 flex-1 w-full'>
-          <div className="flex flex-col items-start gap-2 self-stretch p-3 md:p-4 rounded-xl bg-[#F9F8FC]/[0.05] w-full lg:w-[679px] min-h-[240px] md:h-[288px]">
-            <div className='flex flex-col md:flex-row h-auto md:h-[256px] items-center gap-3 md:gap-4 self-stretch'>
+      <div className='flex items-start gap-2 flex-[1_0_0] self-stretch'>
+        <div className='flex flex-col items-start gap-2 flex-1'>
+          <div className="flex flex-col items-start gap-2 self-stretch p-4 rounded-xl bg-[#F9F8FC]/[0.05] w-[679px] h-[288px]">
+            <div className='flex h-[256px] items-center gap-4 self-stretch'>
               <img
                 src={getCaseImageUrl()}
                 alt={`Изображение кейса ${caseData?.name}`}
                 width={256}
                 height={256}
-                className="object-cover rounded-lg w-[180px] h-[180px] md:w-[256px] md:h-[256px] flex-shrink-0"
+                className="object-cover rounded-lg w-[256px] h-[256px] flex-shrink-0"
               />
 
-              <div className='flex py-2 flex-col justify-between items-start flex-1 self-stretch w-full gap-3 md:gap-0'>
-                <div className='flex flex-col items-start gap-1 md:gap-2 self-stretch'>
-                  <h1 className='text-[#F9F8FC] font-unbounded text-base md:text-xl font-medium'>
+              <div className='flex py-2 flex-col justify-between items-start flex-1 self-stretch'>
+                <div className='flex flex-col items-start gap-2 self-stretch'>
+                  <h1 className='text-[#F9F8FC] font-unbounded text-xl font-medium'>
                     {caseData?.name} · LVL {bonusCase?.level ?? numericLevel}
                   </h1>
-                  <p className="text-[#F9F8FC] font-['Actay_Wide'] text-xs md:text-sm font-bold opacity-30 leading-relaxed line-clamp-2 md:line-clamp-none">
+                  <p className="text-[#F9F8FC] font-['Actay_Wide'] text-sm font-bold opacity-30 leading-relaxed">
                     {caseData?.description || 'Case description not available'}
                   </p>
                 </div>
 
-                <p className="text-[10px] md:text-xs text-[#F9F8FC]/60 font-actay-wide">
+                <p className="text-xs text-[#F9F8FC]/60 font-actay-wide">
                   Бонусный кейс можно открывать только по одному разу.
                 </p>
 
-                <div className='flex items-center gap-2 md:gap-4 self-stretch'>
+                <div className='flex items-center gap-4 self-stretch'>
                   <div className='flex items-center gap-2'>
                     <img
                       src="/Fast.svg"
                       alt="Иконка быстрого режима"
                       width={10}
                       height={14}
-                      className="flex-shrink-0 w-[8px] h-[11px] md:w-[10px] md:h-[14px]"
+                      className="flex-shrink-0"
                     />
-                    <p className="text-[#F9F8FC] font-['Actay_Wide'] text-sm md:text-base font-bold">Быстрый режим</p>
+                    <p className="text-[#F9F8FC] font-['Actay_Wide'] text-base font-bold">Быстрый режим</p>
                     <motion.button
                       onClick={() => {
                         if (isSpinning) return;
@@ -501,12 +501,12 @@ export default function BonusCasePage() {
                   </div>
                 </div>
 
-                <div className='flex flex-col gap-1 self-stretch w-full'>
-                  <div className='flex items-center gap-2 w-full'>
+                <div className='flex flex-col gap-1 self-stretch'>
+                  <div className='flex items-center gap-2'>
                     <motion.button
                       onClick={() => handleOpenCase(false)}
                       disabled={isButtonDisabled}
-                      className={`flex flex-1 px-3 md:px-4 py-2 md:py-3 justify-center items-center gap-2 rounded-xl transition-colors duration-200 ${isButtonDisabled
+                      className={`flex px-4 py-3 justify-center items-center gap-2 rounded-xl transition-colors duration-200 ${isButtonDisabled
                           ? 'bg-[#5C5ADC]/50 cursor-not-allowed'
                           : 'bg-[#5C5ADC] cursor-pointer'
                         }`}
@@ -515,11 +515,11 @@ export default function BonusCasePage() {
                       transition={{ type: "spring", stiffness: 400, damping: 17 }}
                     >
                       <div className="flex flex-col items-center leading-tight text-center">
-                        <span className="text-[#F9F8FC] font-unbounded text-xs md:text-base font-medium">
+                        <span className="text-[#F9F8FC] font-unbounded text-base font-medium">
                           {buttonMainText}
                         </span>
                         {buttonSubText && (
-                          <span className='text-[#F9F8FC]/70 font-actay-wide text-[10px] md:text-xs'>
+                          <span className='text-[#F9F8FC]/70 font-actay-wide text-xs'>
                             {buttonSubText}
                           </span>
                         )}
@@ -529,7 +529,7 @@ export default function BonusCasePage() {
                     <motion.button
                       onClick={() => handleOpenCase(true)}
                       disabled={isSpinning}
-                      className={`flex px-3 md:px-4 py-2 md:py-3 justify-center items-center gap-[10px] rounded-[8px] bg-[#F9F8FC]/[0.05] text-[#F9F8FC] font-unbounded text-xs md:text-sm font-medium transition-colors duration-200 ${isSpinning ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+                      className={`flex px-4 py-3 justify-center items-center gap-[10px] rounded-[8px] bg-[#F9F8FC]/[0.05] text-[#F9F8FC] font-unbounded text-sm font-medium transition-colors duration-200 ${isSpinning ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
                         }`}
                       whileHover={!isSpinning ? { backgroundColor: "#242428" } : {}}
                       whileTap={!isSpinning ? { scale: 0.98 } : {}}
@@ -539,7 +539,7 @@ export default function BonusCasePage() {
                     </motion.button>
                   </div>
                   {actionError && (
-                    <p className="text-[10px] md:text-xs font-actay-wide text-[#E74A4A]">
+                    <p className="text-xs font-actay-wide text-[#E74A4A]">
                       {actionError}
                     </p>
                   )}
@@ -548,7 +548,7 @@ export default function BonusCasePage() {
             </div>
           </div>
 
-          <div className="flex p-[8px] md:p-[10px] items-start rounded-xl bg-[#F9F8FC]/[0.05] w-full lg:w-[679px] h-[220px] md:h-[288px]">
+          <div className="flex p-[10px] items-start rounded-xl bg-[#F9F8FC]/[0.05] w-[679px] h-[288px]">
             <div className="flex w-full h-full gap-[8px]">
               {selectedNumber === 1 && (
                 <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden flex justify-center items-center">
@@ -726,12 +726,11 @@ export default function BonusCasePage() {
           </div>
         </div>
 
-        {/* Правый сайдбар - на мобильных отображается внизу */}
-        <div className='flex w-full lg:w-[221px] flex-col rounded-xl bg-[#F9F8FC]/[0.05] overflow-hidden h-[400px] lg:h-[585px]'>
-          <div className='flex p-3 md:p-4 pb-2 justify-center items-center flex-shrink-0'>
-            <h1 className='text-[#F9F8FC] font-unbounded text-base md:text-xl font-medium'>В кейсе</h1>
+        <div className='flex w-[221px] flex-col rounded-xl bg-[#F9F8FC]/[0.05] overflow-hidden' style={{ height: '585px' }}>
+          <div className='flex p-4 pb-2 justify-center items-center flex-shrink-0'>
+            <h1 className='text-[#F9F8FC] font-unbounded text-xl font-medium'>В кейсе</h1>
           </div>
-          <div className='flex-1 px-3 md:px-4 pb-3 md:pb-4 min-h-0'>
+          <div className='flex-1 px-4 pb-4 min-h-0'>
             <motion.div
               className='h-full overflow-y-auto overflow-x-hidden pr-2'
               style={{
@@ -757,8 +756,7 @@ export default function BonusCasePage() {
                   background: rgba(249, 248, 252, 0.3);
                 }
               `}</style>
-              {/* Сетка предметов - на мобильных больше колонок */}
-              <div className='grid grid-cols-3 md:grid-cols-4 lg:grid-cols-2 gap-2 w-full auto-rows-max'>
+              <div className='grid grid-cols-2 gap-2 w-full auto-rows-max'>
                 {getSortedItems().length > 0 ? (
                   getSortedItems().map((item, index) => (
                     <motion.div
@@ -781,7 +779,7 @@ export default function BonusCasePage() {
                   ))
                 ) : (
                   <motion.div
-                    className="text-[#F9F8FC]/50 font-unbounded text-xs md:text-sm text-center w-full col-span-3 md:col-span-4 lg:col-span-2 py-8"
+                    className="text-[#F9F8FC]/50 font-unbounded text-sm text-center w-full col-span-2 py-8"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.5 }}

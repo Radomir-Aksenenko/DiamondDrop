@@ -110,38 +110,38 @@ const Modal = memo(function Modal({ isOpen, onClose, children, title, className,
             style={{ willChange: 'opacity' }}
           />
           
-          {/* Оптимизированное модальное окно - адаптивное */}
+          {/* Оптимизированное модальное окно */}
           <motion.div
-            className={`relative z-10 bg-[#151519] rounded-[12px] md:rounded-[16px] shadow-xl overflow-hidden mx-3 md:mx-4 ${className ? className : 'w-full max-w-md max-h-[90vh]'}`}
+            className={`relative z-10 bg-[#151519] rounded-[16px] shadow-xl overflow-hidden mx-4 ${className ? className : 'w-full max-w-md max-h-[90vh]'}`}
             variants={modalVariants}
             initial="hidden"
             animate="visible"
             exit="exit"
             style={{ willChange: 'transform, opacity' }}
           >
-            {/* Заголовок - адаптивный */}
+            {/* Заголовок */}
             {title && (
-              <div className="px-3 md:px-4 pt-3 md:pt-4 pb-2">
-                <h2 className="text-lg md:text-xl font-bold text-[#F9F8FC] font-unbounded">{title}</h2>
+              <div className="px-4 pt-4 pb-2">
+                <h2 className="text-xl font-bold text-[#F9F8FC] font-unbounded">{title}</h2>
               </div>
             )}
-
-            {/* Кнопка закрытия - адаптивная */}
+            
+            {/* Кнопка закрытия */}
             {!hideCloseButton && (
               <button
-                className="absolute top-2 md:top-3 right-2 md:right-3 flex items-center justify-center w-7 h-7 md:w-8 md:h-8 rounded-full bg-[#19191D] text-[#F9F8FC] hover:bg-[#1E1E23] transition-colors cursor-pointer"
+                className="absolute top-3 right-3 flex items-center justify-center w-8 h-8 rounded-full bg-[#19191D] text-[#F9F8FC] hover:bg-[#1E1E23] transition-colors cursor-pointer"
                 onClick={onClose}
                 aria-label="Закрыть"
                 type="button"
               >
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="md:w-4 md:h-4">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </button>
             )}
-
-            {/* Содержимое - адаптивные отступы */}
-            <div className="px-3 md:px-4 pb-3 md:pb-4 overflow-y-auto max-h-[calc(90vh-80px)]">
+            
+            {/* Содержимое */}
+            <div className="px-4 pb-4 overflow-y-auto max-h-[calc(90vh-80px)]">
               {children}
             </div>
           </motion.div>
