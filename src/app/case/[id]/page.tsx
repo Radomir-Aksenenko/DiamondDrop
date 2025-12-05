@@ -425,11 +425,11 @@ export default function CasePage() {
 
   // Компонент для кнопок с цифрами
   const NumberButton = ({ number }: { number: number }) => (
-    <motion.button 
+    <motion.button
       onClick={() => {
         // Блокируем переключение во время прокрутки
         if (isSpinning) return;
-        
+
         if (selectedNumber !== number) {
           setSelectedNumber(number);
           // Сбрасываем позиции анимации при смене количества кейсов
@@ -437,11 +437,11 @@ export default function CasePage() {
         }
       }}
       disabled={isSpinning}
-      className={`flex w-[36px] h-[36px] justify-center items-center rounded-[8px] font-unbounded text-sm font-medium transition-all duration-200 ${
-        isSpinning 
+      className={`flex w-[32px] h-[32px] md:w-[36px] md:h-[36px] justify-center items-center rounded-[8px] font-unbounded text-xs md:text-sm font-medium transition-all duration-200 ${
+        isSpinning
           ? 'cursor-not-allowed opacity-50 bg-[#F9F8FC]/[0.05] text-[#F9F8FC]'
-          : selectedNumber === number 
-            ? 'border border-[#5C5ADC] bg-[#6563EE]/[0.10] text-[#F9F8FC] cursor-pointer' 
+          : selectedNumber === number
+            ? 'border border-[#5C5ADC] bg-[#6563EE]/[0.10] text-[#F9F8FC] cursor-pointer'
             : 'bg-[#F9F8FC]/[0.05] text-[#F9F8FC] hover:bg-[#F9F8FC]/[0.08] cursor-pointer'
       }`}
       whileHover={!isSpinning ? { scale: 1.05 } : {}}
@@ -485,73 +485,73 @@ export default function CasePage() {
   }
 
   return (
-    <div className="h-[calc(100vh-85px-1rem)] flex flex-col items-start gap-4 flex-1 self-stretch overflow-hidden">
+    <div className="min-h-[calc(100vh-85px-1rem)] md:h-[calc(100vh-85px-1rem)] flex flex-col items-start gap-2 md:gap-4 flex-1 self-stretch overflow-hidden px-2 md:px-0">
       {/* Кнопка назад */}
-      <button 
+      <button
         onClick={() => router.back()}
-        className="flex w-full h-[42px] items-center gap-4 cursor-pointer"
+        className="flex w-full h-[36px] md:h-[42px] items-center gap-2 md:gap-4 cursor-pointer"
       >
-        <motion.div 
-          className="flex w-[42px] h-[42px] flex-col justify-center items-center gap-[10px] flex-shrink-0 rounded-[8px] bg-[#F9F8FC]/[0.05]"
+        <motion.div
+          className="flex w-[36px] h-[36px] md:w-[42px] md:h-[42px] flex-col justify-center items-center gap-[10px] flex-shrink-0 rounded-[8px] bg-[#F9F8FC]/[0.05]"
           whileHover={{ backgroundColor: "rgba(249, 248, 252, 0.1)" }}
           whileTap={{ scale: 0.95 }}
           transition={{ type: "spring", stiffness: 400, damping: 25 }}
         >
-          <img 
-            src="/Arrow - Left.svg" 
-            alt="Назад" 
-            width={18} 
-            height={12} 
-            className="w-[18px] h-[12px]"
+          <img
+            src="/Arrow - Left.svg"
+            alt="Назад"
+            width={18}
+            height={12}
+            className="w-[14px] h-[10px] md:w-[18px] md:h-[12px]"
           />
         </motion.div>
-        <p className='text-[#F9F8FC] font-unbounded text-2xl font-medium'>Кейсы</p>
+        <p className='text-[#F9F8FC] font-unbounded text-lg md:text-2xl font-medium'>Кейсы</p>
       </button>
 
       {/* Основной контент */}
-      <div className='flex items-start gap-2 flex-[1_0_0] self-stretch'>
-        <div className='flex flex-col items-start gap-2 flex-1'>
+      <div className='flex flex-col md:flex-row items-start gap-2 flex-[1_0_0] self-stretch'>
+        <div className='flex flex-col items-start gap-2 flex-1 w-full md:w-auto'>
           {/* Блок с информацией о кейсе */}
-          <div className="flex flex-col items-start gap-2 self-stretch p-4 rounded-xl bg-[#F9F8FC]/[0.05] w-[679px] h-[288px]">
-            <div className='flex h-[256px] items-center gap-4 self-stretch'>
+          <div className="flex flex-col items-start gap-2 self-stretch p-3 md:p-4 rounded-xl bg-[#F9F8FC]/[0.05] w-full md:w-[679px] h-auto md:h-[288px]">
+            <div className='flex flex-col md:flex-row h-auto md:h-[256px] items-center gap-3 md:gap-4 self-stretch'>
               {/* Изображение кейса */}
               <img
                 src={getCaseImageUrl()}
                 alt={`Изображение кейса ${caseData.name}`}
                 width={256}
                 height={256}
-                className="object-cover rounded-lg w-[256px] h-[256px] flex-shrink-0"
+                className="object-cover rounded-lg w-[160px] h-[160px] md:w-[256px] md:h-[256px] flex-shrink-0"
               />
-              
+
               {/* Информация о кейсе */}
-              <div className='flex py-2 flex-col justify-between items-start flex-1 self-stretch'>
+              <div className='flex py-2 flex-col justify-between items-start flex-1 self-stretch w-full md:w-auto'>
                 {/* Заголовок и описание */}
-                <div className='flex flex-col items-start gap-2 self-stretch'>
-                  <h1 className='text-[#F9F8FC] font-unbounded text-xl font-medium'>{caseData.name}</h1>
-                  <p className="text-[#F9F8FC] font-['Actay_Wide'] text-sm font-bold opacity-30 leading-relaxed">
+                <div className='flex flex-col items-start gap-1 md:gap-2 self-stretch'>
+                  <h1 className='text-[#F9F8FC] font-unbounded text-base md:text-xl font-medium'>{caseData.name}</h1>
+                  <p className="text-[#F9F8FC] font-['Actay_Wide'] text-xs md:text-sm font-bold opacity-30 leading-relaxed line-clamp-2 md:line-clamp-none">
                     {caseData.description || 'Case description not available'}
                   </p>
                 </div>
-                
+
                 {/* Кнопки выбора количества */}
-                <div className='flex items-center gap-2'>
+                <div className='flex items-center gap-1.5 md:gap-2'>
                   {[1, 2, 3, 4].map((number) => (
                     <NumberButton key={number} number={number} />
                   ))}
                 </div>
                 
                 {/* Быстрый режим */}
-                <div className='flex items-center gap-4 self-stretch'>
-                  <div className='flex items-center gap-2'>
+                <div className='flex items-center gap-2 md:gap-4 self-stretch'>
+                  <div className='flex items-center gap-1.5 md:gap-2'>
                     <img
                       src="/Fast.svg"
                       alt="Иконка быстрого режима"
                       width={10}
                       height={14}
-                      className="flex-shrink-0"
+                      className="flex-shrink-0 w-[8px] h-[11px] md:w-[10px] md:h-[14px]"
                     />
-                    <p className="text-[#F9F8FC] font-['Actay_Wide'] text-base font-bold">Быстрый режим</p>
-                    <motion.button 
+                    <p className="text-[#F9F8FC] font-['Actay_Wide'] text-xs md:text-base font-bold">Быстрый режим</p>
+                    <motion.button
                       onClick={() => {
                         // Блокируем переключение быстрого режима во время прокрутки
                         if (isSpinning) return;
@@ -559,14 +559,14 @@ export default function CasePage() {
                       }}
                       disabled={isSpinning}
                       className={`flex w-[27px] h-[15px] p-[2px] ${
-                        isSpinning 
-                          ? 'cursor-not-allowed opacity-50' 
+                        isSpinning
+                          ? 'cursor-not-allowed opacity-50'
                           : 'cursor-pointer'
                       } ${
                         isFastMode ? 'justify-end bg-[#5C5ADC]' : 'justify-start bg-[#F9F8FC]/[0.10]'
                       } items-center rounded-[100px] transition-colors duration-200`}
                     >
-                      <motion.div 
+                      <motion.div
                         className='w-[11px] h-[11px] flex-shrink-0 rounded-[100px] bg-[#F9F8FC]'
                         layout
                         transition={{ type: "spring", stiffness: 500, damping: 30 }}
@@ -576,37 +576,37 @@ export default function CasePage() {
                 </div>
                 
                 {/* Кнопки действий */}
-                <div className='flex items-center gap-2'>
-                  <motion.button 
+                <div className='flex items-center gap-1.5 md:gap-2 w-full md:w-auto'>
+                  <motion.button
                     onClick={() => handleOpenCase(false)}
                     disabled={isSpinning}
-                    className={`flex px-4 py-3 justify-center items-center gap-2 rounded-xl transition-colors duration-200 ${
-                      isSpinning 
-                        ? 'bg-[#5C5ADC]/50 cursor-not-allowed' 
+                    className={`flex px-3 py-2 md:px-4 md:py-3 justify-center items-center gap-1.5 md:gap-2 rounded-xl transition-colors duration-200 flex-1 md:flex-initial ${
+                      isSpinning
+                        ? 'bg-[#5C5ADC]/50 cursor-not-allowed'
                         : 'bg-[#5C5ADC] cursor-pointer'
                     }`}
                     whileHover={!isSpinning ? { backgroundColor: "#6462DE" } : {}}
                     whileTap={!isSpinning ? { scale: 0.98 } : {}}
                     transition={{ type: "spring", stiffness: 400, damping: 17 }}
                   >
-                    <span className="text-[#F9F8FC] font-unbounded text-sm font-medium">
+                    <span className="text-[#F9F8FC] font-unbounded text-xs md:text-sm font-medium">
                       {isSpinning ? 'Открываем...' : `Открыть ${selectedNumber} ${selectedNumber === 1 ? 'кейс' : 'кейса'}`}
                     </span>
                     {!isSpinning && (
                       <>
-                        <span className="text-[#F9F8FC] font-unbounded text-sm font-medium opacity-50">·</span>
-                        <span className='text-[#F9F8FC] font-unbounded text-sm font-medium opacity-50'>
+                        <span className="text-[#F9F8FC] font-unbounded text-xs md:text-sm font-medium opacity-50">·</span>
+                        <span className='text-[#F9F8FC] font-unbounded text-xs md:text-sm font-medium opacity-50'>
                           {selectedNumber * caseData.price}
                         </span>
-                        <span className='text-[#F9F8FC] font-unbounded text-[10px] font-medium opacity-50'>АР</span>
+                        <span className='text-[#F9F8FC] font-unbounded text-[9px] md:text-[10px] font-medium opacity-50'>АР</span>
                       </>
                     )}
                   </motion.button>
-                  
-                  <motion.button 
+
+                  <motion.button
                     onClick={() => handleOpenCase(true)}
                     disabled={isSpinning}
-                    className={`flex px-4 py-3 justify-center items-center gap-[10px] rounded-[8px] bg-[#F9F8FC]/[0.05] text-[#F9F8FC] font-unbounded text-sm font-medium transition-colors duration-200 ${
+                    className={`flex px-3 py-2 md:px-4 md:py-3 justify-center items-center gap-[10px] rounded-[8px] bg-[#F9F8FC]/[0.05] text-[#F9F8FC] font-unbounded text-xs md:text-sm font-medium transition-colors duration-200 ${
                       isSpinning ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
                     }`}
                     whileHover={!isSpinning ? { backgroundColor: "#242428" } : {}}
@@ -621,9 +621,9 @@ export default function CasePage() {
           </div>
           
           {/* Нижний блок - Поля для кейсов */}
-          <div className="flex p-[10px] items-start rounded-xl bg-[#F9F8FC]/[0.05] w-[679px] h-[288px]">
+          <div className="flex p-2 md:p-[10px] items-start rounded-xl bg-[#F9F8FC]/[0.05] w-full md:w-[679px] h-[200px] md:h-[288px]">
             {/* Контейнер для полей кейсов */}
-            <div className="flex w-full h-full gap-[8px]">
+            <div className="flex w-full h-full gap-1.5 md:gap-[8px]">
               {selectedNumber === 1 && (
                 // Одно поле на всю ширину с предметами расположенными горизонтально
                 <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden flex justify-center items-center">
@@ -834,8 +834,8 @@ export default function CasePage() {
           </div>
         </div>
         
-        {/* Правый сайдбар */}
-        <div className='flex w-[221px] flex-col rounded-xl bg-[#F9F8FC]/[0.05] overflow-hidden' style={{ height: '585px' }}>
+        {/* Правый сайдбар - скрыт на мобильных */}
+        <div className='hidden md:flex w-[221px] flex-col rounded-xl bg-[#F9F8FC]/[0.05] overflow-hidden' style={{ height: '585px' }}>
           {/* Заголовок */}
           <div className='flex p-4 pb-2 justify-center items-center flex-shrink-0'>
             <h1 className='text-[#F9F8FC] font-unbounded text-xl font-medium'>В кейсе</h1>
