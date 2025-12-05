@@ -44,26 +44,6 @@ export default function BottomNavigation({ onUpgradeClick, onProfileClick }: Bot
     }
   };
 
-  const createClickHandler = (handler: () => void) => {
-    const handleEvent = (e: React.MouseEvent | React.TouchEvent | React.PointerEvent) => {
-      e.stopPropagation();
-      // НЕ делаем preventDefault - пусть браузер обрабатывает события нормально
-    };
-
-    const handleClick = (e: React.MouseEvent) => {
-      e.stopPropagation();
-      e.preventDefault();
-      handler();
-    };
-
-    return {
-      onPointerDown: handleEvent,
-      onMouseDown: handleEvent,
-      onTouchStart: handleEvent,
-      onClick: handleClick,
-    };
-  };
-
   const navItems = [
     {
       id: 'cases',
@@ -93,26 +73,9 @@ export default function BottomNavigation({ onUpgradeClick, onProfileClick }: Bot
     }
   ];
 
-  const handleContainerInteraction = (e: React.MouseEvent | React.TouchEvent | React.PointerEvent) => {
-    // Блокируем только если клик был непосредственно на контейнер, а не на дочерние элементы
-    if (e.target === e.currentTarget) {
-      e.stopPropagation();
-      e.preventDefault();
-    } else {
-      // Для дочерних элементов (кнопок) - только stopPropagation без preventDefault
-      e.stopPropagation();
-    }
-  };
-
   return (
     <>
-      <div
-        className="fixed bottom-4 left-4 right-4 z-[9999] bg-[#151519]/90 backdrop-blur-md rounded-2xl shadow-lg shadow-black/40 border border-[#F9F8FC]/10 pointer-events-auto touch-action-manipulation select-none"
-        onPointerDown={handleContainerInteraction}
-        onMouseDown={handleContainerInteraction}
-        onTouchStart={handleContainerInteraction}
-        onClick={handleContainerInteraction}
-      >
+      <div className="fixed bottom-4 left-4 right-4 z-50 bg-[#151519]/90 backdrop-blur-md rounded-2xl shadow-lg shadow-black/40 border border-[#F9F8FC]/10">
         <div className="flex items-center justify-around px-3 py-1.5 safe-area-pb">
           {navItems.map((item) => {
           const content = (
@@ -138,8 +101,8 @@ export default function BottomNavigation({ onUpgradeClick, onProfileClick }: Bot
             return (
               <button
                 key={item.id}
-                {...createClickHandler(item.onClick)}
-                className="flex-1 flex justify-center items-center cursor-pointer transition-all duration-300 hover:bg-[#F9F8FC]/5 rounded-xl touch-action-manipulation active:scale-95"
+                onClick={item.onClick}
+                className="flex-1 flex justify-center items-center cursor-pointer transition-all duration-300 hover:bg-[#F9F8FC]/5 rounded-xl"
               >
                 {content}
               </button>
@@ -149,8 +112,8 @@ export default function BottomNavigation({ onUpgradeClick, onProfileClick }: Bot
           return (
             <button
               key={item.id}
-              {...createClickHandler(() => router.push(item.href!))}
-              className="flex-1 flex justify-center items-center cursor-pointer transition-all duration-300 hover:bg-[#F9F8FC]/5 rounded-xl touch-action-manipulation active:scale-95"
+              onClick={() => router.push(item.href!)}
+              className="flex-1 flex justify-center items-center cursor-pointer transition-all duration-300 hover:bg-[#F9F8FC]/5 rounded-xl"
             >
               {content}
             </button>
