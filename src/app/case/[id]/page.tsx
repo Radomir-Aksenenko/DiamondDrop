@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter, useParams, notFound } from 'next/navigation';
 // Убран импорт Image из next/image - заменен на обычные img теги
 import { motion, useAnimation } from 'framer-motion';
@@ -85,6 +85,9 @@ export default function CasePage() {
   const field2Controls = useAnimation();
   const field3Controls = useAnimation();
   const field4Controls = useAnimation();
+
+  // Refs для контейнеров рулетки - для точного измерения размеров
+  const rouletteContainerRef = useRef<HTMLDivElement>(null);
 
   // Функция для сброса позиций анимации
   const resetAnimationPositions = () => {
@@ -372,21 +375,27 @@ export default function CasePage() {
         let animationPromise;
 
         if (selectedNumber === 1) {
-          // Горизонтальная прокрутка для одного кейса (адаптированный алгоритм оригинальной рулетки)
+          // Горизонтальная прокрутка для одного кейса
           const itemWidth = cardWidth + gap;
-          // Адаптивная ширина контейнера
-          const containerWidth = isMobile ? (window.innerWidth - 32) : 663; // 32px = padding
 
-          // Начальная позиция (как в оригинале - стартовая позиция)
+          // Получаем реальную ширину контейнера для мобильных
+          let containerWidth;
+          if (isMobile && rouletteContainerRef.current) {
+            // Используем реальную ширину контейнера
+            const rect = rouletteContainerRef.current.getBoundingClientRect();
+            containerWidth = rect.width;
+          } else {
+            containerWidth = 663; // Desktop
+          }
+
+          // Начальная позиция
           const initialOffset = 0;
 
           // Генерируем случайное смещение в пределах карточки
-          const randomOffset = (Math.random() - 0.5) * (isMobile ? 40 : 60);
+          const randomOffset = (Math.random() - 0.5) * (isMobile ? 30 : 60);
 
           // Финальная позиция - центрируем выигрышный предмет + случайное смещение
           const finalOffset = -(targetIndex * itemWidth) + (containerWidth / 2) - (cardWidth / 2) + randomOffset;
-
-          // Логирование удалено
 
           // Устанавливаем начальную позицию
           fieldControl.set({ x: initialOffset });
@@ -396,26 +405,32 @@ export default function CasePage() {
             x: finalOffset,
             transition: {
               duration: horizontalDuration,
-              ease: [0.23, 1, 0.32, 1], // Плавная остановка без "приклеивания"
+              ease: [0.23, 1, 0.32, 1],
             }
           });
 
         } else {
           // Вертикальная прокрутка для нескольких кейсов
           const itemHeight = cardHeight + gap;
-          // Адаптивная высота контейнера
-          const containerHeight = isMobile ? 200 : 272;
+
+          // Получаем реальную высоту контейнера для мобильных
+          let containerHeight;
+          if (isMobile && rouletteContainerRef.current) {
+            // Используем реальную высоту контейнера
+            const rect = rouletteContainerRef.current.getBoundingClientRect();
+            containerHeight = rect.height;
+          } else {
+            containerHeight = 272; // Desktop
+          }
 
           // Начальная позиция
           const initialOffset = 0;
 
           // Генерируем случайное смещение в пределах карточки
-          const randomOffset = (Math.random() - 0.5) * (isMobile ? 60 : 80);
+          const randomOffset = (Math.random() - 0.5) * (isMobile ? 40 : 80);
 
           // Финальная позиция - центрируем выигрышный предмет + случайное смещение
           const finalOffset = -(targetIndex * itemHeight) + (containerHeight / 2) - (cardHeight / 2) + randomOffset;
-
-          // Логирование удалено
 
           // Устанавливаем начальную позицию
           fieldControl.set({ y: initialOffset });
@@ -425,7 +440,7 @@ export default function CasePage() {
             y: finalOffset,
             transition: {
               duration: verticalDuration,
-              ease: [0.23, 1, 0.32, 1], // Плавная остановка без "приклеивания"
+              ease: [0.23, 1, 0.32, 1],
             }
           });
         }
@@ -648,7 +663,7 @@ export default function CasePage() {
             <div className="flex w-full h-full gap-1.5 md:gap-[8px]">
               {selectedNumber === 1 && (
                 // Одно поле на всю ширину с предметами расположенными горизонтально
-                <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden flex justify-center items-center">
+                <div ref={rouletteContainerRef} className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden flex justify-center items-center">
                   {/* Контейнер для рулетки с анимацией */}
                   <motion.div 
                     className="flex items-center gap-2 p-2"

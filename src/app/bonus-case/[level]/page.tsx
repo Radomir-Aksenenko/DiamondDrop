@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter, useParams, notFound } from 'next/navigation';
 import { motion, useAnimation } from 'framer-motion';
 import CaseItemCard from '@/components/ui/CaseItemCard';
@@ -52,6 +52,9 @@ export default function BonusCasePage() {
   const field2Controls = useAnimation();
   const field3Controls = useAnimation();
   const field4Controls = useAnimation();
+
+  // Refs для контейнеров рулетки - для точного измерения размеров
+  const rouletteContainerRef = useRef<HTMLDivElement>(null);
 
   const getSortedItems = () => {
     if (!caseData?.items) return [];
@@ -354,14 +357,32 @@ export default function BonusCasePage() {
         let animationPromise;
 
         if (selectedNumber === 1) {
+          // Горизонтальная прокрутка для одного кейса
           const itemWidth = cardWidth + gap;
-          // Адаптивная ширина контейнера
-          const containerWidth = isMobile ? (window.innerWidth - 32) : 663;
+
+          // Получаем реальную ширину контейнера для мобильных
+          let containerWidth;
+          if (isMobile && rouletteContainerRef.current) {
+            // Используем реальную ширину контейнера
+            const rect = rouletteContainerRef.current.getBoundingClientRect();
+            containerWidth = rect.width;
+          } else {
+            containerWidth = 663; // Desktop
+          }
+
+          // Начальная позиция
           const initialOffset = 0;
-          const randomOffset = (Math.random() - 0.5) * (isMobile ? 40 : 60);
+
+          // Генерируем случайное смещение в пределах карточки
+          const randomOffset = (Math.random() - 0.5) * (isMobile ? 30 : 60);
+
+          // Финальная позиция - центрируем выигрышный предмет + случайное смещение
           const finalOffset = -(targetIndex * itemWidth) + (containerWidth / 2) - (cardWidth / 2) + randomOffset;
 
+          // Устанавливаем начальную позицию
           fieldControl.set({ x: initialOffset });
+
+          // Создаем анимацию с плавной остановкой для горизонтальной прокрутки
           animationPromise = fieldControl.start({
             x: finalOffset,
             transition: {
@@ -369,15 +390,34 @@ export default function BonusCasePage() {
               ease: [0.23, 1, 0.32, 1],
             },
           });
+
         } else {
+          // Вертикальная прокрутка для нескольких кейсов
           const itemHeight = cardHeight + gap;
-          // Адаптивная высота контейнера
-          const containerHeight = isMobile ? 200 : 272;
+
+          // Получаем реальную высоту контейнера для мобильных
+          let containerHeight;
+          if (isMobile && rouletteContainerRef.current) {
+            // Используем реальную высоту контейнера
+            const rect = rouletteContainerRef.current.getBoundingClientRect();
+            containerHeight = rect.height;
+          } else {
+            containerHeight = 272; // Desktop
+          }
+
+          // Начальная позиция
           const initialOffset = 0;
-          const randomOffset = (Math.random() - 0.5) * (isMobile ? 60 : 80);
+
+          // Генерируем случайное смещение в пределах карточки
+          const randomOffset = (Math.random() - 0.5) * (isMobile ? 40 : 80);
+
+          // Финальная позиция - центрируем выигрышный предмет + случайное смещение
           const finalOffset = -(targetIndex * itemHeight) + (containerHeight / 2) - (cardHeight / 2) + randomOffset;
 
+          // Устанавливаем начальную позицию
           fieldControl.set({ y: initialOffset });
+
+          // Создаем анимацию с плавной остановкой для вертикальной прокрутки
           animationPromise = fieldControl.start({
             y: finalOffset,
             transition: {
@@ -558,7 +598,7 @@ export default function BonusCasePage() {
           <div className="flex p-2 md:p-[10px] items-start rounded-xl bg-[#F9F8FC]/[0.05] w-full md:w-[679px] h-[200px] md:h-[288px]">
             <div className="flex w-full h-full gap-1.5 md:gap-[8px]">
               {selectedNumber === 1 && (
-                <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden flex justify-center items-center">
+                <div ref={rouletteContainerRef} className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden flex justify-center items-center">
                   <motion.div
                     className="flex items-center gap-2 p-2"
                     animate={field1Controls}
