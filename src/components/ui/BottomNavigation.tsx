@@ -44,10 +44,24 @@ export default function BottomNavigation({ onUpgradeClick, onProfileClick }: Bot
     }
   };
 
-  const createClickHandler = (handler: () => void) => (e: React.MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
-    handler();
+  const createClickHandler = (handler: () => void) => {
+    const handleEvent = (e: React.MouseEvent | React.TouchEvent | React.PointerEvent) => {
+      e.stopPropagation();
+      e.preventDefault();
+    };
+
+    const handleClick = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      e.preventDefault();
+      handler();
+    };
+
+    return {
+      onPointerDown: handleEvent,
+      onMouseDown: handleEvent,
+      onTouchStart: handleEvent,
+      onClick: handleClick,
+    };
   };
 
   const navItems = [
@@ -79,21 +93,19 @@ export default function BottomNavigation({ onUpgradeClick, onProfileClick }: Bot
     }
   ];
 
-  const handleContainerClick = (e: React.MouseEvent) => {
+  const handleContainerInteraction = (e: React.MouseEvent | React.TouchEvent | React.PointerEvent) => {
     e.stopPropagation();
     e.preventDefault();
-  };
-
-  const handleContainerTouch = (e: React.TouchEvent) => {
-    e.stopPropagation();
   };
 
   return (
     <>
       <div
-        className="fixed bottom-4 left-4 right-4 z-[9999] bg-[#151519]/90 backdrop-blur-md rounded-2xl shadow-lg shadow-black/40 border border-[#F9F8FC]/10 pointer-events-auto touch-action-manipulation"
-        onClick={handleContainerClick}
-        onTouchStart={handleContainerTouch}
+        className="fixed bottom-4 left-4 right-4 z-[9999] bg-[#151519]/90 backdrop-blur-md rounded-2xl shadow-lg shadow-black/40 border border-[#F9F8FC]/10 pointer-events-auto touch-action-manipulation select-none"
+        onPointerDown={handleContainerInteraction}
+        onMouseDown={handleContainerInteraction}
+        onTouchStart={handleContainerInteraction}
+        onClick={handleContainerInteraction}
       >
         <div className="flex items-center justify-around px-3 py-1.5 safe-area-pb">
           {navItems.map((item) => {
@@ -120,7 +132,7 @@ export default function BottomNavigation({ onUpgradeClick, onProfileClick }: Bot
             return (
               <button
                 key={item.id}
-                onClick={createClickHandler(item.onClick)}
+                {...createClickHandler(item.onClick)}
                 className="flex-1 flex justify-center items-center cursor-pointer transition-all duration-300 hover:bg-[#F9F8FC]/5 rounded-xl touch-action-manipulation active:scale-95"
               >
                 {content}
@@ -131,7 +143,7 @@ export default function BottomNavigation({ onUpgradeClick, onProfileClick }: Bot
           return (
             <button
               key={item.id}
-              onClick={createClickHandler(() => router.push(item.href!))}
+              {...createClickHandler(() => router.push(item.href!))}
               className="flex-1 flex justify-center items-center cursor-pointer transition-all duration-300 hover:bg-[#F9F8FC]/5 rounded-xl touch-action-manipulation active:scale-95"
             >
               {content}
