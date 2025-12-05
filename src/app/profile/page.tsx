@@ -370,7 +370,7 @@ export default function ProfilePage() {
             {/* Сетка предметов инвентаря */}
             {!loading || inventoryItems.length > 0 ? (
               <div className='flex flex-col items-start gap-2 self-stretch'>
-              <div className='grid grid-cols-3 gap-2 w-full'>
+              <div className='grid grid-cols-3 md:grid-cols-2 gap-2 w-full'>
                 {inventoryItems.map((inventoryItem, index) => (
                   <InventoryItemCard 
                     key={`${inventoryItem.item.id}-${index}`}
