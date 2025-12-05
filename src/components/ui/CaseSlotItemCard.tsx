@@ -9,6 +9,7 @@ import { handleItemImageError, getItemImageUrl } from '@/utils/imageUtils';
 interface CaseSlotItemCardProps {
   item: CaseItem;
   className?: string;
+  compact?: boolean; // Для уменьшения размера на мобильных или при множественном открытии
 }
 
 // Конфигурация цветов и стилей для каждого типа редкости
@@ -43,23 +44,24 @@ const rarityConfig = {
 /**
  * Компонент карточки предмета для слотов кейса (без процента выигрыша)
  */
-export default function CaseSlotItemCard({ 
-  item, 
-  className = '' 
+export default function CaseSlotItemCard({
+  item,
+  className = '',
+  compact = false
 }: CaseSlotItemCardProps) {
   const config = rarityConfig[item.rarity as keyof typeof rarityConfig] || rarityConfig.Common;
-  
+
   // Используем цену предмета из API
   const itemValue = item.price;
 
-  // Стили карточки
+  // Стили карточки - адаптивные размеры
   const cardStyles = {
     display: 'flex',
-    width: '76px',
-    height: '100px',
-    padding: '8px',
+    width: compact ? '56px' : '76px',
+    height: compact ? '74px' : '100px',
+    padding: compact ? '6px' : '8px',
     alignItems: 'center',
-    gap: '6px',
+    gap: compact ? '4px' : '6px',
     borderRadius: '8px',
     flexDirection: 'column' as const,
     justifyContent: 'space-between' as const
@@ -80,7 +82,7 @@ export default function CaseSlotItemCard({
       }}
     >
       {/* Верхняя часть - иконка предмета */}
-      <div className="relative w-12 h-12 flex items-center justify-center">
+      <div className={`relative flex items-center justify-center ${compact ? 'w-8 h-8' : 'w-12 h-12'}`}>
         <img
           src={getItemImageUrl(item.imageUrl)}
           alt={item.name}
@@ -89,11 +91,11 @@ export default function CaseSlotItemCard({
         />
         {/* Количество поверх изображения */}
         <div className="absolute -bottom-1 -right-1">
-          <span 
+          <span
             style={{
               color: '#F9F8FC',
               fontFamily: 'Actay Wide',
-              fontSize: '16px',
+              fontSize: compact ? '12px' : '16px',
               fontStyle: 'normal',
               fontWeight: 700,
               lineHeight: 'normal',
@@ -107,12 +109,12 @@ export default function CaseSlotItemCard({
 
       {/* Нижняя часть - цена */}
       <div className="flex items-baseline justify-center">
-        <span 
+        <span
           style={{
             color: '#F9F8FC',
             textAlign: 'center',
             fontFamily: 'Actay Wide',
-            fontSize: '16px',
+            fontSize: compact ? '12px' : '16px',
             fontStyle: 'normal',
             fontWeight: 700,
             lineHeight: 'normal'
@@ -120,11 +122,11 @@ export default function CaseSlotItemCard({
         >
           {formatPrice(itemValue)}
         </span>
-        <span 
+        <span
           style={{
             color: 'rgba(249, 248, 252, 0.50)',
             fontFamily: 'Actay Wide',
-            fontSize: '12px',
+            fontSize: compact ? '9px' : '12px',
             fontStyle: 'normal',
             fontWeight: 700,
             lineHeight: 'normal',

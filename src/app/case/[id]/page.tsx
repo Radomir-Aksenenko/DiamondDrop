@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, useParams, notFound } from 'next/navigation';
 // Убран импорт Image из next/image - заменен на обычные img теги
 import { motion, useAnimation } from 'framer-motion';
@@ -43,7 +43,10 @@ export default function CasePage() {
   
   const [isFastMode, setIsFastMode] = useState(false);
   const [selectedNumber, setSelectedNumber] = useState(1);
-  
+
+  // Определяем, нужен ли компактный режим для карточек
+  const [isCompactCards, setIsCompactCards] = useState(false);
+
   // Состояние для сохранения расположения предметов
   const [savedLayouts, setSavedLayouts] = useState<{[key: string]: CaseItem[]}>({});
   
@@ -59,10 +62,24 @@ export default function CasePage() {
     setSelectedItem(item);
     setIsItemDescriptionModalOpen(true);
   };
-  
+
   const handleCloseItemDescriptionModal = () => {
     setIsItemDescriptionModalOpen(false);
   };
+
+  // useEffect для определения compact режима
+  useEffect(() => {
+    const checkCompactMode = () => {
+      const isMobile = window.innerWidth < 768;
+      const needsCompact = isMobile && selectedNumber >= 3;
+      setIsCompactCards(needsCompact);
+    };
+
+    checkCompactMode();
+    window.addEventListener('resize', checkCompactMode);
+
+    return () => window.removeEventListener('resize', checkCompactMode);
+  }, [selectedNumber]);
   
   // Motion controls для каждого поля рулетки
   const field1Controls = useAnimation();
@@ -260,7 +277,10 @@ export default function CasePage() {
     const baseDuration = isFastMode ? 1.5 : 6; // Ускоренный быстрый режим
     const horizontalDuration = baseDuration; // Одинаковая продолжительность
     const verticalDuration = baseDuration;
-    
+
+    // Определяем, мобильное ли устройство
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
     // Очищаем старые расположения для текущей конфигурации
     setSavedLayouts(prev => {
       const newLayouts = { ...prev };
@@ -271,18 +291,18 @@ export default function CasePage() {
       }
       return newLayouts;
     });
-    
+
     // Получаем массив controls для активных полей
     const controls = [field1Controls, field2Controls, field3Controls, field4Controls];
-    
+
     // Для каждого поля создаем анимацию
     const animationPromises = [];
-    
+
     for (let i = 0; i < selectedNumber; i++) {
       const fieldKey = `field${i + 1}`;
       const targetItem = results[i];
       const fieldControl = controls[i];
-      
+
       if (targetItem && fieldControl) {
         // Преобразуем результат API в формат CaseItem для совместимости
         const targetCaseItem: CaseItem = {
@@ -296,13 +316,13 @@ export default function CasePage() {
           rarity: targetItem.rarity,
           isWithdrawable: true // По умолчанию предметы доступны для вывода
         };
-        
+
         // Создаем массив предметов для анимации (адаптированный алгоритм оригинальной рулетки)
         const infiniteItems: CaseItem[] = [];
-        
+
         // Для горизонтальной рулетки нужно значительно больше карточек
         const baseItemCount = selectedNumber === 1 ? 150 : 60; // Увеличиваем для горизонтальной прокрутки
-        
+
         // Добавляем циклы случайных предметов (как в оригинале - 2-4 цикла)
         const cycles = selectedNumber === 1 ? Math.floor(Math.random() * 3) + 4 : Math.floor(Math.random() * 3) + 2; // 4-6 циклов для горизонтальной, 2-4 для вертикальной
         for (let cycle = 0; cycle < cycles; cycle++) {
@@ -313,9 +333,9 @@ export default function CasePage() {
             }
           }
         }
-        
+
         // Добавляем дополнительные случайные предметы перед выигрышным
-        const additionalItemsBeforeWin = selectedNumber === 1 ? 
+        const additionalItemsBeforeWin = selectedNumber === 1 ?
           Math.floor(Math.random() * 30) + 20 : // 20-49 предметов для горизонтальной
           Math.floor(Math.random() * 15) + 10;  // 10-24 предмета для вертикальной
         for (let j = 0; j < additionalItemsBeforeWin; j++) {
@@ -324,11 +344,11 @@ export default function CasePage() {
             infiniteItems.push({ ...randomItem, id: `${randomItem.id}-${fieldKey}-before-${j}` });
           }
         }
-        
+
         // Добавляем выигрышный предмет и запоминаем его позицию
         const targetIndex = infiniteItems.length; // Позиция выигрышного предмета
         infiniteItems.push({ ...targetCaseItem, id: `${targetCaseItem.id}-${fieldKey}-target` });
-        
+
         // Добавляем дополнительные карточки после выигрышной (больше для горизонтальной прокрутки)
         const additionalCardsAfterWin = selectedNumber === 1 ? 30 : 10; // Больше карточек после выигрышной для горизонтальной
         for (let j = 0; j < additionalCardsAfterWin; j++) {
@@ -337,39 +357,40 @@ export default function CasePage() {
             infiniteItems.push({ ...randomItem, id: `${randomItem.id}-${fieldKey}-after-${j}` });
           }
         }
-        
+
         // Обновляем сохраненные расположения
         setSavedLayouts(prev => ({
           ...prev,
           [`${selectedNumber}-${fieldKey}`]: infiniteItems
         }));
-        
-        // Вычисляем размеры карточек
-        const cardWidth = 76;
-        const cardHeight = 100;
-        const gap = 8;
-        
+
+        // Вычисляем размеры карточек в зависимости от устройства и количества кейсов
+        const cardWidth = isMobile ? (selectedNumber >= 3 ? 56 : 64) : 76;
+        const cardHeight = isMobile ? (selectedNumber >= 3 ? 74 : 84) : 100;
+        const gap = isMobile ? 6 : 8;
+
         let animationPromise;
-        
+
         if (selectedNumber === 1) {
           // Горизонтальная прокрутка для одного кейса (адаптированный алгоритм оригинальной рулетки)
           const itemWidth = cardWidth + gap;
-          const containerWidth = 663; // Ширина контейнера
-          
+          // Адаптивная ширина контейнера
+          const containerWidth = isMobile ? (window.innerWidth - 32) : 663; // 32px = padding
+
           // Начальная позиция (как в оригинале - стартовая позиция)
           const initialOffset = 0;
-          
-          // Генерируем случайное смещение в пределах карточки (-30px до +30px от центра)
-          const randomOffset = (Math.random() - 0.5) * 60; // Случайное смещение от -30 до +30 пикселей
-          
+
+          // Генерируем случайное смещение в пределах карточки
+          const randomOffset = (Math.random() - 0.5) * (isMobile ? 40 : 60);
+
           // Финальная позиция - центрируем выигрышный предмет + случайное смещение
           const finalOffset = -(targetIndex * itemWidth) + (containerWidth / 2) - (cardWidth / 2) + randomOffset;
-          
+
           // Логирование удалено
-          
+
           // Устанавливаем начальную позицию
           fieldControl.set({ x: initialOffset });
-          
+
           // Создаем анимацию с плавной остановкой для горизонтальной прокрутки
           animationPromise = fieldControl.start({
             x: finalOffset,
@@ -378,26 +399,27 @@ export default function CasePage() {
               ease: [0.23, 1, 0.32, 1], // Плавная остановка без "приклеивания"
             }
           });
-          
+
         } else {
           // Вертикальная прокрутка для нескольких кейсов
           const itemHeight = cardHeight + gap;
-          const containerHeight = 272; // Высота контейнера
-          
+          // Адаптивная высота контейнера
+          const containerHeight = isMobile ? 200 : 272;
+
           // Начальная позиция
           const initialOffset = 0;
-          
-          // Генерируем случайное смещение в пределах карточки (-40px до +40px от центра)
-          const randomOffset = (Math.random() - 0.5) * 80; // Случайное смещение от -40 до +40 пикселей
-          
+
+          // Генерируем случайное смещение в пределах карточки
+          const randomOffset = (Math.random() - 0.5) * (isMobile ? 60 : 80);
+
           // Финальная позиция - центрируем выигрышный предмет + случайное смещение
           const finalOffset = -(targetIndex * itemHeight) + (containerHeight / 2) - (cardHeight / 2) + randomOffset;
-          
+
           // Логирование удалено
-          
+
           // Устанавливаем начальную позицию
           fieldControl.set({ y: initialOffset });
-          
+
           // Создаем анимацию с плавной остановкой для вертикальной прокрутки
           animationPromise = fieldControl.start({
             y: finalOffset,
@@ -407,11 +429,11 @@ export default function CasePage() {
             }
           });
         }
-        
+
         animationPromises.push(animationPromise);
       }
     }
-    
+
     // Ждем завершения всех анимаций
     try {
       await Promise.all(animationPromises);
@@ -637,10 +659,11 @@ export default function CasePage() {
                     }}
                   >
                     {(savedLayouts[`${selectedNumber}-field1`] || generateRandomItems('field1')).map((item, index) => (
-                      <CaseSlotItemCard 
-                        key={`field1-${item.id}-${index}`} 
-                        item={item} 
+                      <CaseSlotItemCard
+                        key={`field1-${item.id}-${index}`}
+                        item={item}
                         className="flex-shrink-0"
+                        compact={isCompactCards}
                       />
                     ))}
                   </motion.div>
@@ -661,9 +684,10 @@ export default function CasePage() {
                     animate={field1Controls}
                   >
                       {(savedLayouts[`${selectedNumber}-field1`] || generateRandomItems('field1')).map((item, index) => (
-                        <CaseSlotItemCard 
-                          key={`field1-${item.id}-${index}`} 
-                          item={item} 
+                        <CaseSlotItemCard
+                          key={`field1-${item.id}-${index}`}
+                          item={item}
+                          compact={isCompactCards}
                         />
                       ))}
                     </motion.div>
@@ -679,9 +703,10 @@ export default function CasePage() {
                       animate={field2Controls}
                     >
                       {(savedLayouts[`${selectedNumber}-field2`] || generateRandomItems('field2')).map((item, index) => (
-                        <CaseSlotItemCard 
-                          key={`field2-${item.id}-${index}`} 
-                          item={item} 
+                        <CaseSlotItemCard
+                          key={`field2-${item.id}-${index}`}
+                          item={item}
+                          compact={isCompactCards}
                         />
                       ))}
                     </motion.div>
@@ -703,9 +728,10 @@ export default function CasePage() {
                       animate={field1Controls}
                     >
                       {(savedLayouts[`${selectedNumber}-field1`] || generateRandomItems('field1')).map((item, index) => (
-                        <CaseSlotItemCard 
-                          key={`field1-${item.id}-${index}`} 
-                          item={item} 
+                        <CaseSlotItemCard
+                          key={`field1-${item.id}-${index}`}
+                          item={item}
+                          compact={isCompactCards}
                         />
                       ))}
                     </motion.div>
@@ -721,9 +747,10 @@ export default function CasePage() {
                       animate={field2Controls}
                     >
                       {(savedLayouts[`${selectedNumber}-field2`] || generateRandomItems('field2')).map((item, index) => (
-                        <CaseSlotItemCard 
-                          key={`field2-${item.id}-${index}`} 
-                          item={item} 
+                        <CaseSlotItemCard
+                          key={`field2-${item.id}-${index}`}
+                          item={item}
+                          compact={isCompactCards}
                         />
                       ))}
                     </motion.div>
@@ -739,9 +766,10 @@ export default function CasePage() {
                       animate={field3Controls}
                     >
                       {(savedLayouts[`${selectedNumber}-field3`] || generateRandomItems('field3')).map((item, index) => (
-                        <CaseSlotItemCard 
-                          key={`field3-${item.id}-${index}`} 
-                          item={item} 
+                        <CaseSlotItemCard
+                          key={`field3-${item.id}-${index}`}
+                          item={item}
+                          compact={isCompactCards}
                         />
                       ))}
                     </motion.div>
@@ -763,9 +791,10 @@ export default function CasePage() {
                       animate={field1Controls}
                     >
                       {(savedLayouts[`${selectedNumber}-field1`] || generateRandomItems('field1')).map((item, index) => (
-                        <CaseSlotItemCard 
-                          key={`field1-${item.id}-${index}`} 
-                          item={item} 
+                        <CaseSlotItemCard
+                          key={`field1-${item.id}-${index}`}
+                          item={item}
+                          compact={isCompactCards}
                         />
                       ))}
                     </motion.div>
@@ -781,9 +810,10 @@ export default function CasePage() {
                       animate={field2Controls}
                     >
                       {(savedLayouts[`${selectedNumber}-field2`] || generateRandomItems('field2')).map((item, index) => (
-                        <CaseSlotItemCard 
-                          key={`field2-${item.id}-${index}`} 
-                          item={item} 
+                        <CaseSlotItemCard
+                          key={`field2-${item.id}-${index}`}
+                          item={item}
+                          compact={isCompactCards}
                         />
                       ))}
                     </motion.div>
@@ -799,9 +829,10 @@ export default function CasePage() {
                       animate={field3Controls}
                     >
                       {(savedLayouts[`${selectedNumber}-field3`] || generateRandomItems('field3')).map((item, index) => (
-                        <CaseSlotItemCard 
-                          key={`field3-${item.id}-${index}`} 
-                          item={item} 
+                        <CaseSlotItemCard
+                          key={`field3-${item.id}-${index}`}
+                          item={item}
+                          compact={isCompactCards}
                         />
                       ))}
                     </motion.div>
@@ -817,9 +848,10 @@ export default function CasePage() {
                       animate={field4Controls}
                     >
                       {(savedLayouts[`${selectedNumber}-field4`] || generateRandomItems('field4')).map((item, index) => (
-                        <CaseSlotItemCard 
-                          key={`field4-${item.id}-${index}`} 
-                          item={item} 
+                        <CaseSlotItemCard
+                          key={`field4-${item.id}-${index}`}
+                          item={item}
+                          compact={isCompactCards}
                         />
                       ))}
                     </motion.div>

@@ -272,6 +272,9 @@ export default function BonusCasePage() {
     const horizontalDuration = baseDuration;
     const verticalDuration = baseDuration;
 
+    // Определяем, мобильное ли устройство
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
     setSavedLayouts(prev => {
       const newLayouts = { ...prev };
       for (let i = 0; i < selectedNumber; i++) {
@@ -342,17 +345,19 @@ export default function BonusCasePage() {
           [`${selectedNumber}-${fieldKey}`]: infiniteItems,
         }));
 
-        const cardWidth = 76;
-        const cardHeight = 100;
-        const gap = 8;
+        // Вычисляем размеры карточек в зависимости от устройства и количества кейсов
+        const cardWidth = isMobile ? (selectedNumber >= 3 ? 56 : 64) : 76;
+        const cardHeight = isMobile ? (selectedNumber >= 3 ? 74 : 84) : 100;
+        const gap = isMobile ? 6 : 8;
 
         let animationPromise;
 
         if (selectedNumber === 1) {
           const itemWidth = cardWidth + gap;
-          const containerWidth = 663;
+          // Адаптивная ширина контейнера
+          const containerWidth = isMobile ? (window.innerWidth - 32) : 663;
           const initialOffset = 0;
-          const randomOffset = (Math.random() - 0.5) * 60;
+          const randomOffset = (Math.random() - 0.5) * (isMobile ? 40 : 60);
           const finalOffset = -(targetIndex * itemWidth) + (containerWidth / 2) - (cardWidth / 2) + randomOffset;
 
           fieldControl.set({ x: initialOffset });
@@ -365,9 +370,10 @@ export default function BonusCasePage() {
           });
         } else {
           const itemHeight = cardHeight + gap;
-          const containerHeight = 272;
+          // Адаптивная высота контейнера
+          const containerHeight = isMobile ? 200 : 272;
           const initialOffset = 0;
-          const randomOffset = (Math.random() - 0.5) * 80;
+          const randomOffset = (Math.random() - 0.5) * (isMobile ? 60 : 80);
           const finalOffset = -(targetIndex * itemHeight) + (containerHeight / 2) - (cardHeight / 2) + randomOffset;
 
           fieldControl.set({ y: initialOffset });
