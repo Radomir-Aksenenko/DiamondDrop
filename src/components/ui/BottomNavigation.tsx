@@ -47,7 +47,7 @@ export default function BottomNavigation({ onUpgradeClick, onProfileClick }: Bot
   const createClickHandler = (handler: () => void) => {
     const handleEvent = (e: React.MouseEvent | React.TouchEvent | React.PointerEvent) => {
       e.stopPropagation();
-      e.preventDefault();
+      // НЕ делаем preventDefault - пусть браузер обрабатывает события нормально
     };
 
     const handleClick = (e: React.MouseEvent) => {
@@ -94,8 +94,14 @@ export default function BottomNavigation({ onUpgradeClick, onProfileClick }: Bot
   ];
 
   const handleContainerInteraction = (e: React.MouseEvent | React.TouchEvent | React.PointerEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
+    // Блокируем только если клик был непосредственно на контейнер, а не на дочерние элементы
+    if (e.target === e.currentTarget) {
+      e.stopPropagation();
+      e.preventDefault();
+    } else {
+      // Для дочерних элементов (кнопок) - только stopPropagation без preventDefault
+      e.stopPropagation();
+    }
   };
 
   return (
