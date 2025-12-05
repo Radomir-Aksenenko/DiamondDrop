@@ -75,7 +75,7 @@ export default function BottomNavigation({ onUpgradeClick, onProfileClick }: Bot
 
   return (
     <>
-      <div className="fixed bottom-4 left-4 right-4 z-50 bg-[#151519]/90 backdrop-blur-md rounded-2xl shadow-lg shadow-black/40 border border-[#F9F8FC]/10">
+      <div className="fixed bottom-4 left-4 right-4 z-[9999] bg-[#151519]/90 backdrop-blur-md rounded-2xl shadow-lg shadow-black/40 border border-[#F9F8FC]/10 pointer-events-auto touch-action-manipulation">
         <div className="flex items-center justify-around px-3 py-1.5 safe-area-pb">
           {navItems.map((item) => {
           const content = (
@@ -102,7 +102,7 @@ export default function BottomNavigation({ onUpgradeClick, onProfileClick }: Bot
               <button
                 key={item.id}
                 onClick={item.onClick}
-                className="flex-1 flex justify-center items-center cursor-pointer transition-all duration-300 hover:bg-[#F9F8FC]/5 rounded-xl"
+                className="flex-1 flex justify-center items-center cursor-pointer transition-all duration-300 hover:bg-[#F9F8FC]/5 rounded-xl touch-action-manipulation active:scale-95"
               >
                 {content}
               </button>
@@ -113,7 +113,7 @@ export default function BottomNavigation({ onUpgradeClick, onProfileClick }: Bot
             <button
               key={item.id}
               onClick={() => router.push(item.href!)}
-              className="flex-1 flex justify-center items-center cursor-pointer transition-all duration-300 hover:bg-[#F9F8FC]/5 rounded-xl"
+              className="flex-1 flex justify-center items-center cursor-pointer transition-all duration-300 hover:bg-[#F9F8FC]/5 rounded-xl touch-action-manipulation active:scale-95"
             >
               {content}
             </button>
