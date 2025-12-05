@@ -11,8 +11,16 @@ const nextConfig: NextConfig = {
       }
     ],
   },
+  turbopack: {
+    rules: {
+      '*.svg': {
+        loaders: ['@svgr/webpack'],
+        as: '*.js',
+      },
+    },
+  },
   webpack(config) {
-    // Настройка для импорта SVG как React-компонентов
+    // Настройка для импорта SVG как React-компонентов (для dev режима без turbopack)
     config.module.rules.push({
       test: /\.svg$/,
       use: ["@svgr/webpack"],

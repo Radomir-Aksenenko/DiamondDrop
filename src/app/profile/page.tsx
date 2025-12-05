@@ -34,64 +34,27 @@ export default function ProfilePage() {
   // Состояние для активной вкладки
   const [activeTab, setActiveTab] = useState<'inventory' | 'deliveries' | 'freeCases' | 'settings'>('inventory');
   const [hypedPhrases, setHypedPhrases] = useState(false);
-  
-  // Состояние для sticky поведения
-  const [isSticky, setIsSticky] = useState(false);
-  const stickyThreshold = useRef(0);
-  
+
+  const [showLeftFade, setShowLeftFade] = useState(false);
+  const [showRightFade, setShowRightFade] = useState(false);
+
+  const updateTabFades = () => {
+    const el = tabsRef.current;
+    if (!el) return;
+    setShowLeftFade(el.scrollLeft > 2);
+    setShowRightFade(el.scrollLeft < el.scrollWidth - el.clientWidth - 2);
+  };
+
+  useEffect(() => {
+    updateTabFades();
+  }, []);
+
   // Обновляем данные пользователя при открытии профиля
   useEffect(() => {
     if (isAuthenticated) {
       refreshUser();
     }
   }, [isAuthenticated, refreshUser]);
-
-  // Инициализация порога для sticky поведения
-  useEffect(() => {
-    if (tabsRef.current) {
-      const rect = tabsRef.current.getBoundingClientRect();
-      stickyThreshold.current = window.scrollY + rect.top - 90; // 90px - отступ от хедера
-    }
-  }, []);
-  
-  // Упрощенная логика sticky поведения только с Intersection Observer
-  useEffect(() => {
-    let observer: IntersectionObserver | null = null;
-    
-    // Создаем Intersection Observer для отслеживания sticky состояния
-    if (tabsRef.current) {
-      // Проверяем начальное состояние панели с небольшой задержкой
-      setTimeout(() => {
-        if (tabsRef.current) {
-          const initialTop = tabsRef.current.getBoundingClientRect().top;
-          const initialShouldBeSticky = initialTop <= 90;
-          setIsSticky(initialShouldBeSticky);
-        }
-      }, 100);
-      
-      observer = new IntersectionObserver(
-        (entries) => {
-          const entry = entries[0];
-          if (entry) {
-            // Панель становится sticky когда её верх поднимается выше 90px от верха viewport
-            const shouldBeSticky = entry.boundingClientRect.top <= 90;
-            setIsSticky(shouldBeSticky);
-          }
-        },
-        {
-          threshold: [0, 1]
-        }
-      );
-      
-      observer.observe(tabsRef.current);
-    }
-    
-    return () => {
-      if (observer) {
-        observer.disconnect();
-      }
-    };
-  }, []);
   
   // Данные пользователя
   const userName = user?.nickname ?? (isAuthenticated ? 'Загрузка...' : 'Гость');
@@ -214,12 +177,12 @@ export default function ProfilePage() {
               className="w-[18px] h-[12px]"
             />
           </motion.div>
-          <p className='text-[#F9F8FC] font-unbounded text-2xl font-medium'>Профиль</p>
+          <p className='text-[#F9F8FC] font-unbounded text-xl md:text-2xl font-medium'>Профиль</p>
         </button>
       </div>
       
       {/* Блок профиля */}
-      <div className='flex h-[202px] p-4 items-start gap-4 self-stretch rounded-xl bg-[#F9F8FC]/[0.05]'>
+      <div className='flex md:h-[202px] h-auto p-4 md:flex-row flex-col md:items-start items-center gap-4 self-stretch bg-transparent md:bg-[#F9F8FC]/[0.05] md:rounded-xl'>
         <div className='flex w-[170px] h-[170px] aspect-[1/1] rounded-lg bg-[#5C5ADC] relative overflow-hidden'>
           <>
             <img
@@ -227,17 +190,17 @@ export default function ProfilePage() {
               alt="Avatar"
               className="absolute w-[154px] h-[154px] aspect-square ml-[7px] mt-4"
             />
-            <img 
+            <img
               src="/background.png"
               alt="Background"
               className="w-full h-full object-cover"
             />
           </>
         </div>
-        <div className='flex flex-col justify-center items-start gap-6 flex-1 self-stretch'>
+        <div className='flex flex-col md:justify-center md:items-start items-center gap-4 md:gap-6 flex-1 self-stretch'>
           <div className='flex flex-col items-start gap-1 self-stretch'>
-            <p className='self-stretch text-[#F9F8FC] font-unbounded text-[32px] font-medium'>{userName}</p>
-            <div className='text-[#F9F8FC] font-actay-wide text-base font-bold opacity-50 flex items-center gap-1'>
+            <p className='self-stretch text-[#F9F8FC] font-unbounded text-2xl md:text-[32px] font-medium text-center md:text-left'>{userName}</p>
+            <div className='text-[#F9F8FC] font-actay-wide text-sm md:text-base font-bold opacity-50 flex items-center gap-1 justify-center md:justify-start w-full'>
               <span>{userCurrentXp.toFixed(1)}</span>
               <span>/</span>
               <span>{userCurrentXp + userXpToNext}</span>
@@ -246,11 +209,11 @@ export default function ProfilePage() {
           </div>
           <div className='flex flex-col justify-center items-start gap-2 self-stretch'>
             <div className='flex justify-between items-center self-stretch'>
-              <p className='text-[#F9F8FC] font-unbounded text-base font-semibold'>lvl {userLevel}</p>
-              <p className='text-[#F9F8FC] font-unbounded text-base font-semibold opacity-50'>lvl {userLevel + 1}</p>
+              <p className='text-[#F9F8FC] font-unbounded text-sm md:text-base font-semibold'>lvl {userLevel}</p>
+              <p className='text-[#F9F8FC] font-unbounded text-sm md:text-base font-semibold opacity-50'>lvl {userLevel + 1}</p>
             </div>
-            <div className='flex h-[18px] pr-2 items-center gap-[10px] self-stretch rounded-[100px] bg-[#0D0D11]'>
-              <div 
+            <div className='flex h-[18px] pr-2 items-center gap-[10px] self-stretch rounded-[100px] bg-[#F9F8FC]/[0.08] overflow-hidden shadow-[inset_0_0_0_1px_rgba(249,248,252,0.06)]'>
+              <div
                 className="self-stretch rounded-[100px] bg-gradient-to-r from-[#313076] to-[#5C5ADC] shadow-[inset_0_4px_25.8px_0_rgba(249,248,252,0.10)]"
                 style={{ width: `${Math.max(0, Math.min(100, userProgress))}%`, minWidth: '8px' }}
               ></div>
@@ -259,17 +222,20 @@ export default function ProfilePage() {
         </div>
       </div>
       
-      <div 
+      <div
          ref={tabsRef}
-         className={`flex p-2 items-start gap-1 self-stretch rounded-xl ${
-           isSticky 
-             ? 'sticky top-[90px] z-50 bg-[#18181D]' 
-             : 'bg-[#18181D]'
-         }`}
+         className={
+           'relative flex px-2 py-2 items-start gap-2 self-stretch rounded-xl overflow-x-auto whitespace-nowrap bg-[#18181D] no-scrollbar scroll-smooth'
+         }
+         onScroll={updateTabFades}
        >
-        <motion.button 
+        {/* Левый градиент-подсказка прокрутки */}
+       <div className={`pointer-events-none absolute left-0 top-0 bottom-0 w-6 md:w-10 bg-gradient-to-r from-[#18181D] to-transparent transition-opacity duration-200 ${showLeftFade ? 'opacity-100' : 'opacity-0'}`} />
+       {/* Правый градиент-подсказка прокрутки */}
+       <div className={`pointer-events-none absolute right-0 top-0 bottom-0 w-6 md:w-10 bg-gradient-to-l from-[#18181D] to-transparent transition-opacity duration-200 ${showRightFade ? 'opacity-100' : 'opacity-0'}`} />
+        <motion.button
           onClick={() => setActiveTab('inventory')}
-          className={`flex px-[12px] py-[8px] pr-2 items-center gap-2 rounded-lg cursor-pointer transition-all duration-300 ease-out ${
+          className={`flex px-[12px] py-[8px] pr-2 items-center gap-2 rounded-lg cursor-pointer transition-all duration-300 ease-out flex-shrink-0 mx-1 first:ml-2 ${
             activeTab === 'inventory' ? 'bg-[#232329]' : 'bg-transparent'
           } ${activeTab === 'inventory' ? '' : 'hover:bg-[#232329]'}`}
           whileTap={{ scale: 0.98 }}
@@ -291,9 +257,9 @@ export default function ProfilePage() {
             Инвентарь
           </p>
         </motion.button>
-        <motion.button 
+        <motion.button
           onClick={() => setActiveTab('deliveries')}
-          className={`flex px-[12px] py-[8px] pr-2 items-center gap-2 rounded-lg cursor-pointer transition-all duration-300 ease-out ${
+          className={`flex px-[12px] py-[8px] pr-2 items-center gap-2 rounded-lg cursor-pointer transition-all duration-300 ease-out flex-shrink-0 mx-1 ${
             activeTab === 'deliveries' ? 'bg-[#232329]' : 'bg-transparent'
           } ${activeTab === 'deliveries' ? '' : 'hover:bg-[#232329]'}`}
           whileTap={{ scale: 0.98 }}
@@ -315,9 +281,9 @@ export default function ProfilePage() {
             Доставки
           </p>
         </motion.button>
-        <motion.button 
+        <motion.button
           onClick={() => setActiveTab('freeCases')}
-          className={`flex px-[12px] py-[8px] pr-2 items-center gap-2 rounded-lg cursor-pointer transition-all duration-300 ease-out ${
+          className={`flex px-[12px] py-[8px] pr-2 items-center gap-2 rounded-lg cursor-pointer transition-all duration-300 ease-out flex-shrink-0 mx-1 ${
             activeTab === 'freeCases' ? 'bg-[#232329]' : 'bg-transparent'
           } ${activeTab === 'freeCases' ? '' : 'hover:bg-[#232329]'}`}
           whileTap={{ scale: 0.98 }}
@@ -339,9 +305,9 @@ export default function ProfilePage() {
         
         {/* Кнопка настроек для привилегированных пользователей */}
         <PrivilegedUserCheck>
-          <motion.button 
+          <motion.button
             onClick={() => setActiveTab('settings')}
-            className={`flex px-[12px] py-[8px] pr-2 items-center gap-2 rounded-lg cursor-pointer transition-all duration-300 ease-out ${
+            className={`flex px-[12px] py-[8px] pr-2 items-center gap-2 rounded-lg cursor-pointer transition-all duration-300 ease-out flex-shrink-0 mx-1 last:mr-2 ${
               activeTab === 'settings' ? 'bg-[#232329]' : 'bg-transparent'
             } ${activeTab === 'settings' ? '' : 'hover:bg-[#232329]'}`}
             whileTap={{ scale: 0.98 }}
@@ -404,7 +370,7 @@ export default function ProfilePage() {
             {/* Сетка предметов инвентаря */}
             {!loading || inventoryItems.length > 0 ? (
               <div className='flex flex-col items-start gap-2 self-stretch'>
-              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 w-full'>
+              <div className='grid grid-cols-3 md:grid-cols-2 gap-2 w-full'>
                 {inventoryItems.map((inventoryItem, index) => (
                   <InventoryItemCard 
                     key={`${inventoryItem.item.id}-${index}`}
