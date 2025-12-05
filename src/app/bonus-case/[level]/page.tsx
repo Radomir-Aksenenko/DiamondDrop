@@ -345,9 +345,10 @@ export default function BonusCasePage() {
           [`${selectedNumber}-${fieldKey}`]: infiniteItems,
         }));
 
-        // Вычисляем размеры карточек в зависимости от устройства и количества кейсов
-        const cardWidth = isMobile ? (selectedNumber >= 3 ? 56 : 64) : 76;
-        const cardHeight = isMobile ? (selectedNumber >= 3 ? 74 : 84) : 100;
+        // Вычисляем размеры карточек в зависимости от устройства
+        // На мобильных всегда используем compact размеры (56x74), на desktop - обычные (76x100)
+        const cardWidth = isMobile ? 56 : 76;
+        const cardHeight = isMobile ? 74 : 100;
         const gap = isMobile ? 6 : 8;
 
         let animationPromise;

@@ -67,12 +67,11 @@ export default function CasePage() {
     setIsItemDescriptionModalOpen(false);
   };
 
-  // useEffect для определения compact режима
+  // useEffect для определения compact режима - всегда компактный на мобильных
   useEffect(() => {
     const checkCompactMode = () => {
       const isMobile = window.innerWidth < 768;
-      const needsCompact = isMobile && selectedNumber >= 3;
-      setIsCompactCards(needsCompact);
+      setIsCompactCards(isMobile); // На мобильных всегда используем compact
     };
 
     checkCompactMode();
@@ -364,9 +363,10 @@ export default function CasePage() {
           [`${selectedNumber}-${fieldKey}`]: infiniteItems
         }));
 
-        // Вычисляем размеры карточек в зависимости от устройства и количества кейсов
-        const cardWidth = isMobile ? (selectedNumber >= 3 ? 56 : 64) : 76;
-        const cardHeight = isMobile ? (selectedNumber >= 3 ? 74 : 84) : 100;
+        // Вычисляем размеры карточек в зависимости от устройства
+        // На мобильных всегда используем compact размеры (56x74), на desktop - обычные (76x100)
+        const cardWidth = isMobile ? 56 : 76;
+        const cardHeight = isMobile ? 74 : 100;
         const gap = isMobile ? 6 : 8;
 
         let animationPromise;
