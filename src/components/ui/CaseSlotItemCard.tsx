@@ -52,14 +52,14 @@ export default function CaseSlotItemCard({
   // Используем цену предмета из API
   const itemValue = item.price;
 
-  // Стили карточки
+  // Стили карточки - адаптивные для мобильных
   const cardStyles = {
     display: 'flex',
-    width: '76px',
-    height: '100px',
-    padding: '8px',
+    width: 'clamp(64px, 76px, 76px)', // Немного меньше на очень маленьких экранах
+    height: 'clamp(85px, 100px, 100px)',
+    padding: '6px',
     alignItems: 'center',
-    gap: '6px',
+    gap: '4px',
     borderRadius: '8px',
     flexDirection: 'column' as const,
     justifyContent: 'space-between' as const
