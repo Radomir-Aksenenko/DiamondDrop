@@ -14,6 +14,7 @@ import DeliveryTab from '@/components/ui/DeliveryTab';
 import FreeCasesTab from '@/components/ui/FreeCasesTab';
 import { CaseItem } from '@/hooks/useCasesAPI';
 import { PrivilegedUserCheck } from '@/components/ui/PrivilegedUserCheck';
+import { useIsMobile } from '@/hooks/useIsMobile';
 
 export default function ProfilePage() {
   const { user, isAuthenticated, refreshUser } = usePreloadedData();
@@ -21,6 +22,7 @@ export default function ProfilePage() {
   const { items: inventoryItems, loading, error, hasMore, loadMore, softRefresh } = useInventoryAPI();
   const observerRef = useRef<HTMLDivElement>(null);
   const tabsRef = useRef<HTMLDivElement>(null);
+  const { isMobile } = useIsMobile();
   
   // Состояние для модалки инвентаря
   const [isInventoryModalOpen, setIsInventoryModalOpen] = useState(false);
@@ -86,21 +88,28 @@ export default function ProfilePage() {
 
   // Функции для управления модальным окном описания предмета
   const handleOpenItemDescriptionModal = useCallback((inventoryItem: InventoryItem) => {
-    // Преобразуем InventoryItem в CaseItem для совместимости с модальным окном
-    const caseItem: CaseItem = {
-      id: inventoryItem.item.id,
-      name: inventoryItem.item.name,
-      description: inventoryItem.item.description,
-      imageUrl: inventoryItem.item.imageUrl,
-      amount: inventoryItem.item.amount,
-      price: inventoryItem.item.price,
-      percentChance: inventoryItem.item.percentChance,
-      rarity: inventoryItem.item.rarity,
-      isWithdrawable: inventoryItem.item.isWithdrawable
-    };
-    setSelectedItem(caseItem);
-    setIsItemDescriptionModalOpen(true);
-  }, []);
+    // На мобилке открываем модалку продажи/вывода
+    if (isMobile) {
+      setSelectedInventoryItem(inventoryItem);
+      setInventoryModalTab('sell');
+      setIsInventoryModalOpen(true);
+    } else {
+      // На десктопе открываем модалку описания (старое поведение)
+      const caseItem: CaseItem = {
+        id: inventoryItem.item.id,
+        name: inventoryItem.item.name,
+        description: inventoryItem.item.description,
+        imageUrl: inventoryItem.item.imageUrl,
+        amount: inventoryItem.item.amount,
+        price: inventoryItem.item.price,
+        percentChance: inventoryItem.item.percentChance,
+        rarity: inventoryItem.item.rarity,
+        isWithdrawable: inventoryItem.item.isWithdrawable
+      };
+      setSelectedItem(caseItem);
+      setIsItemDescriptionModalOpen(true);
+    }
+  }, [isMobile]);
 
   const handleCloseItemDescriptionModal = useCallback(() => {
     setIsItemDescriptionModalOpen(false);

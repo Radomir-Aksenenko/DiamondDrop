@@ -9,6 +9,7 @@ import { useSellAPI } from '@/hooks/useSellAPI';
 import { useBalanceUpdater } from '@/hooks/useBalanceUpdater';
 import useItemWithdrawAPI from '@/hooks/useItemWithdrawAPI';
 import useBranchesAPI, { BranchForDisplay } from '@/hooks/useBranchesAPI';
+import ItemDescriptionModal from './ItemDescriptionModal';
 
 interface InventoryModalProps {
   isOpen: boolean;
@@ -27,15 +28,18 @@ interface InventoryModalProps {
  */
 const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedItem, initialTab = 'sell', onSellSuccess }: InventoryModalProps) {
   const [activeTab, setActiveTab] = useState(initialTab);
-  
+
   // Используем useRef для хранения текущего количества - это предотвратит сброс при обновлениях
   const quantityRef = useRef(1);
   const [displayQuantity, setDisplayQuantity] = useState(1);
   const [isMaxSelected, setIsMaxSelected] = useState(false);
-  
+
   // Состояние для выпадающего списка филиалов
   const [isBranchDropdownOpen, setIsBranchDropdownOpen] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState<BranchForDisplay | null>(null);
+
+  // Состояние для модалки описания предмета
+  const [isItemDescriptionModalOpen, setIsItemDescriptionModalOpen] = useState(false);
   
   // Получаем данные филиалов из API
   const { branchesForDisplay: branches, loading: branchesLoading, error: branchesError } = useBranchesAPI();
@@ -91,6 +95,16 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
   const formatPrice = (price: number): string => {
     return price % 1 === 0 ? price.toString() : price.toFixed(1);
   };
+
+  // Обработчик клика на предмет для открытия описания
+  const handleItemClick = useCallback(() => {
+    setIsItemDescriptionModalOpen(true);
+  }, []);
+
+  // Обработчик закрытия модалки описания
+  const handleCloseItemDescriptionModal = useCallback(() => {
+    setIsItemDescriptionModalOpen(false);
+  }, []);
 
   // Стабильные функции для работы с количеством
   const updateQuantity = useCallback((newQuantity: number) => {
@@ -229,10 +243,11 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
         {/* Иконка предмета */}
         <div className="flex-shrink-0">
           {caseItem && (
-            <CaseItemCard 
+            <CaseItemCard
               item={caseItem}
               hideChance={true}
               className="w-[80px] h-[100px]"
+              onClick={handleItemClick}
             />
           )}
         </div>
