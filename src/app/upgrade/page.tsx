@@ -843,6 +843,9 @@ export default function UpgradePage() {
                               isSelected={true}
                               hideAmountInPieces={true}
                               upgradeMode={true}
+                              onClick={() => {
+                                setSelectedItems(prev => prev.filter((_, index) => index !== i));
+                              }}
                               onRemove={() => {
                                 setSelectedItems(prev => prev.filter((_, index) => index !== i));
                               }}
@@ -1005,7 +1008,7 @@ export default function UpgradePage() {
 
   // Десктопная версия
   return (
-    <>
+    <div className="flex flex-col gap-2 w-full h-full">
       <div className="flex flex-col md:flex-row gap-2 w-full flex-1 min-h-0">
         <div className='flex flex-col justify-center items-center flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)] py-4 min-h-0 max-h-full overflow-visible'>
           {selectedItems.length === 0 ? (
@@ -1191,7 +1194,7 @@ export default function UpgradePage() {
            />
          </div>
        </div>
-    </>
+    </div>
    );
  }
  // EOF

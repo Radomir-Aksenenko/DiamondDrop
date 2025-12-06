@@ -561,7 +561,7 @@ export function ItemCard({
 
   // Вертикальная ориентация
   return (
-    <div 
+    <div
       className={`relative ${className} ${onClick || (upgradeMode && onRemove) ? 'group cursor-pointer hover:brightness-110 transition-all duration-200' : ''}`}
       style={{
         background: config.background,
@@ -570,11 +570,18 @@ export function ItemCard({
         flexDirection: 'column',
         justifyContent: 'space-between'
       }}
+      onClick={() => {
+        if (onClick) {
+          onClick();
+        } else if (upgradeMode && onRemove) {
+          onRemove();
+        }
+      }}
     >
-      {/* Кнопка удаления в правом верхнем углу (только для upgradeMode) */}
+      {/* Кнопка удаления в правом верхнем углу (только для upgradeMode на десктопе) */}
       {upgradeMode && onRemove && (
-        <div 
-          className="absolute -top-2 -right-2 w-8 h-8 bg-[#232328] rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 z-30 cursor-pointer hover:bg-[#1a1a1f] hover:scale-110"
+        <div
+          className="absolute -top-2 -right-2 w-8 h-8 bg-[#232328] rounded-full hidden md:flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 z-30 cursor-pointer hover:bg-[#1a1a1f] hover:scale-110"
           onClick={(e) => {
             e.stopPropagation();
             onRemove();
