@@ -59,16 +59,16 @@ function TeamMemberCard({ member }: { member: TeamMember }) {
 
 export default function AboutPage() {
   return (
-    <div className="w-full max-w-5xl mx-auto px-4 pt-8">
+    <div className="w-full max-w-5xl mx-auto px-4 pt-8 pb-24 md:pb-8">
       {/* Заголовок страницы */}
-      <div className="text-center mb-12">
-        <h1 className="text-[24px] font-[500] text-white text-center font-unbounded">
+      <div className="text-center mb-8 md:mb-12">
+        <h1 className="text-[20px] md:text-[24px] font-[500] text-white text-center font-unbounded">
           Наша команда
         </h1>
       </div>
-      
+
       {/* Сетка участников команды */}
-      <div className="grid grid-cols-3 gap-x-2 gap-y-4 justify-items-center">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-x-2 gap-y-8 md:gap-y-4 justify-items-center">
         {teamMembers.map((member) => (
           <div key={member.name}>
             <TeamMemberCard member={member} />
