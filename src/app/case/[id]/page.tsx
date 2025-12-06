@@ -35,12 +35,12 @@ export default function CasePage() {
   const router = useRouter();
   const params = useParams();
   const caseId = params.id as string;
-  
+
   const { caseData, loading, error } = useCaseAPI(caseId);
   const { decreaseBalance } = useBalanceUpdater();
   const { openWalletModal } = useWalletModal();
   const { user } = usePreloadedData();
-  
+
   const [isFastMode, setIsFastMode] = useState(false);
   const [selectedNumber, setSelectedNumber] = useState(1);
 
@@ -48,15 +48,15 @@ export default function CasePage() {
   const [isCompactCards, setIsCompactCards] = useState(false);
 
   // Состояние для сохранения расположения предметов
-  const [savedLayouts, setSavedLayouts] = useState<{[key: string]: CaseItem[]}>({});
-  
+  const [savedLayouts, setSavedLayouts] = useState<{ [key: string]: CaseItem[] }>({});
+
   // Состояния для анимации рулетки
   const [isSpinning, setIsSpinning] = useState(false);
-  
+
   // Состояние для модального окна описания предмета
   const [isItemDescriptionModalOpen, setIsItemDescriptionModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<CaseItem | null>(null);
-  
+
   // Функции для управления модальным окном описания предмета
   const handleOpenItemDescriptionModal = (item: CaseItem) => {
     setSelectedItem(item);
@@ -79,7 +79,7 @@ export default function CasePage() {
 
     return () => window.removeEventListener('resize', checkCompactMode);
   }, [selectedNumber]);
-  
+
   // Motion controls для каждого поля рулетки
   const field1Controls = useAnimation();
   const field2Controls = useAnimation();
@@ -100,7 +100,7 @@ export default function CasePage() {
   // Функция для сортировки предметов по цене (всегда от дорогих к дешевым)
   const getSortedItems = () => {
     if (!caseData?.items) return [];
-    
+
     return [...caseData.items].sort((a, b) => b.price - a.price); // От дорогих к дешевым
   };
 
@@ -109,17 +109,17 @@ export default function CasePage() {
     if (!caseData?.imageUrl) {
       return "/09b1b0e86eb0cd8a7909f6f74b56ddc17804658d.png"; // Дефолтная картинка
     }
-    
+
     // Если URL уже полный (начинается с http/https), используем как есть
     if (caseData.imageUrl.startsWith('http://') || caseData.imageUrl.startsWith('https://')) {
       return caseData.imageUrl;
     }
-    
+
     // Если URL относительный, добавляем базовый URL API
     if (caseData.imageUrl.startsWith('/')) {
       return `${API_BASE_URL}${caseData.imageUrl}`;
     }
-    
+
     // Если URL без слеша в начале, добавляем слеш и базовый URL
     return `${API_BASE_URL}/${caseData.imageUrl}`;
   };
@@ -134,19 +134,19 @@ export default function CasePage() {
   // Функция для генерации массива случайных предметов для слота с сохранением состояния
   const generateRandomItems = (fieldKey: string) => {
     if (!caseData?.items || caseData.items.length === 0) return [];
-    
+
     // Создаем уникальный ключ для сохранения расположения
     const layoutKey = `${selectedNumber}-${fieldKey}`;
-    
+
     // Если расположение уже сохранено, возвращаем его
     if (savedLayouts[layoutKey]) {
       return savedLayouts[layoutKey];
     }
-    
+
     // Создаем достаточно предметов для отображения
     const baseItemCount = selectedNumber === 1 ? 50 : 40; // Меньше предметов для начального отображения
     const items: CaseItem[] = [];
-    
+
     // Генерируем случайные предметы
     for (let i = 0; i < baseItemCount; i++) {
       const randomItem = getRandomItem();
@@ -154,11 +154,11 @@ export default function CasePage() {
         items.push({ ...randomItem, id: `${randomItem.id}-${fieldKey}-${i}` });
       }
     }
-    
+
     // Создаем циклический массив для плавного отображения
     const cycleLength = Math.min(20, baseItemCount);
     const displayItems: CaseItem[] = [];
-    
+
     // Добавляем несколько циклов для начального отображения
     for (let cycle = 0; cycle < 3; cycle++) {
       for (let j = 0; j < cycleLength; j++) {
@@ -167,16 +167,16 @@ export default function CasePage() {
         displayItems.push(cyclicItem);
       }
     }
-    
+
     // Добавляем основные предметы
     displayItems.push(...items);
-    
+
     // Сохраняем расположение
     setSavedLayouts(prev => ({
       ...prev,
       [layoutKey]: displayItems
     }));
-    
+
     return displayItems;
   };
 
@@ -195,7 +195,7 @@ export default function CasePage() {
     }
 
     const totalCost = caseData.price * selectedNumber;
-    
+
     // Если баланса недостаточно, открываем модалку пополнения с предустановленной суммой
     if (user.balance < totalCost) {
       const neededAmount = totalCost - user.balance;
@@ -216,56 +216,56 @@ export default function CasePage() {
       // Логирование удалено
       return;
     }
-    
+
     try {
       // Логирование удалено
       setIsSpinning(true);
-      
+
       // Сбрасываем предыдущие анимации
       field1Controls.stop();
       field2Controls.stop();
       field3Controls.stop();
       field4Controls.stop();
-      
+
       // Получаем токен авторизации из системы аутентификации
       const token = getAuthToken();
       if (!token && !isDemo) {
         throw new Error('Токен авторизации не найден');
       }
-      
+
       const headers: Record<string, string> = {
         'accept': '*/*',
         'Content-Type': 'application/json'
       };
-      
+
       // Добавляем токен авторизации только если он есть (для не-демо режима)
       if (token) {
         headers['Authorization'] = token;
       }
-      
+
       const response = await fetch(`${API_BASE_URL}/cases/${caseId}/opens?amount=${selectedNumber}&demo=${isDemo}`, {
         method: 'POST',
         headers,
         body: ''
       });
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const results: CaseOpenResult[] = await response.json();
       // Логирование удалено
-      
+
       // Локально уменьшаем баланс сразу после получения результатов (только для не демо режима)
       if (!isDemo && caseData) {
         const totalCost = caseData.price * selectedNumber;
         // Логирование удалено
         decreaseBalance(totalCost);
       }
-      
+
       // Запускаем анимацию рулетки
       startSpinAnimation(results);
-      
+
     } catch (error) {
       console.error('Error opening case:', error);
       setIsSpinning(false);
@@ -474,13 +474,12 @@ export default function CasePage() {
         }
       }}
       disabled={isSpinning}
-      className={`flex w-[32px] h-[32px] md:w-[36px] md:h-[36px] justify-center items-center rounded-[8px] font-unbounded text-xs md:text-sm font-medium transition-all duration-200 ${
-        isSpinning
+      className={`flex w-[32px] h-[32px] md:w-[36px] md:h-[36px] justify-center items-center rounded-[8px] font-unbounded text-xs md:text-sm font-medium transition-all duration-200 ${isSpinning
           ? 'cursor-not-allowed opacity-50 bg-[#F9F8FC]/[0.05] text-[#F9F8FC]'
           : selectedNumber === number
             ? 'border border-[#5C5ADC] bg-[#6563EE]/[0.10] text-[#F9F8FC] cursor-pointer'
             : 'bg-[#F9F8FC]/[0.05] text-[#F9F8FC] hover:bg-[#F9F8FC]/[0.08] cursor-pointer'
-      }`}
+        }`}
       whileHover={!isSpinning ? { scale: 1.05 } : {}}
       whileTap={!isSpinning ? { scale: 0.95 } : {}}
       transition={{ type: "spring", stiffness: 400, damping: 17 }}
@@ -506,7 +505,7 @@ export default function CasePage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center text-white">
           <div className="text-xl mb-4">Error: {error}</div>
-          <button 
+          <button
             onClick={() => router.back()}
             className="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
           >
@@ -576,7 +575,7 @@ export default function CasePage() {
                     <NumberButton key={number} number={number} />
                   ))}
                 </div>
-                
+
                 {/* Быстрый режим */}
                 <div className='flex items-center gap-2 md:gap-4 self-stretch'>
                   <div className='flex items-center gap-1.5 md:gap-2'>
@@ -595,13 +594,11 @@ export default function CasePage() {
                         setIsFastMode(!isFastMode);
                       }}
                       disabled={isSpinning}
-                      className={`flex w-[27px] h-[15px] p-[2px] ${
-                        isSpinning
+                      className={`flex w-[27px] h-[15px] p-[2px] ${isSpinning
                           ? 'cursor-not-allowed opacity-50'
                           : 'cursor-pointer'
-                      } ${
-                        isFastMode ? 'justify-end bg-[#5C5ADC]' : 'justify-start bg-[#F9F8FC]/[0.10]'
-                      } items-center rounded-[100px] transition-colors duration-200`}
+                        } ${isFastMode ? 'justify-end bg-[#5C5ADC]' : 'justify-start bg-[#F9F8FC]/[0.10]'
+                        } items-center rounded-[100px] transition-colors duration-200`}
                     >
                       <motion.div
                         className='w-[11px] h-[11px] flex-shrink-0 rounded-[100px] bg-[#F9F8FC]'
@@ -611,17 +608,16 @@ export default function CasePage() {
                     </motion.button>
                   </div>
                 </div>
-                
+
                 {/* Кнопки действий */}
                 <div className='flex items-center gap-1.5 md:gap-2 w-full md:w-auto'>
                   <motion.button
                     onClick={() => handleOpenCase(false)}
                     disabled={isSpinning}
-                    className={`flex px-3 py-2 md:px-4 md:py-3 justify-center items-center gap-1.5 md:gap-2 rounded-xl transition-colors duration-200 flex-1 md:flex-initial ${
-                      isSpinning
+                    className={`flex px-3 py-2 md:px-4 md:py-3 justify-center items-center gap-1.5 md:gap-2 rounded-xl transition-colors duration-200 flex-1 md:flex-initial ${isSpinning
                         ? 'bg-[#5C5ADC]/50 cursor-not-allowed'
                         : 'bg-[#5C5ADC] cursor-pointer'
-                    }`}
+                      }`}
                     whileHover={!isSpinning ? { backgroundColor: "#6462DE" } : {}}
                     whileTap={!isSpinning ? { scale: 0.98 } : {}}
                     transition={{ type: "spring", stiffness: 400, damping: 17 }}
@@ -643,9 +639,8 @@ export default function CasePage() {
                   <motion.button
                     onClick={() => handleOpenCase(true)}
                     disabled={isSpinning}
-                    className={`flex px-3 py-2 md:px-4 md:py-3 justify-center items-center gap-[10px] rounded-[8px] bg-[#F9F8FC]/[0.05] text-[#F9F8FC] font-unbounded text-xs md:text-sm font-medium transition-colors duration-200 ${
-                      isSpinning ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
-                    }`}
+                    className={`flex px-3 py-2 md:px-4 md:py-3 justify-center items-center gap-[10px] rounded-[8px] bg-[#F9F8FC]/[0.05] text-[#F9F8FC] font-unbounded text-xs md:text-sm font-medium transition-colors duration-200 ${isSpinning ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+                      }`}
                     whileHover={!isSpinning ? { backgroundColor: "#242428" } : {}}
                     whileTap={!isSpinning ? { scale: 0.98 } : {}}
                     transition={{ type: "spring", stiffness: 400, damping: 17 }}
@@ -656,7 +651,7 @@ export default function CasePage() {
               </div>
             </div>
           </div>
-          
+
           {/* Нижний блок - Поля для кейсов */}
           <div className="flex p-2 md:p-[10px] items-start rounded-xl bg-[#F9F8FC]/[0.05] w-full md:w-[679px] h-[200px] md:h-[288px]">
             {/* Контейнер для полей кейсов */}
@@ -665,8 +660,8 @@ export default function CasePage() {
                 // Одно поле на всю ширину с предметами расположенными горизонтально
                 <div ref={rouletteContainerRef} className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden flex justify-center items-center">
                   {/* Контейнер для рулетки с анимацией */}
-                  <motion.div 
-                    className="flex items-center gap-2 p-2"
+                  <motion.div
+                    className="flex items-center gap-1.5 md:gap-2 p-2"
                     animate={field1Controls}
                     style={{
                       width: 'max-content',
@@ -682,22 +677,22 @@ export default function CasePage() {
                       />
                     ))}
                   </motion.div>
-                  
+
                   {/* Белая палочка по центру */}
                   <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-0.5 h-full bg-gradient-to-b from-white/60 via-white/70 to-white/60 z-10 pointer-events-none shadow-md shadow-white/10">
                   </div>
                 </div>
               )}
-              
+
               {selectedNumber === 2 && (
                 // Два поля горизонтально, предметы вертикально
                 <>
                   <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
                     {/* Контейнер для рулетки с анимацией */}
-                  <motion.div 
-                    className="flex flex-col items-center gap-2 p-2"
-                    animate={field1Controls}
-                  >
+                    <motion.div
+                      className="flex flex-col items-center gap-2 p-2"
+                      animate={field1Controls}
+                    >
                       {(savedLayouts[`${selectedNumber}-field1`] || generateRandomItems('field1')).map((item, index) => (
                         <CaseSlotItemCard
                           key={`field1-${item.id}-${index}`}
@@ -706,15 +701,15 @@ export default function CasePage() {
                         />
                       ))}
                     </motion.div>
-                    
+
                     {/* Белая палочка по центру */}
                     <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-0.5 bg-gradient-to-r from-white/60 via-white/70 to-white/60 z-10 pointer-events-none shadow-md shadow-white/10">
                     </div>
                   </div>
                   <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
                     {/* Контейнер для рулетки с анимацией */}
-                    <motion.div 
-                      className="flex flex-col items-center gap-2 p-2"
+                    <motion.div
+                      className="flex flex-col items-center gap-1.5 md:gap-2 p-2"
                       animate={field2Controls}
                     >
                       {(savedLayouts[`${selectedNumber}-field2`] || generateRandomItems('field2')).map((item, index) => (
@@ -725,21 +720,21 @@ export default function CasePage() {
                         />
                       ))}
                     </motion.div>
-                    
+
                     {/* Белая палочка по центру */}
-                     <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-0.5 bg-gradient-to-r from-white/60 via-white/70 to-white/60 z-10 pointer-events-none shadow-md shadow-white/10">
-                     </div>
+                    <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-0.5 bg-gradient-to-r from-white/60 via-white/70 to-white/60 z-10 pointer-events-none shadow-md shadow-white/10">
+                    </div>
                   </div>
                 </>
               )}
-              
+
               {selectedNumber === 3 && (
                 // Три поля горизонтально, предметы вертикально
                 <>
                   <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
                     {/* Контейнер для рулетки с анимацией */}
-                    <motion.div 
-                      className="flex flex-col items-center gap-2 p-2"
+                    <motion.div
+                      className="flex flex-col items-center gap-1.5 md:gap-2 p-2"
                       animate={field1Controls}
                     >
                       {(savedLayouts[`${selectedNumber}-field1`] || generateRandomItems('field1')).map((item, index) => (
@@ -750,15 +745,15 @@ export default function CasePage() {
                         />
                       ))}
                     </motion.div>
-                    
+
                     {/* Белая палочка по центру */}
                     <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-0.5 bg-gradient-to-r from-white/60 via-white/70 to-white/60 z-10 pointer-events-none shadow-md shadow-white/10">
                     </div>
                   </div>
                   <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
                     {/* Контейнер для рулетки с анимацией */}
-                    <motion.div 
-                      className="flex flex-col items-center gap-2 p-2"
+                    <motion.div
+                      className="flex flex-col items-center gap-1.5 md:gap-2 p-2"
                       animate={field2Controls}
                     >
                       {(savedLayouts[`${selectedNumber}-field2`] || generateRandomItems('field2')).map((item, index) => (
@@ -769,15 +764,15 @@ export default function CasePage() {
                         />
                       ))}
                     </motion.div>
-                    
+
                     {/* Белая палочка по центру */}
                     <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-0.5 bg-gradient-to-r from-white/60 via-white/70 to-white/60 z-10 pointer-events-none shadow-md shadow-white/10">
                     </div>
                   </div>
                   <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
                     {/* Контейнер для рулетки с анимацией */}
-                    <motion.div 
-                      className="flex flex-col items-center gap-2 p-2"
+                    <motion.div
+                      className="flex flex-col items-center gap-1.5 md:gap-2 p-2"
                       animate={field3Controls}
                     >
                       {(savedLayouts[`${selectedNumber}-field3`] || generateRandomItems('field3')).map((item, index) => (
@@ -788,21 +783,21 @@ export default function CasePage() {
                         />
                       ))}
                     </motion.div>
-                    
+
                     {/* Белая палочка по центру */}
                     <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-0.5 bg-gradient-to-r from-white/60 via-white/70 to-white/60 z-10 pointer-events-none shadow-md shadow-white/10">
                     </div>
                   </div>
                 </>
               )}
-              
+
               {selectedNumber === 4 && (
                 // Четыре поля горизонтально, предметы вертикально
                 <>
                   <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
                     {/* Контейнер для рулетки с анимацией */}
-                    <motion.div 
-                      className="flex flex-col items-center gap-2 p-2"
+                    <motion.div
+                      className="flex flex-col items-center gap-1.5 md:gap-2 p-2"
                       animate={field1Controls}
                     >
                       {(savedLayouts[`${selectedNumber}-field1`] || generateRandomItems('field1')).map((item, index) => (
@@ -813,15 +808,15 @@ export default function CasePage() {
                         />
                       ))}
                     </motion.div>
-                    
+
                     {/* Белая палочка по центру */}
                     <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-0.5 bg-gradient-to-r from-white/60 via-white/70 to-white/60 z-10 pointer-events-none shadow-md shadow-white/10">
                     </div>
                   </div>
                   <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
                     {/* Контейнер для рулетки с анимацией */}
-                    <motion.div 
-                      className="flex flex-col items-center gap-2 p-2"
+                    <motion.div
+                      className="flex flex-col items-center gap-1.5 md:gap-2 p-2"
                       animate={field2Controls}
                     >
                       {(savedLayouts[`${selectedNumber}-field2`] || generateRandomItems('field2')).map((item, index) => (
@@ -832,15 +827,15 @@ export default function CasePage() {
                         />
                       ))}
                     </motion.div>
-                    
+
                     {/* Белая палочка по центру */}
                     <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-0.5 bg-gradient-to-r from-white/60 via-white/70 to-white/60 z-10 pointer-events-none shadow-md shadow-white/10">
                     </div>
                   </div>
                   <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
                     {/* Контейнер для рулетки с анимацией */}
-                    <motion.div 
-                      className="flex flex-col items-center gap-2 p-2"
+                    <motion.div
+                      className="flex flex-col items-center gap-1.5 md:gap-2 p-2"
                       animate={field3Controls}
                     >
                       {(savedLayouts[`${selectedNumber}-field3`] || generateRandomItems('field3')).map((item, index) => (
@@ -851,15 +846,15 @@ export default function CasePage() {
                         />
                       ))}
                     </motion.div>
-                    
+
                     {/* Белая палочка по центру */}
                     <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-0.5 bg-gradient-to-r from-white/60 via-white/70 to-white/60 z-10 pointer-events-none shadow-md shadow-white/10">
                     </div>
                   </div>
                   <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
                     {/* Контейнер для рулетки с анимацией */}
-                    <motion.div 
-                      className="flex flex-col items-center gap-2 p-2"
+                    <motion.div
+                      className="flex flex-col items-center gap-1.5 md:gap-2 p-2"
                       animate={field4Controls}
                     >
                       {(savedLayouts[`${selectedNumber}-field4`] || generateRandomItems('field4')).map((item, index) => (
@@ -870,7 +865,7 @@ export default function CasePage() {
                         />
                       ))}
                     </motion.div>
-                    
+
                     {/* Белая палочка по центру */}
                     <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-0.5 bg-gradient-to-r from-white/60 via-white/70 to-white/60 z-10 pointer-events-none shadow-md shadow-white/10">
                     </div>
@@ -880,20 +875,20 @@ export default function CasePage() {
             </div>
           </div>
         </div>
-        
+
         {/* Правый сайдбар - скрыт на мобильных */}
         <div className='hidden md:flex w-[221px] flex-col rounded-xl bg-[#F9F8FC]/[0.05] overflow-hidden' style={{ height: '585px' }}>
           {/* Заголовок */}
           <div className='flex p-4 pb-2 justify-center items-center flex-shrink-0'>
             <h1 className='text-[#F9F8FC] font-unbounded text-xl font-medium'>В кейсе</h1>
           </div>
-          
+
           {/* Контейнер с предметами */}
           <div className='flex-1 px-4 pb-4 min-h-0'>
             {/* Область прокрутки с motion.div */}
-            <motion.div 
+            <motion.div
               className='h-full overflow-y-auto overflow-x-hidden pr-2'
-              style={{ 
+              style={{
                 scrollbarWidth: 'thin',
                 scrollbarColor: 'rgba(249, 248, 252, 0.2) transparent'
               }}
@@ -916,23 +911,23 @@ export default function CasePage() {
                   background: rgba(249, 248, 252, 0.3);
                 }
               `}</style>
-              
+
               {/* Сетка предметов */}
               <div className='grid grid-cols-2 gap-2 w-full auto-rows-max'>
                 {getSortedItems().length > 0 ? (
                   getSortedItems().map((item, index) => (
-                    <motion.div 
-                      key={`${item.id}-${index}`} 
+                    <motion.div
+                      key={`${item.id}-${index}`}
                       className='w-full flex justify-center items-start'
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ 
-                        duration: 0.3, 
+                      transition={{
+                        duration: 0.3,
                         delay: index * 0.05,
                         ease: "easeOut"
                       }}
                     >
-                      <CaseItemCard 
+                      <CaseItemCard
                         item={item}
                         className='flex-shrink-0'
                         onClick={() => handleOpenItemDescriptionModal(item)}
@@ -940,7 +935,7 @@ export default function CasePage() {
                     </motion.div>
                   ))
                 ) : (
-                  <motion.div 
+                  <motion.div
                     className="text-[#F9F8FC]/50 font-unbounded text-sm text-center w-full col-span-2 py-8"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -954,7 +949,7 @@ export default function CasePage() {
           </div>
         </div>
       </div>
-      
+
       {/* Модальное окно описания предмета */}
       <ItemDescriptionModal
         isOpen={isItemDescriptionModalOpen}

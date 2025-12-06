@@ -48,6 +48,21 @@ export default function BonusCasePage() {
     return () => clearInterval(interval);
   }, []);
 
+  // Определяем, нужен ли компактный режим для карточек
+  const [isCompactCards, setIsCompactCards] = useState(false);
+
+  useEffect(() => {
+    const checkCompactMode = () => {
+      const isMobile = window.innerWidth < 768;
+      setIsCompactCards(isMobile);
+    };
+
+    checkCompactMode();
+    window.addEventListener('resize', checkCompactMode);
+
+    return () => window.removeEventListener('resize', checkCompactMode);
+  }, []);
+
   const field1Controls = useAnimation();
   const field2Controls = useAnimation();
   const field3Controls = useAnimation();
@@ -534,8 +549,8 @@ export default function BonusCasePage() {
                       }}
                       disabled={isSpinning}
                       className={`flex w-[27px] h-[15px] p-[2px] ${isSpinning
-                          ? 'cursor-not-allowed opacity-50'
-                          : 'cursor-pointer'
+                        ? 'cursor-not-allowed opacity-50'
+                        : 'cursor-pointer'
                         } ${isFastMode ? 'justify-end bg-[#5C5ADC]' : 'justify-start bg-[#F9F8FC]/[0.10]'
                         } items-center rounded-[100px] transition-colors duration-200`}
                     >
@@ -554,8 +569,8 @@ export default function BonusCasePage() {
                       onClick={() => handleOpenCase(false)}
                       disabled={isButtonDisabled}
                       className={`flex px-3 py-2 md:px-4 md:py-3 justify-center items-center gap-2 rounded-xl transition-colors duration-200 flex-1 md:flex-initial ${isButtonDisabled
-                          ? 'bg-[#5C5ADC]/50 cursor-not-allowed'
-                          : 'bg-[#5C5ADC] cursor-pointer'
+                        ? 'bg-[#5C5ADC]/50 cursor-not-allowed'
+                        : 'bg-[#5C5ADC] cursor-pointer'
                         }`}
                       whileHover={!isButtonDisabled ? { backgroundColor: "#6462DE" } : {}}
                       whileTap={!isButtonDisabled ? { scale: 0.98 } : {}}
@@ -600,7 +615,7 @@ export default function BonusCasePage() {
               {selectedNumber === 1 && (
                 <div ref={rouletteContainerRef} className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden flex justify-center items-center">
                   <motion.div
-                    className="flex items-center gap-2 p-2"
+                    className="flex items-center gap-1.5 md:gap-2 p-2"
                     animate={field1Controls}
                     style={{
                       width: 'max-content',
@@ -612,6 +627,7 @@ export default function BonusCasePage() {
                         key={`field1-${item.id}-${index}`}
                         item={item}
                         className="flex-shrink-0"
+                        compact={isCompactCards}
                       />
                     ))}
                   </motion.div>
