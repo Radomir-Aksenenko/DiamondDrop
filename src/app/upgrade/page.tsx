@@ -5,6 +5,7 @@ import { useInventoryAPI, InventoryItem } from '@/hooks/useInventoryAPI';
 import { ItemCard } from '@/components/ui/RarityCard';
 import { CaseItem } from '@/hooks/useCasesAPI';
 import useUpgradeAPI, { UpgradeInventoryItem } from '@/hooks/useUpgradeAPI';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import Link from 'next/link'
 
 // Константа процента удалена как неиспользуемая
@@ -146,20 +147,21 @@ const CircularProgress = ({ percentage, hasSelectedUpgradeItem = false, isSpinni
 };
 
 // Компонент для отображения списка предметов с процентами
-function CaseItemsList({ 
-  items, 
-  loading, 
+function CaseItemsList({
+  items,
+  loading,
   error,
-  selectedUpgradeItem, 
-  onItemSelect, 
+  selectedUpgradeItem,
+  onItemSelect,
   onItemRemove,
   calculateTotalPrice,
   rtp,
   hasSelectedItems,
   hasMore,
-  onLoadMore
-}: { 
-  items: CaseItem[], 
+  onLoadMore,
+  gridCols = 3
+}: {
+  items: CaseItem[],
   loading: boolean,
   error?: string | null,
   selectedUpgradeItem: CaseItem | null,
@@ -169,7 +171,8 @@ function CaseItemsList({
   rtp: number,
   hasSelectedItems: boolean,
   hasMore: boolean,
-  onLoadMore: () => void
+  onLoadMore: () => void,
+  gridCols?: number
 }) {
   // Функция для расчета успешного апгрейда для конкретного предмета
   const calculateItemUpgradePercentage = (upgradeItemPrice: number) => {
@@ -242,7 +245,7 @@ function CaseItemsList({
           div::-webkit-scrollbar-thumb { background: rgba(249, 248, 252, 0.2); border-radius: 2px; }
           div::-webkit-scrollbar-thumb:hover { background: rgba(249, 248, 252, 0.3); }
         `}</style>
-        <div className="grid grid-cols-3 auto-rows-[76px] gap-3">
+        <div className={`grid ${gridCols === 2 ? 'grid-cols-2' : 'grid-cols-3'} ${gridCols === 2 ? 'auto-rows-[100px]' : 'auto-rows-[76px]'} ${gridCols === 2 ? 'gap-2' : 'gap-3'}`}>
           {filteredItems.map((item) => (
             <div key={item.id} className="relative group">
               <ItemCard
@@ -281,14 +284,15 @@ function CaseItemsList({
 }
 
 // Компонент для отображения списка предметов инвентаря
-function InventoryItemsList({ selectedItems, onItemSelect, inventoryUpdateRef, convertToCaseItem }: { 
-  selectedItems: SelectedItem[], 
+function InventoryItemsList({ selectedItems, onItemSelect, inventoryUpdateRef, convertToCaseItem, gridCols = 3 }: {
+  selectedItems: SelectedItem[],
   onItemSelect: (item: InventoryItem) => void,
   inventoryUpdateRef?: React.MutableRefObject<{
     updateItemAmounts: (updates: { itemId: string; amountChange: number }[]) => void;
     addItemToInventory: (newItem: InventoryItem) => void;
   } | null>,
-  convertToCaseItem: (inventoryItem: InventoryItem) => CaseItem
+  convertToCaseItem: (inventoryItem: InventoryItem) => CaseItem,
+  gridCols?: number
 }) {
   const { items, loading, error, updateItemAmounts, addItemToInventory } = useInventoryAPI();
   
@@ -355,7 +359,7 @@ function InventoryItemsList({ selectedItems, onItemSelect, inventoryUpdateRef, c
           div::-webkit-scrollbar-thumb { background: rgba(249, 248, 252, 0.2); border-radius: 2px; }
           div::-webkit-scrollbar-thumb:hover { background: rgba(249, 248, 252, 0.3); }
         `}</style>
-        <div className="grid grid-cols-3 auto-rows-[76px] gap-3">
+        <div className={`grid ${gridCols === 2 ? 'grid-cols-2' : 'grid-cols-3'} ${gridCols === 2 ? 'auto-rows-[100px]' : 'auto-rows-[76px]'} ${gridCols === 2 ? 'gap-2' : 'gap-3'}`}>
           {sortedItems.map((inventoryItem) => {
             // Суммируем все selectedAmount для одинаковых предметов
             const totalSelectedAmount = selectedItems
@@ -388,6 +392,7 @@ function InventoryItemsList({ selectedItems, onItemSelect, inventoryUpdateRef, c
 }
 
 export default function UpgradePage() {
+  const { isMobile } = useIsMobile();
   const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
   const [minPrice, setMinPrice] = useState<number>(0);
   const [isMinPriceManual, setIsMinPriceManual] = useState<boolean>(false);
@@ -395,7 +400,8 @@ export default function UpgradePage() {
   const [isSpinning, setIsSpinning] = useState<boolean>(false);
   const [currentRotation, setCurrentRotation] = useState<number>(90); // Начальный угол 90°, чтобы указатель был сверху
   const [animationDuration, setAnimationDuration] = useState<number>(3000); // Длительность анимации в мс
-  
+  const [activeTab, setActiveTab] = useState<'upgrade' | 'inventory' | 'target'>('upgrade'); // Для мобильных вкладок
+
   // Ref для функций обновления инвентаря
   const inventoryUpdateFunctions = useRef<{
     updateItemAmounts: (updates: { itemId: string; amountChange: number }[]) => void;
@@ -761,7 +767,7 @@ export default function UpgradePage() {
     setSelectedItems(prev => {
       // Проверяем, сколько раз уже выбран этот предмет
       const selectedCount = prev.filter(item => item.inventoryItem.item.id === inventoryItem.item.id).length;
-      
+
       if (selectedCount < inventoryItem.amount) {
         // Добавляем новый экземпляр предмета в отдельную ячейку
         return [...prev, { inventoryItem, selectedAmount: 1 }];
@@ -770,9 +776,237 @@ export default function UpgradePage() {
     });
   };
 
+  // Мобильная версия с вкладками
+  if (isMobile) {
+    return (
+      <div className="flex flex-col w-full h-full pt-2">
+        {/* Навигация вкладок */}
+        <div className="flex gap-2 mx-4 mb-4 p-2 rounded-xl bg-[#18181D]">
+          <button
+            onClick={() => setActiveTab('upgrade')}
+            className={`flex-1 py-3 px-4 rounded-lg font-["Actay_Wide"] text-sm font-bold transition-all ${
+              activeTab === 'upgrade'
+                ? 'bg-[#232329] text-[#F9F8FC]'
+                : 'bg-transparent text-[#F9F8FC] opacity-50 hover:bg-[#232329]'
+            }`}
+          >
+            Апгрейд
+          </button>
+          <button
+            onClick={() => setActiveTab('inventory')}
+            className={`flex-1 py-3 px-4 rounded-lg font-["Actay_Wide"] text-sm font-bold transition-all ${
+              activeTab === 'inventory'
+                ? 'bg-[#232329] text-[#F9F8FC]'
+                : 'bg-transparent text-[#F9F8FC] opacity-50 hover:bg-[#232329]'
+            }`}
+          >
+            Инвентарь
+          </button>
+          <button
+            onClick={() => setActiveTab('target')}
+            className={`flex-1 py-3 px-4 rounded-lg font-["Actay_Wide"] text-sm font-bold transition-all ${
+              activeTab === 'target'
+                ? 'bg-[#232329] text-[#F9F8FC]'
+                : 'bg-transparent text-[#F9F8FC] opacity-50 hover:bg-[#232329]'
+            }`}
+          >
+            Цель
+          </button>
+        </div>
+
+        {/* Контент вкладок */}
+        <div className="flex-1 overflow-y-auto px-4 pb-4">
+          {/* Вкладка "Апгрейд" */}
+          {activeTab === 'upgrade' && (
+            <div className="flex flex-col gap-4">
+              {/* Выбранные предметы */}
+              <div className="flex flex-col rounded-xl bg-[rgba(249,248,252,0.05)] p-4">
+                <p className="text-[#F9F8FC] font-['Actay_Wide'] text-base font-bold mb-3">Выбранные предметы</p>
+                {selectedItems.length === 0 ? (
+                  <div className="flex items-center justify-center h-32">
+                    <p className="text-[#5C5B60] text-center font-['Actay_Wide'] text-sm">
+                      Выберите до 8 предметов<br/>из инвентаря
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-4 gap-1">
+                    {Array.from({ length: 8 }, (_, i) => {
+                      const item = selectedItems[i];
+                      return (
+                        <div key={i} className="aspect-[78/124.75]">
+                          {item ? (
+                            <ItemCard
+                              item={convertToCaseItem(item.inventoryItem)}
+                              amount={item.inventoryItem.item.amount}
+                              orientation="vertical"
+                              className="w-full h-full"
+                              isSelected={true}
+                              hideAmountInPieces={true}
+                              upgradeMode={true}
+                              onRemove={() => {
+                                setSelectedItems(prev => prev.filter((_, index) => index !== i));
+                              }}
+                            />
+                          ) : (
+                            <div className="w-full h-full rounded-lg border border-[rgba(249,248,252,0.05)]" />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Круговой прогресс */}
+              <div className="flex flex-col items-center rounded-xl bg-[rgba(249,248,252,0.05)] p-6">
+                <CircularProgress
+                  percentage={calculateUpgradeSuccessPercentage()}
+                  hasSelectedUpgradeItem={selectedUpgradeItem !== null}
+                  isSpinning={isSpinning}
+                  currentRotation={currentRotation}
+                  animationDuration={animationDuration}
+                />
+              </div>
+
+              {/* Статистика */}
+              <div className="flex gap-2">
+                <div className="flex-1 flex items-center justify-center h-12 rounded-lg bg-[rgba(249,248,252,0.05)]">
+                  <p className="text-[#F9F8FC] font-['Actay_Wide'] text-base font-bold opacity-30">
+                    x{calculateRoundedPayback()}
+                  </p>
+                </div>
+                <div className="flex-1 flex items-center justify-center gap-1 h-12 rounded-lg bg-[rgba(17,171,71,0.10)]">
+                  <span className="text-[#11AB47] font-['Actay_Wide'] text-base font-bold">
+                    + {calculatePriceDifference()}
+                  </span>
+                  <span className="text-[#11AB47] font-['Actay_Wide'] text-sm font-bold">АР</span>
+                </div>
+              </div>
+
+              {/* Целевой предмет */}
+              <div className="flex flex-col rounded-xl bg-[rgba(249,248,252,0.05)] p-4">
+                <p className="text-[#F9F8FC] font-['Actay_Wide'] text-base font-bold mb-3">Целевой предмет</p>
+                {!selectedUpgradeItem ? (
+                  <div className="flex items-center justify-center h-32">
+                    <p className="text-[#5C5B60] text-center font-['Actay_Wide'] text-sm">
+                      Выберите предмет,<br/>который хотите получить
+                    </p>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-20 h-20 bg-center bg-cover bg-no-repeat rounded-lg"
+                      style={{ backgroundImage: `url(${selectedUpgradeItem.imageUrl})` }}
+                    />
+                    <div className="flex-1">
+                      <p className={`font-['Actay_Wide'] text-sm font-bold ${rarityTextColor(selectedUpgradeItem.rarity)}`}>
+                        {selectedUpgradeItem.name}
+                      </p>
+                      <div className="mt-1">
+                        <span className="text-[#F9F8FC] font-['Actay_Wide'] text-base font-bold">
+                          {selectedUpgradeItem.price}
+                        </span>
+                        <span className="text-[rgba(249,248,252,0.50)] font-['Actay_Wide'] text-xs font-bold"> АР</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Кнопка апгрейда */}
+              {(() => {
+                const isDisabled = !selectedUpgradeItem || selectedItems.length === 0 || isSpinning || upgradeLoading;
+                return (
+                  <button
+                    onClick={isDisabled ? undefined : handleUpgradeClick}
+                    disabled={isDisabled}
+                    className={`w-full py-4 rounded-lg font-['Actay_Wide'] text-base font-bold transition-all ${
+                      isDisabled
+                        ? 'bg-gray-500 text-gray-400 cursor-not-allowed opacity-60'
+                        : 'bg-[#5C5ADC] text-[#F9F8FC] active:scale-[0.98]'
+                    }`}
+                  >
+                    {isSpinning || upgradeLoading ? 'Прокачиваем...' : 'Прокачать'}
+                  </button>
+                );
+              })()}
+            </div>
+          )}
+
+          {/* Вкладка "Инвентарь" */}
+          {activeTab === 'inventory' && (
+            <div className="flex flex-col gap-4">
+              <InventoryItemsList
+                selectedItems={selectedItems}
+                onItemSelect={handleItemSelect}
+                inventoryUpdateRef={inventoryUpdateFunctions}
+                convertToCaseItem={convertToCaseItem}
+                gridCols={2}
+              />
+            </div>
+          )}
+
+          {/* Вкладка "Цель" */}
+          {activeTab === 'target' && (
+            <div className="flex flex-col gap-4">
+              {/* Фильтр минимальной цены */}
+              <div className="flex items-center justify-between p-4 rounded-xl bg-[rgba(249,248,252,0.05)]">
+                <span className="text-[#F9F8FC] font-['Actay_Wide'] text-sm font-bold">Минимальная цена</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[rgba(249,248,252,0.50)] font-['Actay_Wide'] text-sm">от</span>
+                  <input
+                    type="number"
+                    value={minPrice}
+                    disabled={selectedItems.length === 0}
+                    onChange={(e) => {
+                      setIsMinPriceManual(true);
+                      const value = parseFloat(e.target.value);
+                      const normalized = isNaN(value) ? 0 : value;
+                      setMinPrice(Math.max(normalized, 0));
+                    }}
+                    onKeyDown={(e) => {
+                      if (!/[0-9.,]/.test(e.key) && !['Backspace', 'Delete', 'Tab', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+                        e.preventDefault();
+                      }
+                    }}
+                    min={0}
+                    className={`w-16 bg-transparent font-['Actay_Wide'] text-sm font-bold text-center border-none outline-none ${
+                      selectedItems.length === 0
+                        ? 'text-[rgba(249,248,252,0.15)] cursor-not-allowed'
+                        : 'text-[rgba(249,248,252,0.30)]'
+                    }`}
+                    style={{ appearance: 'textfield' }}
+                  />
+                  <span className="text-[rgba(249,248,252,0.50)] font-['Actay_Wide'] text-sm">АР</span>
+                </div>
+              </div>
+
+              {/* Список предметов для апгрейда */}
+              <CaseItemsList
+                items={convertedUpgradeItems}
+                loading={upgradeItemsLoading}
+                error={upgradeItemsError}
+                selectedUpgradeItem={selectedUpgradeItem}
+                onItemSelect={handleUpgradeItemSelect}
+                onItemRemove={handleUpgradeItemRemove}
+                calculateTotalPrice={calculateTotalPrice}
+                rtp={rtp}
+                hasSelectedItems={selectedItems.length > 0}
+                hasMore={upgradeItemsHasMore}
+                onLoadMore={() => loadMoreUpgradeItems(minPrice)}
+                gridCols={2}
+              />
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Десктопная версия
   return (
-    <div className="h-[calc(100vh-85px-1rem)] flex flex-col items-stretch gap-2 self-stretch overflow-hidden py-2">
-      <div className='flex justify-center items-stretch gap-2 self-stretch min-h-0 h-[300px]'>
+    <>
+      <div className="flex flex-col md:flex-row gap-2 w-full flex-1 min-h-0">
         <div className='flex flex-col justify-center items-center flex-1 self-stretch rounded-xl bg-[rgba(249,248,252,0.05)] py-4 min-h-0 max-h-full overflow-visible'>
           {selectedItems.length === 0 ? (
             <p className='text-[#5C5B60] text-center font-["Actay_Wide"] text-base'>Выберите до 8 предметов<br/>для апгрейда</p>
@@ -957,7 +1191,7 @@ export default function UpgradePage() {
            />
          </div>
        </div>
-     </div>
+    </>
    );
  }
  // EOF
