@@ -580,14 +580,14 @@ export default function CasePage() {
                 </div>
 
                 {/* Кнопки выбора количества */}
-                <div className='flex items-center gap-3 md:gap-2'>
+                <div className='flex items-center gap-3 md:gap-2 mt-4 md:mt-0'>
                   {[1, 2, 3, 4].map((number) => (
                     <NumberButton key={number} number={number} />
                   ))}
                 </div>
 
                 {/* Быстрый режим */}
-                <div className='flex items-center gap-2 md:gap-4 self-stretch'>
+                <div className='flex items-center gap-2 md:gap-4 self-stretch mt-4 md:mt-0'>
                   <div className='flex items-center gap-3 md:gap-2'>
                     <img
                       src="/Fast.svg"
@@ -620,11 +620,11 @@ export default function CasePage() {
                 </div>
 
                 {/* Кнопки действий */}
-                <div className='flex items-center gap-3 md:gap-2 w-full md:w-auto'>
+                <div className='flex items-center gap-3 md:gap-2 w-full md:w-auto mt-4 md:mt-0'>
                   <motion.button
                     onClick={() => handleOpenCase(false)}
                     disabled={isSpinning}
-                    className={`flex px-3 py-2 md:px-4 md:py-3 justify-center items-center gap-1.5 md:gap-2 rounded-xl transition-colors duration-200 flex-1 md:flex-initial ${isSpinning
+                    className={`flex px-3 py-2 md:px-4 md:py-3 justify-center items-center gap-1.5 md:gap-2 rounded-lg md:rounded-xl transition-colors duration-200 flex-1 md:flex-initial ${isSpinning
                       ? 'bg-[#5C5ADC]/50 cursor-not-allowed'
                       : 'bg-[#5C5ADC] cursor-pointer'
                       }`}
@@ -649,7 +649,7 @@ export default function CasePage() {
                   <motion.button
                     onClick={() => handleOpenCase(true)}
                     disabled={isSpinning}
-                    className={`flex px-3 py-2 md:px-4 md:py-3 justify-center items-center gap-[10px] rounded-[8px] bg-[#F9F8FC]/[0.05] text-[#F9F8FC] font-unbounded text-xs md:text-sm font-medium transition-colors duration-200 ${isSpinning ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+                    className={`flex px-3 py-2 md:px-4 md:py-3 justify-center items-center gap-[10px] rounded-[6px] md:rounded-[8px] bg-[#F9F8FC]/[0.05] text-[#F9F8FC] font-unbounded text-xs md:text-sm font-medium transition-colors duration-200 ${isSpinning ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
                       }`}
                     whileHover={!isSpinning ? { backgroundColor: "#242428" } : {}}
                     whileTap={!isSpinning ? { scale: 0.98 } : {}}
