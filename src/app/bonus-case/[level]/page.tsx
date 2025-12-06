@@ -472,7 +472,7 @@ export default function BonusCasePage() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-85px-1rem)] md:h-[calc(100vh-85px-1rem)] flex flex-col items-start gap-2 md:gap-4 flex-1 self-stretch overflow-hidden px-2 md:px-0">
+    <div className="min-h-[calc(100vh-85px-1rem)] md:h-[calc(100vh-85px-1rem)] flex flex-col items-start gap-4 md:gap-6 flex-1 self-stretch overflow-hidden px-2 md:px-0">
       <button
         onClick={() => router.back()}
         className="flex w-full h-[36px] md:h-[42px] items-center gap-2 md:gap-4 cursor-pointer"
@@ -494,10 +494,10 @@ export default function BonusCasePage() {
         <p className='text-[#F9F8FC] font-unbounded text-lg md:text-2xl font-medium'>Фри Кейсы</p>
       </button>
 
-      <div className='flex flex-col md:flex-row items-start gap-2 flex-[1_0_0] self-stretch'>
+      <div className='flex flex-col md:flex-row items-start gap-5 flex-[1_0_0] self-stretch'>
         <div className='flex flex-col items-start gap-2 flex-1 w-full md:w-auto'>
-          <div className="flex flex-col items-start gap-2 self-stretch p-3 md:p-4 rounded-xl bg-[#F9F8FC]/[0.05] w-full md:w-[679px] h-auto md:h-[288px]">
-            <div className='flex flex-col md:flex-row h-auto md:h-[256px] items-center gap-3 md:gap-4 self-stretch'>
+          <div className="flex flex-col items-start gap-3 self-stretch p-5 md:p-6 rounded-xl bg-[#F9F8FC]/[0.05] w-full md:w-[679px] h-auto md:h-[288px]">
+            <div className='flex flex-col md:flex-row h-auto md:h-[256px] items-center gap-5 md:gap-4 self-stretch'>
               <img
                 src={getCaseImageUrl()}
                 alt={`Изображение кейса ${caseData?.name}`}
@@ -521,7 +521,7 @@ export default function BonusCasePage() {
                 </p>
 
                 <div className='flex items-center gap-2 md:gap-4 self-stretch'>
-                  <div className='flex items-center gap-1.5 md:gap-2'>
+                  <div className='flex items-center gap-3 md:gap-2'>
                     <img
                       src="/Fast.svg"
                       alt="Иконка быстрого режима"
@@ -552,7 +552,7 @@ export default function BonusCasePage() {
                 </div>
 
                 <div className='flex flex-col gap-1 self-stretch w-full md:w-auto'>
-                  <div className='flex items-center gap-1.5 md:gap-2 w-full md:w-auto'>
+                  <div className='flex items-center gap-3 md:gap-2 w-full md:w-auto'>
                     <motion.button
                       onClick={() => handleOpenCase(false)}
                       disabled={isButtonDisabled}
