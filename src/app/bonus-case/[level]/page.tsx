@@ -290,8 +290,9 @@ export default function BonusCasePage() {
     const horizontalDuration = baseDuration;
     const verticalDuration = baseDuration;
 
-    // Определяем, мобильное ли устройство
-    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    // Определяем, используется ли компактный режим
+    // Используем состояние компонента для согласованности с рендерингом
+    const isMobile = isCompactCards;
 
     setSavedLayouts(prev => {
       const newLayouts = { ...prev };
@@ -364,7 +365,7 @@ export default function BonusCasePage() {
         }));
 
         // Вычисляем размеры карточек в зависимости от устройства
-        // На мобильных всегда используем compact размеры (56x74), на desktop - обычные (76x100)
+        // Используем точные значения пикселей, соответствующие CSS
         const cardWidth = isMobile ? 56 : 76;
         const cardHeight = isMobile ? 74 : 100;
         const gap = isMobile ? 6 : 8;
@@ -375,14 +376,13 @@ export default function BonusCasePage() {
           // Горизонтальная прокрутка для одного кейса
           const itemWidth = cardWidth + gap;
 
-          // Получаем реальную ширину контейнера для мобильных
-          let containerWidth;
-          if (isMobile && rouletteContainerRef.current) {
-            // Используем реальную ширину контейнера
+          // Получаем реальную ширину контейнера
+          let containerWidth = 663; // Default Desktop width
+
+          if (rouletteContainerRef.current) {
+            // Если ref доступен, используем его реальную ширину для точности
             const rect = rouletteContainerRef.current.getBoundingClientRect();
             containerWidth = rect.width;
-          } else {
-            containerWidth = 663; // Desktop
           }
 
           // Начальная позиция
@@ -407,32 +407,20 @@ export default function BonusCasePage() {
           });
 
         } else {
-          // Вертикальная прокрутка для нескольких кейсов
+          // Вертикальная прокрутка (код оставлен для совместимости, но selectedNumber всегда 1 здесь)
           const itemHeight = cardHeight + gap;
+          let containerHeight = 272;
 
-          // Получаем реальную высоту контейнера для мобильных
-          let containerHeight;
-          if (isMobile && rouletteContainerRef.current) {
-            // Используем реальную высоту контейнера
-            const rect = rouletteContainerRef.current.getBoundingClientRect();
-            containerHeight = rect.height;
-          } else {
-            containerHeight = 272; // Desktop
+          if (isMobile) {
+            containerHeight = 184;
           }
 
-          // Начальная позиция
           const initialOffset = 0;
-
-          // Генерируем случайное смещение в пределах карточки
           const randomOffset = (Math.random() - 0.5) * (isMobile ? 40 : 80);
-
-          // Финальная позиция - центрируем выигрышный предмет + случайное смещение
           const finalOffset = -(targetIndex * itemHeight) + (containerHeight / 2) - (cardHeight / 2) + randomOffset;
 
-          // Устанавливаем начальную позицию
           fieldControl.set({ y: initialOffset });
 
-          // Создаем анимацию с плавной остановкой для вертикальной прокрутки
           animationPromise = fieldControl.start({
             y: finalOffset,
             transition: {
@@ -615,11 +603,12 @@ export default function BonusCasePage() {
               {selectedNumber === 1 && (
                 <div ref={rouletteContainerRef} className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden flex justify-center items-center">
                   <motion.div
-                    className="flex items-center gap-1.5 md:gap-2 p-2"
+                    className="flex items-center p-2"
                     animate={field1Controls}
                     style={{
                       width: 'max-content',
                       minWidth: '100%',
+                      gap: isCompactCards ? '6px' : '8px'
                     }}
                   >
                     {(savedLayouts[`${selectedNumber}-field1`] || generateRandomItems('field1')).map((item, index) => (

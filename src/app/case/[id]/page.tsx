@@ -280,8 +280,9 @@ export default function CasePage() {
     const horizontalDuration = baseDuration; // Одинаковая продолжительность
     const verticalDuration = baseDuration;
 
-    // Определяем, мобильное ли устройство
-    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    // Определяем, используется ли компактный режим
+    // Используем состояние компонента для согласованности с рендерингом
+    const isMobile = isCompactCards;
 
     // Очищаем старые расположения для текущей конфигурации
     setSavedLayouts(prev => {
@@ -367,7 +368,7 @@ export default function CasePage() {
         }));
 
         // Вычисляем размеры карточек в зависимости от устройства
-        // На мобильных всегда используем compact размеры (56x74), на desktop - обычные (76x100)
+        // Используем точные значения пикселей, соответствующие CSS
         const cardWidth = isMobile ? 56 : 76;
         const cardHeight = isMobile ? 74 : 100;
         const gap = isMobile ? 6 : 8;
@@ -378,14 +379,13 @@ export default function CasePage() {
           // Горизонтальная прокрутка для одного кейса
           const itemWidth = cardWidth + gap;
 
-          // Получаем реальную ширину контейнера для мобильных
-          let containerWidth;
-          if (isMobile && rouletteContainerRef.current) {
-            // Используем реальную ширину контейнера
+          // Получаем реальную ширину контейнера
+          let containerWidth = 663; // Default Desktop width
+
+          if (rouletteContainerRef.current) {
+            // Если ref доступен, используем его реальную ширину для точности
             const rect = rouletteContainerRef.current.getBoundingClientRect();
             containerWidth = rect.width;
-          } else {
-            containerWidth = 663; // Desktop
           }
 
           // Начальная позиция
@@ -413,14 +413,24 @@ export default function CasePage() {
           // Вертикальная прокрутка для нескольких кейсов
           const itemHeight = cardHeight + gap;
 
-          // Получаем реальную высоту контейнера для мобильных
-          let containerHeight;
-          if (isMobile && rouletteContainerRef.current) {
-            // Используем реальную высоту контейнера
+          // Дефолтная высота
+          let containerHeight = 272;
+
+          if (rouletteContainerRef.current) {
+            // Если ref доступен (например если он прикреплен где-то выше), используем
+            // Но для вертикальной прокрутки ref не всегда прикреплен к каждому контейнеру в текущей верстке
             const rect = rouletteContainerRef.current.getBoundingClientRect();
-            containerHeight = rect.height;
-          } else {
-            containerHeight = 272; // Desktop
+            // В текущей верстке rouletteContainerRef прикреплен к контейнеру wrapper только для selectedNumber === 1?
+            // Проверим... В текущем коде ref вешается только на selectedNumber === 1.
+            // Поэтому для > 1 используем константу или нужно добавить ref'ы.
+            // Пока оставим константу или более умную логику
+          }
+
+          // Более точная логика высоты для мобильных (расчетная)
+          if (isMobile) {
+            // h-[200px] parent, p-2 => 16px vertical padding total?
+            // inner height approx 184px
+            containerHeight = 184;
           }
 
           // Начальная позиция
@@ -475,10 +485,10 @@ export default function CasePage() {
       }}
       disabled={isSpinning}
       className={`flex w-[32px] h-[32px] md:w-[36px] md:h-[36px] justify-center items-center rounded-[8px] font-unbounded text-xs md:text-sm font-medium transition-all duration-200 ${isSpinning
-          ? 'cursor-not-allowed opacity-50 bg-[#F9F8FC]/[0.05] text-[#F9F8FC]'
-          : selectedNumber === number
-            ? 'border border-[#5C5ADC] bg-[#6563EE]/[0.10] text-[#F9F8FC] cursor-pointer'
-            : 'bg-[#F9F8FC]/[0.05] text-[#F9F8FC] hover:bg-[#F9F8FC]/[0.08] cursor-pointer'
+        ? 'cursor-not-allowed opacity-50 bg-[#F9F8FC]/[0.05] text-[#F9F8FC]'
+        : selectedNumber === number
+          ? 'border border-[#5C5ADC] bg-[#6563EE]/[0.10] text-[#F9F8FC] cursor-pointer'
+          : 'bg-[#F9F8FC]/[0.05] text-[#F9F8FC] hover:bg-[#F9F8FC]/[0.08] cursor-pointer'
         }`}
       whileHover={!isSpinning ? { scale: 1.05 } : {}}
       whileTap={!isSpinning ? { scale: 0.95 } : {}}
@@ -595,8 +605,8 @@ export default function CasePage() {
                       }}
                       disabled={isSpinning}
                       className={`flex w-[27px] h-[15px] p-[2px] ${isSpinning
-                          ? 'cursor-not-allowed opacity-50'
-                          : 'cursor-pointer'
+                        ? 'cursor-not-allowed opacity-50'
+                        : 'cursor-pointer'
                         } ${isFastMode ? 'justify-end bg-[#5C5ADC]' : 'justify-start bg-[#F9F8FC]/[0.10]'
                         } items-center rounded-[100px] transition-colors duration-200`}
                     >
@@ -615,8 +625,8 @@ export default function CasePage() {
                     onClick={() => handleOpenCase(false)}
                     disabled={isSpinning}
                     className={`flex px-3 py-2 md:px-4 md:py-3 justify-center items-center gap-1.5 md:gap-2 rounded-xl transition-colors duration-200 flex-1 md:flex-initial ${isSpinning
-                        ? 'bg-[#5C5ADC]/50 cursor-not-allowed'
-                        : 'bg-[#5C5ADC] cursor-pointer'
+                      ? 'bg-[#5C5ADC]/50 cursor-not-allowed'
+                      : 'bg-[#5C5ADC] cursor-pointer'
                       }`}
                     whileHover={!isSpinning ? { backgroundColor: "#6462DE" } : {}}
                     whileTap={!isSpinning ? { scale: 0.98 } : {}}
@@ -661,11 +671,12 @@ export default function CasePage() {
                 <div ref={rouletteContainerRef} className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden flex justify-center items-center">
                   {/* Контейнер для рулетки с анимацией */}
                   <motion.div
-                    className="flex items-center gap-1.5 md:gap-2 p-2"
+                    className="flex items-center p-2"
                     animate={field1Controls}
                     style={{
                       width: 'max-content',
-                      minWidth: '100%'
+                      minWidth: '100%',
+                      gap: isCompactCards ? '6px' : '8px'
                     }}
                   >
                     {(savedLayouts[`${selectedNumber}-field1`] || generateRandomItems('field1')).map((item, index) => (
