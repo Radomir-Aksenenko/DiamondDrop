@@ -414,19 +414,19 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
       
       {/* Кнопки */}
       <div className="grid grid-cols-2 gap-2 mt-4">
-        <button 
+        <button
           onClick={onClose}
           className="bg-[#19191D] hover:bg-[#2A2A30] transition-colors py-2.5 px-4 rounded-lg text-[#F9F8FC] font-bold cursor-pointer outline-none focus:outline-none active:outline-none focus:ring-0 active:ring-0"
           type="button"
         >
           Отменить
         </button>
-        <button 
+        <button
           onClick={activeTab === 'withdraw' ? handleWithdraw : handleSell}
           disabled={isSelling || isWithdrawing || (activeTab === 'withdraw' && !selectedItem?.item.isWithdrawable)}
           className={`py-2.5 px-4 rounded-lg text-[#F9F8FC] font-bold outline-none focus:outline-none active:outline-none focus:ring-0 active:ring-0 transition-colors ${
             isSelling || isWithdrawing || (activeTab === 'withdraw' && !selectedItem?.item.isWithdrawable)
-              ? 'bg-[#5C5ADC]/50 cursor-not-allowed' 
+              ? 'bg-[#5C5ADC]/50 cursor-not-allowed'
               : 'bg-[#5C5ADC] hover:bg-[#4A48B0] cursor-pointer'
           }`}
           type="button"
@@ -434,6 +434,13 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
           {isSelling ? 'Продажа...' : isWithdrawing ? 'Вывод...' : (activeTab === 'sell' ? `Продать • ${formatPrice((selectedItem?.item.price || 0) * displayQuantity)} АР` : `Вывести ${displayQuantity} шт.`)}
         </button>
       </div>
+
+      {/* Модалка описания предмета */}
+      <ItemDescriptionModal
+        isOpen={isItemDescriptionModalOpen}
+        onClose={handleCloseItemDescriptionModal}
+        item={caseItem}
+      />
     </Modal>
   );
 });
