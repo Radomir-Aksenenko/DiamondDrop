@@ -10,6 +10,7 @@ import { useBalanceUpdater } from '@/hooks/useBalanceUpdater';
 import useItemWithdrawAPI from '@/hooks/useItemWithdrawAPI';
 import useBranchesAPI, { BranchForDisplay } from '@/hooks/useBranchesAPI';
 import ItemDescriptionModal from './ItemDescriptionModal';
+import { useIsMobile } from '@/hooks/useIsMobile';
 
 interface InventoryModalProps {
   isOpen: boolean;
@@ -28,6 +29,7 @@ interface InventoryModalProps {
  */
 const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedItem, initialTab = 'sell', onSellSuccess }: InventoryModalProps) {
   const [activeTab, setActiveTab] = useState(initialTab);
+  const { isMobile } = useIsMobile();
 
   // Используем useRef для хранения текущего количества - это предотвратит сброс при обновлениях
   const quantityRef = useRef(1);
@@ -40,7 +42,7 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
 
   // Состояние для модалки описания предмета
   const [isItemDescriptionModalOpen, setIsItemDescriptionModalOpen] = useState(false);
-  
+
   // Получаем данные филиалов из API
   const { branchesForDisplay: branches, loading: branchesLoading, error: branchesError } = useBranchesAPI();
   
@@ -239,24 +241,24 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={modalTitle}>
-      <div className='flex p-4 items-start gap-4 self-stretch rounded-lg bg-[#F9F8FC]/5'>
+      <div className={`flex ${isMobile ? 'p-3 gap-3' : 'p-4 gap-4'} items-start self-stretch rounded-lg bg-[#F9F8FC]/5`}>
         {/* Иконка предмета */}
         <div className="flex-shrink-0">
           {caseItem && (
             <CaseItemCard
               item={caseItem}
               hideChance={true}
-              className="w-[80px] h-[100px]"
+              className={isMobile ? 'w-[70px] h-[90px]' : 'w-[80px] h-[100px]'}
               onClick={handleItemClick}
             />
           )}
         </div>
-        <div className='flex flex-col justify-center items-start gap-3 flex-1 self-stretch'>
+        <div className={`flex flex-col justify-center items-start ${isMobile ? 'gap-2' : 'gap-3'} flex-1 self-stretch`}>
           <div className='flex flex-col items-start self-stretch'>
-            <p className='self-stretch text-[#F9F8FC] text-20 font-bold'>
+            <p className={`self-stretch text-[#F9F8FC] ${isMobile ? 'text-base' : 'text-20'} font-bold`}>
               {selectedItem?.item.name || 'Предмет не выбран'}
             </p>
-            <p className='self-stretch text-[#F9F8FC]/50 text-16 font-bold overflow-hidden line-clamp-1'>
+            <p className={`self-stretch text-[#F9F8FC]/50 ${isMobile ? 'text-xs' : 'text-16'} font-bold overflow-hidden line-clamp-1`}>
               {selectedItem?.item.description || 'Описание отсутствует'}
             </p>
           </div>
@@ -265,36 +267,36 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
               <button
                 onClick={handleDecrease}
                 disabled={displayQuantity <= 1}
-                className={`flex w-9 p-2.5 px-2 py-1.5 flex-col items-center justify-center gap-2.5 rounded-md transition-colors ${
+                className={`flex ${isMobile ? 'w-8 px-2 py-1' : 'w-9 p-2.5 px-2 py-1.5'} flex-col items-center justify-center gap-2.5 rounded-md transition-colors ${
                   displayQuantity <= 1
-                    ? 'bg-[#F9F8FC]/5 opacity-50 cursor-not-allowed' 
+                    ? 'bg-[#F9F8FC]/5 opacity-50 cursor-not-allowed'
                     : 'bg-[#F9F8FC]/5 hover:bg-[#2A2A30] active:bg-[#F9F8FC]/15 cursor-pointer'
                 }`}
                 type="button"
               >
-                <span className='text-[#F9F8FC] text-center text-16 font-bold'>-</span>
+                <span className={`text-[#F9F8FC] text-center ${isMobile ? 'text-sm' : 'text-16'} font-bold`}>-</span>
               </button>
-              <div className='flex w-9 p-2.5 px-2 py-1.5 flex-col items-center justify-center gap-2.5 rounded-md bg-[#5C5ADC]'>
-                <span className='text-[#F9F8FC] text-center text-16 font-bold'>{displayQuantity}</span>
+              <div className={`flex ${isMobile ? 'w-8 px-2 py-1' : 'w-9 p-2.5 px-2 py-1.5'} flex-col items-center justify-center gap-2.5 rounded-md bg-[#5C5ADC]`}>
+                <span className={`text-[#F9F8FC] text-center ${isMobile ? 'text-sm' : 'text-16'} font-bold`}>{displayQuantity}</span>
               </div>
               <button
                 onClick={handleIncrease}
                 disabled={displayQuantity >= maxQuantity}
-                className={`flex w-9 p-2.5 px-2 py-1.5 flex-col items-center justify-center gap-2.5 rounded-md transition-colors ${
+                className={`flex ${isMobile ? 'w-8 px-2 py-1' : 'w-9 p-2.5 px-2 py-1.5'} flex-col items-center justify-center gap-2.5 rounded-md transition-colors ${
                   displayQuantity >= maxQuantity
-                    ? 'bg-[#F9F8FC]/5 opacity-50 cursor-not-allowed' 
+                    ? 'bg-[#F9F8FC]/5 opacity-50 cursor-not-allowed'
                     : 'bg-[#F9F8FC]/5 hover:bg-[#2A2A30] active:bg-[#F9F8FC]/15 cursor-pointer'
                 }`}
                 type="button"
               >
-                <span className='text-[#F9F8FC] text-center text-16 font-bold'>+</span>
+                <span className={`text-[#F9F8FC] text-center ${isMobile ? 'text-sm' : 'text-16'} font-bold`}>+</span>
               </button>
             </div>
-            <button 
+            <button
               onClick={handleMaxClick}
-              className={`text-[#F9F8FC] text-center text-16 font-bold px-3 py-1.5 rounded-md transition-all ${
-                isMaxSelected 
-                  ? 'bg-[#6563EE]/10 border border-[#5C5ADC] cursor-pointer' 
+              className={`text-[#F9F8FC] text-center ${isMobile ? 'text-sm px-2 py-1' : 'text-16 px-3 py-1.5'} font-bold rounded-md transition-all ${
+                isMaxSelected
+                  ? 'bg-[#6563EE]/10 border border-[#5C5ADC] cursor-pointer'
                   : 'bg-[#F9F8FC]/5 hover:bg-[#2A2A30] border border-transparent hover:border-[#5C5ADC] cursor-pointer'
               }`}
               type="button"
@@ -307,17 +309,17 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
       
       {/* Отображение ошибок продажи */}
       {sellError && (
-        <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
-          <p className="text-red-400 text-sm font-medium">
+        <div className={`${isMobile ? 'mt-2 p-2' : 'mt-4 p-3'} bg-red-500/10 border border-red-500/20 rounded-lg`}>
+          <p className={`text-red-400 ${isMobile ? 'text-xs' : 'text-sm'} font-medium`}>
             Ошибка продажи: {sellError}
           </p>
         </div>
       )}
-      
+
       {/* Отображение ошибок вывода */}
       {withdrawError && (
-        <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
-          <p className="text-red-400 text-sm font-medium">
+        <div className={`${isMobile ? 'mt-2 p-2' : 'mt-4 p-3'} bg-red-500/10 border border-red-500/20 rounded-lg`}>
+          <p className={`text-red-400 ${isMobile ? 'text-xs' : 'text-sm'} font-medium`}>
             {withdrawError}
           </p>
         </div>
@@ -325,14 +327,14 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
       
       {/* Блок выбора филиала - только для вкладки вывода */}
       {activeTab === 'withdraw' && (
-        <div className='flex w-full mt-2 flex-col items-start gap-1'>
-          <button 
+        <div className={`flex w-full ${isMobile ? 'mt-2' : 'mt-2'} flex-col items-start gap-1`}>
+          <button
             onClick={() => setIsBranchDropdownOpen(!isBranchDropdownOpen)}
-            className='flex px-4 py-3 justify-between items-center self-stretch rounded-xl bg-[#F9F8FC]/5 hover:bg-[#2A2A30] transition-colors cursor-pointer'
+            className={`flex ${isMobile ? 'px-3 py-2' : 'px-4 py-3'} justify-between items-center self-stretch rounded-xl bg-[#F9F8FC]/5 hover:bg-[#2A2A30] transition-colors cursor-pointer`}
             type="button"
           >
             <div className='flex justify-between items-center w-full'>
-              <p className='text-[#FFF]/50 font-["Actay_Wide"] text-16 font-bold'>
+              <p className={`text-[#FFF]/50 font-["Actay_Wide"] ${isMobile ? 'text-sm' : 'text-16'} font-bold`}>
                 {selectedBranch?.name || 'Выберите филиал'}
               </p>
               {selectedBranch && (
@@ -413,18 +415,11 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
       )}
       
       {/* Кнопки */}
-      <div className="grid grid-cols-2 gap-2 mt-4">
-        <button
-          onClick={onClose}
-          className="bg-[#19191D] hover:bg-[#2A2A30] transition-colors py-2.5 px-4 rounded-lg text-[#F9F8FC] font-bold cursor-pointer outline-none focus:outline-none active:outline-none focus:ring-0 active:ring-0"
-          type="button"
-        >
-          Отменить
-        </button>
+      <div className={`flex ${isMobile ? 'flex-col' : 'grid grid-cols-2'} gap-2 ${isMobile ? 'mt-3' : 'mt-4'}`}>
         <button
           onClick={activeTab === 'withdraw' ? handleWithdraw : handleSell}
           disabled={isSelling || isWithdrawing || (activeTab === 'withdraw' && !selectedItem?.item.isWithdrawable)}
-          className={`py-2.5 px-4 rounded-lg text-[#F9F8FC] font-bold outline-none focus:outline-none active:outline-none focus:ring-0 active:ring-0 transition-colors ${
+          className={`${isMobile ? 'py-2 px-4' : 'py-2.5 px-4'} rounded-lg text-[#F9F8FC] font-bold outline-none focus:outline-none active:outline-none focus:ring-0 active:ring-0 transition-colors ${
             isSelling || isWithdrawing || (activeTab === 'withdraw' && !selectedItem?.item.isWithdrawable)
               ? 'bg-[#5C5ADC]/50 cursor-not-allowed'
               : 'bg-[#5C5ADC] hover:bg-[#4A48B0] cursor-pointer'
@@ -432,6 +427,13 @@ const InventoryModal = memo(function InventoryModal({ isOpen, onClose, selectedI
           type="button"
         >
           {isSelling ? 'Продажа...' : isWithdrawing ? 'Вывод...' : (activeTab === 'sell' ? `Продать • ${formatPrice((selectedItem?.item.price || 0) * displayQuantity)} АР` : `Вывести ${displayQuantity} шт.`)}
+        </button>
+        <button
+          onClick={onClose}
+          className={`bg-[#19191D] hover:bg-[#2A2A30] transition-colors ${isMobile ? 'py-2 px-4' : 'py-2.5 px-4'} rounded-lg text-[#F9F8FC] font-bold cursor-pointer outline-none focus:outline-none active:outline-none focus:ring-0 active:ring-0`}
+          type="button"
+        >
+          Отменить
         </button>
       </div>
 
