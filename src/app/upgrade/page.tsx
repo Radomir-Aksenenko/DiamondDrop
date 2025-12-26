@@ -28,7 +28,30 @@ interface CircularProgressProps {
   isSpinning?: boolean;
   currentRotation?: number;
   animationDuration?: number;
+  formatPercentage?: (percentage: number) => string;
 }
+
+// Функция для форматирования процента с точными значениями
+const formatPercentage = (percentage: number): string => {
+  if (percentage < 0.001) {
+    return '< 0.001';
+  }
+  
+  // Определяем количество знаков после запятой
+  if (percentage >= 100) {
+    // Для больших значений показываем 2 знака после запятой
+    return percentage.toFixed(2);
+  } else if (percentage >= 1) {
+    // Для значений от 1 до 100 показываем 2 знака
+    return percentage.toFixed(2);
+  } else if (percentage >= 0.01) {
+    // Для значений от 0.01 до 1 показываем 2 знака
+    return percentage.toFixed(2);
+  } else {
+    // Для значений от 0.001 до 0.01 показываем 3 знака
+    return percentage.toFixed(3);
+  }
+};
 
 // Функция для определения цвета и текста в зависимости от процента
 const getPercentageStyle = (percentage: number) => {
@@ -68,10 +91,15 @@ const rarityTextColor = (rarity: CaseItem['rarity']) => {
   }
 };
 
-const CircularProgress = ({ percentage, hasSelectedUpgradeItem = false, isSpinning = false, currentRotation = 90, animationDuration = 3000 }: CircularProgressProps) => {
+const CircularProgress = ({ percentage, hasSelectedUpgradeItem = false, isSpinning = false, currentRotation = 90, animationDuration = 3000, formatPercentage: formatPercentageProp }: CircularProgressProps) => {
   const radius = 82;
   const circumference = 2 * Math.PI * radius;
-  const strokeDasharray = `${(percentage / 100) * circumference} ${circumference}`;
+  // Используем переданную функцию форматирования или дефолтную
+  const formatFunc = formatPercentageProp || formatPercentage;
+  const formattedPercentage = formatFunc(percentage);
+  // Для визуального отображения прогресса используем ограниченное значение (максимум 100%)
+  const displayPercentage = Math.min(percentage, 100);
+  const strokeDasharray = `${(displayPercentage / 100) * circumference} ${circumference}`;
 
   return (
     <div className="relative w-[172px] h-[172px]">
@@ -124,7 +152,7 @@ const CircularProgress = ({ percentage, hasSelectedUpgradeItem = false, isSpinni
                lineHeight: 'normal'
              }}
            >
-             {percentage}%
+             {formattedPercentage}%
            </span>
            <div 
               className="text-center font-bold" 
@@ -174,7 +202,7 @@ function CaseItemsList({
   onLoadMore: () => void,
   gridCols?: number
 }) {
-  // Функция для расчета успешного апгрейда для конкретного предмета
+  // Функция для расчета успешного апгрейда для конкретного предмета (точное значение)
   const calculateItemUpgradePercentage = (upgradeItemPrice: number) => {
     const totalUserItemsPrice = calculateTotalPrice();
     
@@ -183,7 +211,7 @@ function CaseItemsList({
     }
     
     const percentage = (totalUserItemsPrice / upgradeItemPrice) * rtp;
-    return Math.ceil(percentage); // Округляем вверх до целого числа
+    return percentage; // Возвращаем точное значение без округления
   };
   // Сортируем предметы по цене (по возрастанию для правого блока)
   const sortedItems = React.useMemo(() => {
@@ -246,27 +274,31 @@ function CaseItemsList({
           div::-webkit-scrollbar-thumb:hover { background: rgba(249, 248, 252, 0.3); }
         `}</style>
         <div className={`grid ${gridCols === 2 ? 'grid-cols-2' : 'grid-cols-3'} ${gridCols === 2 ? 'auto-rows-[100px]' : 'auto-rows-[76px]'} ${gridCols === 2 ? 'gap-2' : 'gap-3'}`}>
-          {filteredItems.map((item) => (
-            <div key={item.id} className="relative group">
-              <ItemCard
-                item={item}
-                amount={calculateItemUpgradePercentage(item.price)}
-                orientation="horizontal"
-                className="hover:brightness-110 transition-all"
-                fullWidth
-                showPercentage={true}
-                isSelected={selectedUpgradeItem?.id === item.id}
-                onRemove={selectedUpgradeItem?.id === item.id ? onItemRemove : undefined}
-                onClick={() => {
-                  if (selectedUpgradeItem?.id === item.id) {
-                    onItemRemove();
-                  } else {
-                    onItemSelect(item);
-                  }
-                }}
-              />
-            </div>
-          ))}
+          {filteredItems.map((item) => {
+            const percentage = calculateItemUpgradePercentage(item.price);
+            return (
+              <div key={item.id} className="relative group">
+                <ItemCard
+                  item={item}
+                  amount={percentage}
+                  formattedAmount={formatPercentage(percentage)}
+                  orientation="horizontal"
+                  className="hover:brightness-110 transition-all"
+                  fullWidth
+                  showPercentage={true}
+                  isSelected={selectedUpgradeItem?.id === item.id}
+                  onRemove={selectedUpgradeItem?.id === item.id ? onItemRemove : undefined}
+                  onClick={() => {
+                    if (selectedUpgradeItem?.id === item.id) {
+                      onItemRemove();
+                    } else {
+                      onItemSelect(item);
+                    }
+                  }}
+                />
+              </div>
+            );
+          })}
         </div>
         {/* Нижний индикатор: фиксированная высота для бесшовной подгрузки */}
         <div className='h-10 flex items-center justify-center'>
@@ -430,7 +462,7 @@ export default function UpgradePage() {
     }, 0);
   }, [selectedItems]);
 
-  // Функция для расчета процента успешного апгрейда
+  // Функция для расчета процента успешного апгрейда (точное значение без округления)
   const calculateUpgradeSuccessPercentage = useCallback(() => {
     const totalUserItemsPrice = calculateTotalPrice();
     const upgradeItemPrice = selectedUpgradeItem?.price || 0;
@@ -440,7 +472,7 @@ export default function UpgradePage() {
     }
     
     const percentage = (totalUserItemsPrice / upgradeItemPrice) * rtp;
-    return Math.ceil(percentage); // Округляем вверх до целого числа
+    return percentage; // Возвращаем точное значение без округления
   }, [calculateTotalPrice, selectedUpgradeItem?.price, rtp]);
 
   // Функция для расчета округленного окупа (x9 формат)
@@ -868,6 +900,7 @@ export default function UpgradePage() {
                   isSpinning={isSpinning}
                   currentRotation={currentRotation}
                   animationDuration={animationDuration}
+                  formatPercentage={formatPercentage}
                 />
               </div>
 
@@ -1063,6 +1096,7 @@ export default function UpgradePage() {
               isSpinning={isSpinning}
               currentRotation={currentRotation}
               animationDuration={animationDuration}
+              formatPercentage={formatPercentage}
             />
           </div>
           <div className='flex flex-col items-start gap-2 self-stretch'>
