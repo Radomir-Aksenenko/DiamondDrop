@@ -73,7 +73,8 @@ export default function CaseSlotItemCard({
   };
 
   return (
-    <div 
+    <div
+      data-slot-card
       className={className}
       style={{
         background: config.background,

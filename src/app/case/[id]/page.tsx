@@ -88,6 +88,8 @@ export default function CasePage() {
 
   // Refs для контейнеров рулетки - для точного измерения размеров
   const rouletteContainerRef = useRef<HTMLDivElement>(null);
+  // Ref для измерения реального размера карточки в слоте
+  const slotCardMeasureRef = useRef<HTMLDivElement>(null);
 
   // Функция для сброса позиций анимации
   const resetAnimationPositions = () => {
@@ -367,11 +369,39 @@ export default function CasePage() {
           [`${selectedNumber}-${fieldKey}`]: infiniteItems
         }));
 
-        // Вычисляем размеры карточек в зависимости от устройства
-        // Используем точные значения пикселей, соответствующие CSS
-        const cardWidth = isMobile ? 56 : 76;
-        const cardHeight = isMobile ? 74 : 100;
-        const gap = isMobile ? 6 : 8;
+        // Динамически измеряем реальные размеры карточек из DOM
+        // Это гарантирует правильное позиционирование на любом разрешении экрана
+        let cardWidth = isMobile ? 56 : 76;
+        let cardHeight = isMobile ? 74 : 100;
+        let gap = isMobile ? 6 : 8;
+
+        // Попытка измерить реальный размер карточки из DOM
+        if (rouletteContainerRef.current) {
+          const renderedCard = rouletteContainerRef.current.querySelector('[data-slot-card]') as HTMLElement;
+          if (renderedCard) {
+            const cardRect = renderedCard.getBoundingClientRect();
+            cardWidth = cardRect.width;
+            cardHeight = cardRect.height;
+
+            // Измеряем реальный gap между карточками
+            const allCards = rouletteContainerRef.current.querySelectorAll('[data-slot-card]');
+            if (allCards.length >= 2) {
+              const firstCardRect = allCards[0].getBoundingClientRect();
+              const secondCardRect = allCards[1].getBoundingClientRect();
+              // Для горизонтальной рулетки gap = начало второй карточки - конец первой
+              if (selectedNumber === 1) {
+                gap = secondCardRect.left - firstCardRect.right;
+              } else {
+                // Для вертикальной рулетки
+                gap = secondCardRect.top - firstCardRect.bottom;
+              }
+              // Защита от отрицательных или слишком больших значений
+              if (gap < 0 || gap > 20) {
+                gap = isMobile ? 6 : 8;
+              }
+            }
+          }
+        }
 
         let animationPromise;
 
@@ -391,8 +421,10 @@ export default function CasePage() {
           // Начальная позиция
           const initialOffset = 0;
 
-          // Генерируем случайное смещение в пределах карточки
-          const randomOffset = (Math.random() - 0.5) * (isMobile ? 30 : 60);
+          // Генерируем случайное смещение в пределах допустимой зоны карточки (± 30% ширины карточки)
+          // Это гарантирует, что выигрышная карточка всегда будет видна под указателем
+          const maxRandomOffset = cardWidth * 0.3;
+          const randomOffset = (Math.random() - 0.5) * maxRandomOffset;
 
           // Финальная позиция - центрируем выигрышный предмет + случайное смещение
           const finalOffset = -(targetIndex * itemWidth) + (containerWidth / 2) - (cardWidth / 2) + randomOffset;
@@ -413,31 +445,24 @@ export default function CasePage() {
           // Вертикальная прокрутка для нескольких кейсов
           const itemHeight = cardHeight + gap;
 
-          // Дефолтная высота
-          let containerHeight = 272;
+          // Получаем реальную высоту контейнера из DOM
+          // Находим родительский контейнер рулетки по его классам
+          let containerHeight = isMobile ? 184 : 272; // Дефолтные значения как fallback
 
-          if (rouletteContainerRef.current) {
-            // Если ref доступен (например если он прикреплен где-то выше), используем
-            // Но для вертикальной прокрутки ref не всегда прикреплен к каждому контейнеру в текущей верстке
-            const rect = rouletteContainerRef.current.getBoundingClientRect();
-            // В текущей верстке rouletteContainerRef прикреплен к контейнеру wrapper только для selectedNumber === 1?
-            // Проверим... В текущем коде ref вешается только на selectedNumber === 1.
-            // Поэтому для > 1 используем константу или нужно добавить ref'ы.
-            // Пока оставим константу или более умную логику
-          }
-
-          // Более точная логика высоты для мобильных (расчетная)
-          if (isMobile) {
-            // h-[200px] parent, p-2 => 16px vertical padding total?
-            // inner height approx 184px
-            containerHeight = 184;
+          // Ищем контейнер вертикальной рулетки в DOM
+          const verticalContainers = document.querySelectorAll('.flex-1.h-full.rounded-lg.bg-\\[\\#0D0D11\\]');
+          if (verticalContainers.length > 0 && verticalContainers[i]) {
+            const containerRect = (verticalContainers[i] as HTMLElement).getBoundingClientRect();
+            containerHeight = containerRect.height;
           }
 
           // Начальная позиция
           const initialOffset = 0;
 
-          // Генерируем случайное смещение в пределах карточки
-          const randomOffset = (Math.random() - 0.5) * (isMobile ? 40 : 80);
+          // Генерируем случайное смещение в пределах допустимой зоны карточки (± 30% высоты карточки)
+          // Это гарантирует, что выигрышная карточка всегда будет видна под указателем
+          const maxRandomOffset = cardHeight * 0.3;
+          const randomOffset = (Math.random() - 0.5) * maxRandomOffset;
 
           // Финальная позиция - центрируем выигрышный предмет + случайное смещение
           const finalOffset = -(targetIndex * itemHeight) + (containerHeight / 2) - (cardHeight / 2) + randomOffset;
