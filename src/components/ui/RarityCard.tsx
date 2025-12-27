@@ -43,6 +43,7 @@ interface ItemCardProps {
   hoverIcon?: 'plus' | 'magnifier'; // Тип иконки при наведении
   fullWidth?: boolean; // Растягивать по ширине контейнера (для апгрейда)
   showPercentage?: boolean; // Показывать проценты вместо количества штук
+  formattedAmount?: string; // Отформатированная строка для отображения (используется вместо amount когда передан)
   isSelected?: boolean; // Предмет выбран (показывать галочку)
   onRemove?: () => void; // Функция для удаления предмета
   hideAmountInPieces?: boolean; // Скрывать отображение количества в ШТ
@@ -354,6 +355,7 @@ export function ItemCard({
   hoverIcon = 'plus',
   fullWidth = false,
   showPercentage = false,
+  formattedAmount,
   isSelected = false,
   onRemove,
   hideAmountInPieces = false,
@@ -538,7 +540,7 @@ export function ItemCard({
                 lineHeight: 'normal'
               }}
             >
-              {amount}
+              {formattedAmount !== undefined ? formattedAmount : amount}
             </span>
             <span 
               style={{
@@ -672,7 +674,7 @@ export function ItemCard({
                 opacity: 0.5
               }}
             >
-              {amount}
+              {formattedAmount !== undefined ? formattedAmount : amount}
             </span>
             <span 
               style={{
