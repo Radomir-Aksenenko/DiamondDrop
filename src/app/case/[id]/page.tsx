@@ -276,7 +276,6 @@ export default function CasePage() {
 
   // Функция для запуска анимации рулетки (адаптированная из оригинальной рулетки)
   const startSpinAnimation = async (results: CaseOpenResult[]) => {
-    // Логирование удалено
     // Разные duration для горизонтальной и вертикальной прокрутки
     const baseDuration = isFastMode ? 1.5 : 6; // Ускоренный быстрый режим
     const horizontalDuration = baseDuration; // Одинаковая продолжительность
@@ -286,22 +285,17 @@ export default function CasePage() {
     // Используем состояние компонента для согласованности с рендерингом
     const isMobile = isCompactCards;
 
-    // Очищаем старые расположения для текущей конфигурации
-    setSavedLayouts(prev => {
-      const newLayouts = { ...prev };
-      for (let i = 0; i < selectedNumber; i++) {
-        const fieldKey = `field${i + 1}`;
-        const layoutKey = `${selectedNumber}-${fieldKey}`;
-        delete newLayouts[layoutKey];
-      }
-      return newLayouts;
-    });
-
     // Получаем массив controls для активных полей
     const controls = [field1Controls, field2Controls, field3Controls, field4Controls];
 
-    // Для каждого поля создаем анимацию
-    const animationPromises = [];
+    // Подготавливаем данные для всех полей СНАЧАЛА
+    const fieldsData: Array<{
+      fieldKey: string;
+      targetIndex: number;
+      infiniteItems: CaseItem[];
+      fieldControl: typeof field1Controls;
+      fieldIndex: number;
+    }> = [];
 
     for (let i = 0; i < selectedNumber; i++) {
       const fieldKey = `field${i + 1}`;
@@ -319,17 +313,15 @@ export default function CasePage() {
           price: targetItem.price,
           percentChance: targetItem.percentChance,
           rarity: targetItem.rarity,
-          isWithdrawable: true // По умолчанию предметы доступны для вывода
+          isWithdrawable: true
         };
 
-        // Создаем массив предметов для анимации (адаптированный алгоритм оригинальной рулетки)
+        // Создаем массив предметов для анимации
         const infiniteItems: CaseItem[] = [];
 
-        // Для горизонтальной рулетки нужно значительно больше карточек
-        const baseItemCount = selectedNumber === 1 ? 150 : 60; // Увеличиваем для горизонтальной прокрутки
+        const baseItemCount = selectedNumber === 1 ? 150 : 60;
+        const cycles = selectedNumber === 1 ? Math.floor(Math.random() * 3) + 4 : Math.floor(Math.random() * 3) + 2;
 
-        // Добавляем циклы случайных предметов (как в оригинале - 2-4 цикла)
-        const cycles = selectedNumber === 1 ? Math.floor(Math.random() * 3) + 4 : Math.floor(Math.random() * 3) + 2; // 4-6 циклов для горизонтальной, 2-4 для вертикальной
         for (let cycle = 0; cycle < cycles; cycle++) {
           for (let j = 0; j < baseItemCount; j++) {
             const randomItem = getRandomItem();
@@ -339,10 +331,10 @@ export default function CasePage() {
           }
         }
 
-        // Добавляем дополнительные случайные предметы перед выигрышным
         const additionalItemsBeforeWin = selectedNumber === 1 ?
-          Math.floor(Math.random() * 30) + 20 : // 20-49 предметов для горизонтальной
-          Math.floor(Math.random() * 15) + 10;  // 10-24 предмета для вертикальной
+          Math.floor(Math.random() * 30) + 20 :
+          Math.floor(Math.random() * 15) + 10;
+
         for (let j = 0; j < additionalItemsBeforeWin; j++) {
           const randomItem = getRandomItem();
           if (randomItem) {
@@ -350,12 +342,11 @@ export default function CasePage() {
           }
         }
 
-        // Добавляем выигрышный предмет и запоминаем его позицию
-        const targetIndex = infiniteItems.length; // Позиция выигрышного предмета
+        // Позиция выигрышного предмета
+        const targetIndex = infiniteItems.length;
         infiniteItems.push({ ...targetCaseItem, id: `${targetCaseItem.id}-${fieldKey}-target` });
 
-        // Добавляем дополнительные карточки после выигрышной (больше для горизонтальной прокрутки)
-        const additionalCardsAfterWin = selectedNumber === 1 ? 30 : 10; // Больше карточек после выигрышной для горизонтальной
+        const additionalCardsAfterWin = selectedNumber === 1 ? 30 : 10;
         for (let j = 0; j < additionalCardsAfterWin; j++) {
           const randomItem = getRandomItem();
           if (randomItem) {
@@ -363,131 +354,154 @@ export default function CasePage() {
           }
         }
 
-        // Обновляем сохраненные расположения
-        setSavedLayouts(prev => ({
-          ...prev,
-          [`${selectedNumber}-${fieldKey}`]: infiniteItems
-        }));
-
-        // Динамически измеряем реальные размеры карточек из DOM
-        // Это гарантирует правильное позиционирование на любом разрешении экрана
-        let cardWidth = isMobile ? 56 : 76;
-        let cardHeight = isMobile ? 74 : 100;
-        let gap = isMobile ? 6 : 8;
-
-        // Попытка измерить реальный размер карточки из DOM
-        if (rouletteContainerRef.current) {
-          const renderedCard = rouletteContainerRef.current.querySelector('[data-slot-card]') as HTMLElement;
-          if (renderedCard) {
-            const cardRect = renderedCard.getBoundingClientRect();
-            cardWidth = cardRect.width;
-            cardHeight = cardRect.height;
-
-            // Измеряем реальный gap между карточками
-            const allCards = rouletteContainerRef.current.querySelectorAll('[data-slot-card]');
-            if (allCards.length >= 2) {
-              const firstCardRect = allCards[0].getBoundingClientRect();
-              const secondCardRect = allCards[1].getBoundingClientRect();
-              // Для горизонтальной рулетки gap = начало второй карточки - конец первой
-              if (selectedNumber === 1) {
-                gap = secondCardRect.left - firstCardRect.right;
-              } else {
-                // Для вертикальной рулетки
-                gap = secondCardRect.top - firstCardRect.bottom;
-              }
-              // Защита от отрицательных или слишком больших значений
-              if (gap < 0 || gap > 20) {
-                gap = isMobile ? 6 : 8;
-              }
-            }
-          }
-        }
-
-        let animationPromise;
-
-        if (selectedNumber === 1) {
-          // Горизонтальная прокрутка для одного кейса
-          const itemWidth = cardWidth + gap;
-
-          // Получаем реальную ширину контейнера
-          let containerWidth = 663; // Default Desktop width
-
-          if (rouletteContainerRef.current) {
-            // Если ref доступен, используем его реальную ширину для точности
-            const rect = rouletteContainerRef.current.getBoundingClientRect();
-            containerWidth = rect.width;
-          }
-
-          // Начальная позиция
-          const initialOffset = 0;
-
-          // Генерируем случайное смещение в пределах допустимой зоны карточки (± 30% ширины карточки)
-          // Это гарантирует, что выигрышная карточка всегда будет видна под указателем
-          const maxRandomOffset = cardWidth * 0.3;
-          const randomOffset = (Math.random() - 0.5) * maxRandomOffset;
-
-          // Финальная позиция - центрируем выигрышный предмет + случайное смещение
-          const finalOffset = -(targetIndex * itemWidth) + (containerWidth / 2) - (cardWidth / 2) + randomOffset;
-
-          // Устанавливаем начальную позицию
-          fieldControl.set({ x: initialOffset });
-
-          // Создаем анимацию с плавной остановкой для горизонтальной прокрутки
-          animationPromise = fieldControl.start({
-            x: finalOffset,
-            transition: {
-              duration: horizontalDuration,
-              ease: [0.23, 1, 0.32, 1],
-            }
-          });
-
-        } else {
-          // Вертикальная прокрутка для нескольких кейсов
-          const itemHeight = cardHeight + gap;
-
-          // Получаем реальную высоту контейнера из DOM
-          // Находим родительский контейнер рулетки по его классам
-          let containerHeight = isMobile ? 184 : 272; // Дефолтные значения как fallback
-
-          // Ищем контейнер вертикальной рулетки в DOM
-          const verticalContainers = document.querySelectorAll('.flex-1.h-full.rounded-lg.bg-\\[\\#0D0D11\\]');
-          if (verticalContainers.length > 0 && verticalContainers[i]) {
-            const containerRect = (verticalContainers[i] as HTMLElement).getBoundingClientRect();
-            containerHeight = containerRect.height;
-          }
-
-          // Начальная позиция
-          const initialOffset = 0;
-
-          // Генерируем случайное смещение в пределах допустимой зоны карточки (± 30% высоты карточки)
-          // Это гарантирует, что выигрышная карточка всегда будет видна под указателем
-          const maxRandomOffset = cardHeight * 0.3;
-          const randomOffset = (Math.random() - 0.5) * maxRandomOffset;
-
-          // Финальная позиция - центрируем выигрышный предмет + случайное смещение
-          const finalOffset = -(targetIndex * itemHeight) + (containerHeight / 2) - (cardHeight / 2) + randomOffset;
-
-          // Устанавливаем начальную позицию
-          fieldControl.set({ y: initialOffset });
-
-          // Создаем анимацию с плавной остановкой для вертикальной прокрутки
-          animationPromise = fieldControl.start({
-            y: finalOffset,
-            transition: {
-              duration: verticalDuration,
-              ease: [0.23, 1, 0.32, 1],
-            }
-          });
-        }
-
-        animationPromises.push(animationPromise);
+        fieldsData.push({
+          fieldKey,
+          targetIndex,
+          infiniteItems,
+          fieldControl,
+          fieldIndex: i
+        });
       }
+    }
+
+    // Обновляем все layouts одним вызовом для синхронного рендера
+    setSavedLayouts(prev => {
+      const newLayouts = { ...prev };
+      // Очищаем старые
+      for (let i = 0; i < selectedNumber; i++) {
+        const layoutKey = `${selectedNumber}-field${i + 1}`;
+        delete newLayouts[layoutKey];
+      }
+      // Добавляем новые
+      for (const data of fieldsData) {
+        newLayouts[`${selectedNumber}-${data.fieldKey}`] = data.infiniteItems;
+      }
+      return newLayouts;
+    });
+
+    // КРИТИЧНО: Ждём следующий кадр рендера, чтобы DOM обновился с новыми карточками
+    await new Promise<void>(resolve => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          resolve();
+        });
+      });
+    });
+
+    // Теперь измеряем реальные размеры из DOM ПОСЛЕ рендера
+    const animationPromises = [];
+
+    for (const data of fieldsData) {
+      const { fieldKey, targetIndex, fieldControl, fieldIndex } = data;
+
+      // Используем CSS-значения как базовые (они точные для данного режима)
+      let cardWidth = isMobile ? 56 : 76;
+      let cardHeight = isMobile ? 74 : 100;
+      let gap = isMobile ? 6 : 8;
+
+      // Измеряем реальные размеры из отрендеренного DOM
+      if (rouletteContainerRef.current && selectedNumber === 1) {
+        const allCards = rouletteContainerRef.current.querySelectorAll('[data-slot-card]');
+        if (allCards.length >= 2) {
+          const firstCard = allCards[0] as HTMLElement;
+          const secondCard = allCards[1] as HTMLElement;
+          const firstRect = firstCard.getBoundingClientRect();
+          const secondRect = secondCard.getBoundingClientRect();
+
+          // Используем реальные измерения
+          cardWidth = firstRect.width;
+          cardHeight = firstRect.height;
+          gap = Math.max(0, secondRect.left - firstRect.right);
+
+          // Санитизация gap
+          if (gap > 20 || gap < 0) gap = isMobile ? 6 : 8;
+        }
+      }
+
+      // Для вертикальных рулеток находим нужный контейнер
+      if (selectedNumber > 1) {
+        const verticalContainers = document.querySelectorAll('[data-roulette-container]');
+        if (verticalContainers[fieldIndex]) {
+          const container = verticalContainers[fieldIndex] as HTMLElement;
+          const allCards = container.querySelectorAll('[data-slot-card]');
+          if (allCards.length >= 2) {
+            const firstCard = allCards[0] as HTMLElement;
+            const secondCard = allCards[1] as HTMLElement;
+            const firstRect = firstCard.getBoundingClientRect();
+            const secondRect = secondCard.getBoundingClientRect();
+
+            cardWidth = firstRect.width;
+            cardHeight = firstRect.height;
+            gap = Math.max(0, secondRect.top - firstRect.bottom);
+
+            if (gap > 20 || gap < 0) gap = isMobile ? 6 : 8;
+          }
+        }
+      }
+
+      let animationPromise;
+
+      if (selectedNumber === 1) {
+        // Горизонтальная прокрутка
+        const itemWidth = cardWidth + gap;
+
+        let containerWidth = 663;
+        if (rouletteContainerRef.current) {
+          containerWidth = rouletteContainerRef.current.getBoundingClientRect().width;
+        }
+
+        // Уменьшаем random offset до 15% для большей точности
+        // Это гарантирует, что выигрышная карточка ВСЕГДА под указателем
+        const maxRandomOffset = cardWidth * 0.15;
+        const randomOffset = (Math.random() - 0.5) * 2 * maxRandomOffset;
+
+        // Финальная позиция - точно центрируем выигрышный предмет
+        const finalOffset = -(targetIndex * itemWidth) + (containerWidth / 2) - (cardWidth / 2) + randomOffset;
+
+        fieldControl.set({ x: 0 });
+
+        animationPromise = fieldControl.start({
+          x: finalOffset,
+          transition: {
+            duration: horizontalDuration,
+            ease: [0.23, 1, 0.32, 1],
+          }
+        });
+
+      } else {
+        // Вертикальная прокрутка
+        const itemHeight = cardHeight + gap;
+
+        // Получаем высоту контейнера из data-атрибута
+        let containerHeight = isMobile ? 184 : 272;
+        const verticalContainers = document.querySelectorAll('[data-roulette-container]');
+        if (verticalContainers[fieldIndex]) {
+          containerHeight = (verticalContainers[fieldIndex] as HTMLElement).getBoundingClientRect().height;
+        }
+
+        // Уменьшаем random offset до 15%
+        const maxRandomOffset = cardHeight * 0.15;
+        const randomOffset = (Math.random() - 0.5) * 2 * maxRandomOffset;
+
+        const finalOffset = -(targetIndex * itemHeight) + (containerHeight / 2) - (cardHeight / 2) + randomOffset;
+
+        fieldControl.set({ y: 0 });
+
+        animationPromise = fieldControl.start({
+          y: finalOffset,
+          transition: {
+            duration: verticalDuration,
+            ease: [0.23, 1, 0.32, 1],
+          }
+        });
+      }
+
+      animationPromises.push(animationPromise);
     }
 
     // Ждем завершения всех анимаций
     try {
       await Promise.all(animationPromises);
-      // Логирование удалено
       setIsSpinning(false);
     } catch (error) {
       console.error('Animation error:', error);
@@ -723,7 +737,7 @@ export default function CasePage() {
               {selectedNumber === 2 && (
                 // Два поля горизонтально, предметы вертикально
                 <>
-                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
+                  <div data-roulette-container className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
                     {/* Контейнер для рулетки с анимацией */}
                     <motion.div
                       className="flex flex-col items-center gap-2 p-2"
@@ -742,7 +756,7 @@ export default function CasePage() {
                     <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-0.5 bg-gradient-to-r from-white/60 via-white/70 to-white/60 z-10 pointer-events-none shadow-md shadow-white/10">
                     </div>
                   </div>
-                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
+                  <div data-roulette-container className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
                     {/* Контейнер для рулетки с анимацией */}
                     <motion.div
                       className="flex flex-col items-center gap-1.5 md:gap-2 p-2"
@@ -767,7 +781,7 @@ export default function CasePage() {
               {selectedNumber === 3 && (
                 // Три поля горизонтально, предметы вертикально
                 <>
-                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
+                  <div data-roulette-container className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
                     {/* Контейнер для рулетки с анимацией */}
                     <motion.div
                       className="flex flex-col items-center gap-1.5 md:gap-2 p-2"
@@ -786,7 +800,7 @@ export default function CasePage() {
                     <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-0.5 bg-gradient-to-r from-white/60 via-white/70 to-white/60 z-10 pointer-events-none shadow-md shadow-white/10">
                     </div>
                   </div>
-                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
+                  <div data-roulette-container className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
                     {/* Контейнер для рулетки с анимацией */}
                     <motion.div
                       className="flex flex-col items-center gap-1.5 md:gap-2 p-2"
@@ -805,7 +819,7 @@ export default function CasePage() {
                     <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-0.5 bg-gradient-to-r from-white/60 via-white/70 to-white/60 z-10 pointer-events-none shadow-md shadow-white/10">
                     </div>
                   </div>
-                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
+                  <div data-roulette-container className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
                     {/* Контейнер для рулетки с анимацией */}
                     <motion.div
                       className="flex flex-col items-center gap-1.5 md:gap-2 p-2"
@@ -830,7 +844,7 @@ export default function CasePage() {
               {selectedNumber === 4 && (
                 // Четыре поля горизонтально, предметы вертикально
                 <>
-                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
+                  <div data-roulette-container className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
                     {/* Контейнер для рулетки с анимацией */}
                     <motion.div
                       className="flex flex-col items-center gap-1.5 md:gap-2 p-2"
@@ -849,7 +863,7 @@ export default function CasePage() {
                     <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-0.5 bg-gradient-to-r from-white/60 via-white/70 to-white/60 z-10 pointer-events-none shadow-md shadow-white/10">
                     </div>
                   </div>
-                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
+                  <div data-roulette-container className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
                     {/* Контейнер для рулетки с анимацией */}
                     <motion.div
                       className="flex flex-col items-center gap-1.5 md:gap-2 p-2"
@@ -868,7 +882,7 @@ export default function CasePage() {
                     <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-0.5 bg-gradient-to-r from-white/60 via-white/70 to-white/60 z-10 pointer-events-none shadow-md shadow-white/10">
                     </div>
                   </div>
-                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
+                  <div data-roulette-container className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
                     {/* Контейнер для рулетки с анимацией */}
                     <motion.div
                       className="flex flex-col items-center gap-1.5 md:gap-2 p-2"
@@ -887,7 +901,7 @@ export default function CasePage() {
                     <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-0.5 bg-gradient-to-r from-white/60 via-white/70 to-white/60 z-10 pointer-events-none shadow-md shadow-white/10">
                     </div>
                   </div>
-                  <div className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
+                  <div data-roulette-container className="flex-1 h-full rounded-lg bg-[#0D0D11] relative overflow-hidden">
                     {/* Контейнер для рулетки с анимацией */}
                     <motion.div
                       className="flex flex-col items-center gap-1.5 md:gap-2 p-2"
