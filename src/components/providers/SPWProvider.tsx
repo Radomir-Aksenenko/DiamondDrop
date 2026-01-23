@@ -5,7 +5,9 @@ import spw from '@/lib/spw';
 import { SPWUser } from '@/types/spw';
 import { validateUserAndSetToken, ValidationData } from '@/lib/auth';
 import { isDevelopment, DEV_CONFIG } from '@/lib/config';
+import { isInSPWorldsFrame } from '@/lib/iframeUtils';
 import LoadingScreen from '@/components/ui/LoadingScreen';
+import DiscordAuth from '@/components/ui/DiscordAuth';
 import DataPreloadProvider, { usePreloadedData } from './DataPreloadProvider';
 
 /**
@@ -15,6 +17,8 @@ function SPWContent({ children }: { children: React.ReactNode }) {
   const { loading: dataLoading, error: dataError } = usePreloadedData();
   const [spwLoading, setSPWLoading] = useState(true);
   const [spwError, setSPWError] = useState<string | null>(null);
+  const [isInFrame, setIsInFrame] = useState<boolean | null>(null);
+  const [showDiscordAuth, setShowDiscordAuth] = useState(false);
 
   // Общее состояние загрузки (SPW + данные)
   const isLoading = spwLoading || dataLoading;
@@ -29,6 +33,26 @@ function SPWContent({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
+
+    // Проверяем, открыт ли сайт в iframe от SPWorlds
+    const checkFrame = () => {
+      // В dev режиме всегда пропускаем проверку iframe
+      if (isDevelopment) {
+        return true;
+      }
+      
+      const inFrame = isInSPWorldsFrame();
+      setIsInFrame(inFrame);
+      
+      // Если сайт открыт не в iframe от SPWorlds, показываем Discord авторизацию
+      if (!inFrame) {
+        setShowDiscordAuth(true);
+        setSPWLoading(false);
+        return false; // Не продолжаем инициализацию SPWMini
+      }
+      
+      return true; // Продолжаем инициализацию SPWMini
+    };
 
     // Функция валидации пользователя
     const handleUserValidation = async (user: SPWUser) => {
@@ -76,6 +100,11 @@ function SPWContent({ children }: { children: React.ReactNode }) {
       }
     };
 
+    // Проверяем контекст загрузки
+    if (!checkFrame()) {
+      return; // Показываем Discord авторизацию, не инициализируем SPWMini
+    }
+
     // В dev режиме пропускаем инициализацию SPW и сразу переходим к валидации
     if (isDevelopment && DEV_CONFIG.skipAuth) {
       
@@ -95,7 +124,7 @@ function SPWContent({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    // Инициализация SPWMini
+    // Инициализация SPWMini (только если мы в iframe от SPWorlds)
     spw.initialize();
 
     // Обработчики событий
@@ -133,6 +162,19 @@ function SPWContent({ children }: { children: React.ReactNode }) {
       spw.dispose();
     };
   }, []);
+
+  // Показываем Discord авторизацию если сайт открыт не в iframe от SPWorlds
+  if (showDiscordAuth) {
+    return (
+      <DiscordAuth
+        onAuthSuccess={() => {
+          // После успешной авторизации перезагружаем страницу,
+          // чтобы все компоненты получили обновленный токен
+          window.location.reload();
+        }}
+      />
+    );
+  }
 
   // Показываем загрузку пока не инициализировано
   if (isLoading) {
