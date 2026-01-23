@@ -101,38 +101,18 @@ export default function DiscordAuth({ onAuthSuccess }: DiscordAuthProps) {
     window.location.href = authUrl;
   };
 
-  const handleTokenSubmit = async () => {
+  const handleTokenSubmit = () => {
     if (!tokenInput.trim()) {
       setError('Введите токен');
       return;
     }
 
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      // Опционально: можно проверить токен на сервере
-      // Но для простоты просто сохраняем его
-      const token = tokenInput.trim();
-      
-      // Сохраняем токен
-      setAuthToken(token);
-      
-      // Небольшая задержка для применения токена
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      // Вызываем callback успешной авторизации
-      if (onAuthSuccess) {
-        onAuthSuccess();
-      } else {
-        // Перезагружаем страницу для применения авторизации
-        window.location.reload();
-      }
-    } catch (err) {
-      console.error('Token auth error:', err);
-      setError(err instanceof Error ? err.message : 'Ошибка применения токена');
-      setIsLoading(false);
-    }
+    // Сохраняем токен и сразу перезагружаем страницу
+    const token = tokenInput.trim();
+    setAuthToken(token);
+    
+    // Перезагружаем страницу для применения авторизации
+    window.location.reload();
   };
 
   return (
@@ -250,34 +230,24 @@ export default function DiscordAuth({ onAuthSuccess }: DiscordAuthProps) {
                   setError(null);
                 }}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !isLoading) {
+                  if (e.key === 'Enter' && tokenInput.trim()) {
                     handleTokenSubmit();
                   }
                 }}
                 placeholder="Введите токен..."
-                disabled={isLoading}
                 className="w-full px-4 py-3 bg-[#F9F8FC]/[0.05] border border-[#F9F8FC]/[0.1] rounded-lg text-[#F9F8FC] font-actay-wide text-sm placeholder:text-[#F9F8FC]/30 focus:outline-none focus:border-[#5865F2] focus:ring-1 focus:ring-[#5865F2] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               />
             </div>
             <motion.button
               onClick={handleTokenSubmit}
-              disabled={isLoading || !tokenInput.trim()}
+              disabled={!tokenInput.trim()}
               className="flex items-center justify-center gap-3 w-full px-6 py-4 bg-[#5865F2] hover:bg-[#4752C4] disabled:bg-[#5865F2]/50 disabled:cursor-not-allowed rounded-lg transition-colors duration-200"
-              whileHover={!isLoading && tokenInput.trim() ? { scale: 1.02 } : {}}
-              whileTap={!isLoading && tokenInput.trim() ? { scale: 0.98 } : {}}
+              whileHover={tokenInput.trim() ? { scale: 1.02 } : {}}
+              whileTap={tokenInput.trim() ? { scale: 0.98 } : {}}
             >
-              {isLoading ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  <span className="text-white font-unbounded font-medium">
-                    Применение...
-                  </span>
-                </>
-              ) : (
-                <span className="text-white font-unbounded font-medium text-lg">
-                  Применить токен
-                </span>
-              )}
+              <span className="text-white font-unbounded font-medium text-lg">
+                Применить токен
+              </span>
             </motion.button>
           </div>
         )}
