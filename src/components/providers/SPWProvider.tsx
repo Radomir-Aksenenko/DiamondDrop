@@ -3,9 +3,10 @@
 import { useEffect, useState } from 'react';
 import spw from '@/lib/spw';
 import { SPWUser } from '@/types/spw';
-import { validateUserAndSetToken, ValidationData } from '@/lib/auth';
+import { validateUserAndSetToken, ValidationData, setAuthToken } from '@/lib/auth';
 import { isDevelopment, DEV_CONFIG } from '@/lib/config';
 import LoadingScreen from '@/components/ui/LoadingScreen';
+import ExternalLoginScreen from '@/components/ui/ExternalLoginScreen';
 import DataPreloadProvider, { usePreloadedData } from './DataPreloadProvider';
 
 /**
@@ -15,6 +16,7 @@ function SPWContent({ children }: { children: React.ReactNode }) {
   const { loading: dataLoading, error: dataError } = usePreloadedData();
   const [spwLoading, setSPWLoading] = useState(true);
   const [spwError, setSPWError] = useState<string | null>(null);
+  const [showExternalLogin, setShowExternalLogin] = useState(false);
 
   // Общее состояние загрузки (SPW + данные)
   const isLoading = spwLoading || dataLoading;
@@ -29,6 +31,8 @@ function SPWContent({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
+
+
 
     // Функция валидации пользователя
     const handleUserValidation = async (user: SPWUser) => {
@@ -60,13 +64,13 @@ function SPWContent({ children }: { children: React.ReactNode }) {
 
         // Валидируем пользователя и получаем токен
         await validateUserAndSetToken(validationData);
-        
+
         // Уведомляем о получении токена
         await notifyTokenReceived();
-        
+
         // Ждем небольшую задержку чтобы DataPreloadProvider успел начать загрузку
         await new Promise(resolve => setTimeout(resolve, 100));
-        
+
         setSPWLoading(false);
         setSPWError(null);
       } catch (error) {
@@ -78,7 +82,7 @@ function SPWContent({ children }: { children: React.ReactNode }) {
 
     // В dev режиме пропускаем инициализацию SPW и сразу переходим к валидации
     if (isDevelopment && DEV_CONFIG.skipAuth) {
-      
+
       // Создаем мок пользователя для валидации
       const mockSPWUser: SPWUser = {
         username: 'DevUser',
@@ -95,13 +99,32 @@ function SPWContent({ children }: { children: React.ReactNode }) {
       return;
     }
 
+    // Проверка на запуск вне iframe (если не сработал skipAuth)
+    try {
+      if (typeof window !== 'undefined' && window.self === window.top) {
+        // Проверяем сохраненный токен в localStorage
+        const savedToken = localStorage.getItem('dd_auth_token');
+        if (savedToken) {
+          setAuthToken(savedToken);
+          setSPWLoading(false);
+          return;
+        }
+
+        setShowExternalLogin(true);
+        setSPWLoading(false);
+        return;
+      }
+    } catch (e) {
+      console.error('Error checking iframe status:', e);
+    }
+
     // Инициализация SPWMini
     spw.initialize();
 
     // Обработчики событий
     const handleReady = () => {
       if (!mounted) return;
-      
+
       // Не вызываем валидацию здесь, так как она будет вызвана в handleInitResponse
       // if (spw.user) {
       //   await handleUserValidation(spw.user);
@@ -110,13 +133,13 @@ function SPWContent({ children }: { children: React.ReactNode }) {
 
     const handleInitResponse = async (user: SPWUser) => {
       if (!mounted) return;
-      
+
       await handleUserValidation(user);
     };
 
     const handleInitError = (message: string) => {
       if (!mounted) return;
-      
+
       console.error(`Login error: ${message}`);
       setSPWError(`Ошибка инициализации SPWorlds: ${message}`);
       setSPWLoading(false);
@@ -134,6 +157,19 @@ function SPWContent({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
+  const handleTokenSubmit = (token: string) => {
+    // Сохраняем токен в localStorage для повторных входов
+    localStorage.setItem('dd_auth_token', token);
+
+    setAuthToken(token);
+    setShowExternalLogin(false);
+    // DataPreloadProvider автоматически подхватит токен и начнет загрузку
+  };
+
+  if (showExternalLogin) {
+    return <ExternalLoginScreen onTokenSubmit={handleTokenSubmit} />;
+  }
+
   // Показываем загрузку пока не инициализировано
   if (isLoading) {
     return <LoadingScreen />;
@@ -146,8 +182,8 @@ function SPWContent({ children }: { children: React.ReactNode }) {
         <div className="text-center text-white p-8">
           <h1 className="text-2xl font-bold mb-4">Ошибка инициализации</h1>
           <p className="mb-4">{error}</p>
-          <button 
-            onClick={() => window.location.reload()} 
+          <button
+            onClick={() => window.location.reload()}
             className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded transition-colors"
           >
             Перезагрузить страницу
